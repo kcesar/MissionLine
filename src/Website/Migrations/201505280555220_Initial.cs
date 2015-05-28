@@ -8,7 +8,7 @@ namespace Kcesar.MissionLine.Website.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.VoiceCalls",
+                "dbo.missionline_VoiceCall",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -23,11 +23,11 @@ namespace Kcesar.MissionLine.Website.Migrations
                         EventId = c.Int(),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.SarEvents", t => t.EventId)
+                .ForeignKey("dbo.missionline_SarEvent", t => t.EventId)
                 .Index(t => t.EventId);
             
             CreateTable(
-                "dbo.SarEvents",
+                "dbo.missionline_SarEvent",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -38,7 +38,7 @@ namespace Kcesar.MissionLine.Website.Migrations
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "dbo.IssuingAuthorityKeys",
+                "dbo.missionline_IssuingAuthorityKey",
                 c => new
                     {
                         Id = c.String(nullable: false, maxLength: 128),
@@ -46,7 +46,7 @@ namespace Kcesar.MissionLine.Website.Migrations
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "dbo.MemberSignIns",
+                "dbo.missionline_MemberSignIn",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -58,11 +58,11 @@ namespace Kcesar.MissionLine.Website.Migrations
                         EventId = c.Int(),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.SarEvents", t => t.EventId)
+                .ForeignKey("dbo.missionline_SarEvent", t => t.EventId)
                 .Index(t => t.EventId);
             
             CreateTable(
-                "dbo.Tenants",
+                "dbo.missionline_Tenant",
                 c => new
                     {
                         Id = c.String(nullable: false, maxLength: 128),
@@ -73,15 +73,15 @@ namespace Kcesar.MissionLine.Website.Migrations
         
         public override void Down()
         {
-            DropForeignKey("dbo.MemberSignIns", "EventId", "dbo.SarEvents");
-            DropForeignKey("dbo.VoiceCalls", "EventId", "dbo.SarEvents");
-            DropIndex("dbo.MemberSignIns", new[] { "EventId" });
-            DropIndex("dbo.VoiceCalls", new[] { "EventId" });
-            DropTable("dbo.Tenants");
-            DropTable("dbo.MemberSignIns");
-            DropTable("dbo.IssuingAuthorityKeys");
-            DropTable("dbo.SarEvents");
-            DropTable("dbo.VoiceCalls");
+            DropForeignKey("dbo.missionline_MemberSignIn", "EventId", "dbo.missionline_SarEvent");
+            DropForeignKey("dbo.missionline_VoiceCall", "EventId", "dbo.missionline_SarEvent");
+            DropIndex("dbo.missionline_MemberSignIn", new[] { "EventId" });
+            DropIndex("dbo.missionline_VoiceCall", new[] { "EventId" });
+            DropTable("dbo.missionline_Tenant");
+            DropTable("dbo.missionline_MemberSignIn");
+            DropTable("dbo.missionline_IssuingAuthorityKey");
+            DropTable("dbo.missionline_SarEvent");
+            DropTable("dbo.missionline_VoiceCall");
         }
     }
 }
