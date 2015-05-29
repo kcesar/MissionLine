@@ -3,7 +3,7 @@
     <text>
     <ul class="nav navbar-nav navbar-right">
         <li class="navbar-text">
-            Hello, @User.Identity.Name!
+            @User.Identity.Name.Split('@')[0]
         </li>
         <li>
             @Html.ActionLink("Sign out", "SignOut", "Account")

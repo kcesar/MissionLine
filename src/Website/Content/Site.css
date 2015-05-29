@@ -3,6 +3,18 @@
     padding-bottom: 20px;
 }
 
+td.roster-state {
+  width: 1em;
+}
+td.SignedIn, .table-striped > tbody > tr:nth-child(odd) > td.SignedIn {
+  background-color:#83de59 !important;
+}
+td.SignedOut, .table-striped > tbody > tr:nth-child(odd) > td.SignedOut {
+  background-color:#3b3b3b !important;
+}
+
+
+
 /* Set padding to keep content from hitting the edges */
 .body-content {
     padding-left: 15px;
