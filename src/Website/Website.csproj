@@ -156,6 +156,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\VoiceController.cs" />
+    <Compile Include="Data\CallAction.cs" />
     <Compile Include="Data\MemberSignIn.cs" />
     <Compile Include="Data\SarEvent.cs" />
     <Compile Include="Data\VoiceCall.cs" />
@@ -169,6 +170,10 @@
     <Compile Include="Migrations\201505280555220_Initial.Designer.cs">
       <DependentUpon>201505280555220_Initial.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201505282323049_CallActions.cs" />
+    <Compile Include="Migrations\201505282323049_CallActions.Designer.cs">
+      <DependentUpon>201505282323049_CallActions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\MemberSummary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -177,6 +182,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Speeches.resx</DependentUpon>
     </Compile>
+    <Compile Include="TwilioExtensions.cs" />
     <Compile Include="Utils\DatabaseIssuerNameRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -233,6 +239,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201505280555220_Initial.resx">
       <DependentUpon>201505280555220_Initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505282323049_CallActions.resx">
+      <DependentUpon>201505282323049_CallActions.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Speeches.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Entity;
 using System.IdentityModel.Services;
 using System.IdentityModel.Services.Configuration;
 using System.Linq;
@@ -16,6 +17,10 @@ namespace Kcesar.MissionLine.Website
   {
     protected void Application_Start()
     {
+      if (ConfigurationManager.AppSettings["autoUpdateDatabase"] != null)
+      {
+        Database.SetInitializer(new MigrateDatabaseToLatestVersion<Kcesar.MissionLine.Website.Data.MissionLineDbContext, Kcesar.MissionLine.Website.Migrations.Configuration>());
+      }
       FederatedAuthentication.FederationConfigurationCreated += FederatedAuthentication_FederationConfigurationCreated;
       AreaRegistration.RegisterAllAreas();
       IdentityConfig.ConfigureIdentity();

@@ -3,7 +3,20 @@ using System.Data.Entity;
 
 namespace Kcesar.MissionLine.Website.Data
 {
-  public class MissionLineDbContext : DbContext
+  public interface IMissionLineDbContext : IDisposable
+  {
+    IDbSet<IssuingAuthorityKey> IssuingAuthorityKeys { get; set; }
+
+    IDbSet<Tenant> Tenants { get; set; }
+
+    IDbSet<VoiceCall> Calls { get; set; }
+    IDbSet<MemberSignIn> SignIns { get; set; }
+    IDbSet<SarEvent> Events { get; set; }
+
+    int SaveChanges();
+  }
+
+  public class MissionLineDbContext : DbContext, IMissionLineDbContext
   {
     public MissionLineDbContext()
       : base("DefaultConnection")
@@ -16,9 +29,9 @@ namespace Kcesar.MissionLine.Website.Data
       base.OnModelCreating(modelBuilder);
     }
 
-    public DbSet<IssuingAuthorityKey> IssuingAuthorityKeys { get; set; }
+    public IDbSet<IssuingAuthorityKey> IssuingAuthorityKeys { get; set; }
 
-    public DbSet<Tenant> Tenants { get; set; }
+    public IDbSet<Tenant> Tenants { get; set; }
 
     public IDbSet<VoiceCall> Calls { get; set; }
     public IDbSet<MemberSignIn> SignIns { get; set; }

@@ -126,10 +126,10 @@
   <data name="MenuBody" xml:space="preserve">
     <value>Press 1 to sign in or out. Press 2 to record a message. Press 9 for admin options.</value>
   </data>
-  <data name="Preamble" xml:space="preserve">
-    <value>This is the King County Explorer Search and Rescue mission line. If you have a search and rescue emergency, hang up now and call 9 1 1.</value>
-  </data>
   <data name="StartRecording" xml:space="preserve">
     <value>Please record your message after the beep</value>
+  </data>
+  <data name="WelcomeUnknownCaller" xml:space="preserve">
+    <value>This is the King County Explorer Search and Rescue mission line. If you have a search and rescue emergency, hang up now and call 9 1 1.</value>
   </data>
 </root>

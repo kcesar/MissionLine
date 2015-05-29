@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -63,7 +64,7 @@ namespace Kcesar.MissionLine.Website.Utils
                 {
                     if (newKeys)
                     {
-                      context.IssuingAuthorityKeys.RemoveRange(context.IssuingAuthorityKeys);
+                      ((DbSet<IssuingAuthorityKey>)context.IssuingAuthorityKeys).RemoveRange(context.IssuingAuthorityKeys);
                       foreach (string thumbprint in issuingAuthority.Thumbprints)
                       {
                           context.IssuingAuthorityKeys.Add(new IssuingAuthorityKey { Id = thumbprint });

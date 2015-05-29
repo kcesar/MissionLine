@@ -88,20 +88,20 @@ namespace Kcesar.MissionLine.Website {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This is the King County Explorer Search and Rescue mission line. If you have a search and rescue emergency, hang up now and call 9 1 1..
-        /// </summary>
-        internal static string Preamble {
-            get {
-                return ResourceManager.GetString("Preamble", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Please record your message after the beep.
         /// </summary>
         internal static string StartRecording {
             get {
                 return ResourceManager.GetString("StartRecording", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This is the King County Explorer Search and Rescue mission line. If you have a search and rescue emergency, hang up now and call 9 1 1..
+        /// </summary>
+        internal static string WelcomeUnknownCaller {
+            get {
+                return ResourceManager.GetString("WelcomeUnknownCaller", resourceCulture);
             }
         }
     }

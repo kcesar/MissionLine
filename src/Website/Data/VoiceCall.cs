@@ -21,5 +21,7 @@ namespace Kcesar.MissionLine.Website.Data
     [ForeignKey("Event")]
     public int? EventId { get; set; }
     public virtual SarEvent Event { get; set; }
+
+    public virtual ICollection<CallAction> Actions { get; set; }
   }
 }
