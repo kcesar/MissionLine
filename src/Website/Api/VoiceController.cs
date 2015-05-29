@@ -86,7 +86,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       });
 
       var response = BeginMenu();
-      if (this.memberId != null)
+      if (this.memberId == null)
       {
         response.SayVoice(Speeches.WelcomeUnknownCaller);
       }
@@ -146,14 +146,13 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     [HttpPost]
     public TwilioResponse DoLogin(TwilioRequest request)
     {
-      string newMemberId = null;
-      string newName = this.memberName;
       var response = new TwilioResponse();
 
-      if (members.LookupMemberDEM(request.Digits, out newMemberId, out newName))
+      var lookup = members.LookupMemberDEM(request.Digits);
+      if (lookup != null)
       {
-        this.memberId = newMemberId;
-        this.memberName = newName;
+        this.memberId = lookup.Id;
+        this.memberName = lookup.Name;
         BeginMenu(response);
         EndMenu(response);
       }
@@ -187,6 +186,56 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       var response = BeginMenu();
       response.SayVoice("Your miles have been updated.");
       EndMenu(response, true);
+      return response;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public TwilioResponse StopRecording(TwilioRequest request)
+    {
+      TwilioResponse response = null;
+      Db(db =>
+      {
+        var call = db.Calls.Single(f => f.CallId == request.CallSid);
+        //if (!string.IsNullOrWhiteSpace(call.RecordingUrl))
+        //{
+        //  // Delete previous recording
+        //}
+        call.RecordingDuration = request.RecordingDuration;
+        call.RecordingUrl = request.RecordingUrl;
+        db.SaveChanges();
+
+        response = BeginMenu();
+        response.SayVoice("Recording saved.");
+        EndMenu(response, true);
+      });
+      return response;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public TwilioResponse Complete(TwilioRequest request)
+    {
+      Db(db =>
+      {
+        var call = db.Calls.Where(f => f.CallId == request.CallSid).SingleOrDefault();
+        if (call != null)
+        {
+          call.Duration = request.CallDuration;
+          db.SaveChanges();
+        }
+      });
+
+      var response = new TwilioResponse();
+      response.Hangup();
       return response;
     }
 
@@ -244,8 +293,12 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     protected override void Initialize(System.Web.Http.Controllers.HttpControllerContext controllerContext)
     {
       base.Initialize(controllerContext);
-      
-      var queries = controllerContext.Request.GetQueryNameValuePairs();
+
+      ParseQuery(controllerContext.Request.GetQueryNameValuePairs());
+    }
+
+    public void ParseQuery(IEnumerable<KeyValuePair<string, string>> queries)
+    {
       this.memberId = queries.Where(f => f.Key == "memberId").Select(f => f.Value).FirstOrDefault();
       this.memberName = queries.Where(f => f.Key == "memberName").Select(f => f.Value).FirstOrDefault();
       this.hasRecording = queries.Where(f => f.Key == "hasR").Select(f => f.Value).FirstOrDefault() == "1";
@@ -309,7 +362,9 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
 
     private void SetMemberInfoFromPhone(string From)
     {
-      members.LookupMemberPhone(From, out this.memberId, out this.memberName);
+      var lookup = members.LookupMemberPhone(From);
+      this.memberId = lookup.Id;
+      this.memberName = lookup.Name;
     }
 
     private void AddLoginPrompt(TwilioResponse response)
@@ -320,41 +375,6 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       response.EndGather();
       BeginMenu(response);
       EndMenu(response);
-    }
-
-    public TwilioResponse StopRecording(string CallSid, string RecordingUrl, int? RecordingDuration)
-    {
-      TwilioResponse response = null;
-      Db(db =>
-      {
-        var call = db.Calls.Single(f => f.CallId == CallSid);
-        //if (!string.IsNullOrWhiteSpace(call.RecordingUrl))
-        //{
-        //  // Delete previous recording
-        //}
-        call.RecordingDuration = RecordingDuration;
-        call.RecordingUrl = RecordingUrl;
-        db.SaveChanges();
-
-        response = BeginMenu();
-        response.SayVoice("Recording saved.");
-        EndMenu(response, true);
-      });
-      return response;
-    }
-
-    public TwilioResponse Complete(string CallSid, int? CallDuration)
-    {
-      Db(db =>
-      {
-        var call = db.Calls.Where(f => f.CallId == CallSid).Single();
-        call.Duration = CallDuration;
-        db.SaveChanges();
-      });
-
-      var response = new TwilioResponse();
-      response.Hangup();
-      return response;
     }
 
     private string GetAction(string name)

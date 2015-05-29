@@ -8,6 +8,11 @@ namespace Kcesar.MissionLine.Website.Data
 {
   public class VoiceCall
   {
+    public VoiceCall()
+    {
+      this.Actions = new List<CallAction>();
+    }
+
     public int Id { get; set; }
     public string CallId { get; set; }
     public string Number { get; set; }

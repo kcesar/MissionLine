@@ -10,8 +10,8 @@ namespace Kcesar.MissionLine.Website
 {
   public interface IMemberSource
   {
-    bool LookupMemberPhone(string phone, out string newMemberId, out string newMemberName);
-    bool LookupMemberDEM(string workerNumber, out string id, out string name);
+    MemberLookupResult LookupMemberPhone(string phone);
+    MemberLookupResult LookupMemberDEM(string workerNumber);
   }
 
   public class MemberSource : IMemberSource
@@ -25,17 +25,17 @@ namespace Kcesar.MissionLine.Website
       this.credential = new NetworkCredential(config.GetConfig("databaseUsername"), config.GetConfig("databasePassword"));
     }
 
-    public bool LookupMemberPhone(string phone, out string newMemberId, out string newMemberName)
+    public MemberLookupResult LookupMemberPhone(string phone)
     {
-      return DoLookup("/api/members/byphonenumber/" + phone.TrimStart('+'), out newMemberId, out newMemberName);
+      return DoLookup("/api/members/byphonenumber/" + phone.TrimStart('+'));
     }
 
-    public bool LookupMemberDEM(string workerNumber, out string id, out string name)
+    public MemberLookupResult LookupMemberDEM(string workerNumber)
     {
-      return DoLookup("/api/members/byworkernumber/" + workerNumber, out id, out name);
+      return DoLookup("/api/members/byworkernumber/" + workerNumber);
     }
 
-    private bool DoLookup(string url, out string newMemberId, out string newMemberName)
+    private MemberLookupResult DoLookup(string url)
     {
       WebClient client = new WebClient() { Credentials = this.credential };
       MemberSummary[] members = JsonConvert.DeserializeObject<MemberSummary[]>(
@@ -44,16 +44,20 @@ namespace Kcesar.MissionLine.Website
 
       if (members.Length == 1)
       {
-        newMemberId = members[0].Id.ToString();
-        newMemberName = members[0].Name;
-      }
-      else
-      {
-        newMemberId = null;
-        newMemberName = null;
+        return new MemberLookupResult
+        {
+          Id = members[0].Id.ToString(),
+          Name = members[0].Name
+        };
       }
 
-      return newMemberId != null;
+      return null;
     }
+  }
+
+  public class MemberLookupResult
+  {
+    public string Id { get; set; }
+    public string Name { get; set; }
   }
 }
