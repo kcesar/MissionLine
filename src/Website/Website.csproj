@@ -102,9 +102,6 @@
     <Reference Include="Twilio.Api">
       <HintPath>..\..\packages\Twilio.4.0.3\lib\3.5\Twilio.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Twilio.Mvc">
-      <HintPath>..\..\packages\Twilio.Mvc.3.1.15\lib\3.5\Twilio.Mvc.dll</HintPath>
-    </Reference>
     <Reference Include="Twilio.Twiml">
       <HintPath>..\..\packages\Twilio.TwiML.3.3.6\lib\3.5\Twilio.Twiml.dll</HintPath>
     </Reference>
@@ -147,6 +144,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\Model\TwilioRequest.cs" />
+    <Compile Include="Api\TwilioResponseFormatter.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
@@ -155,7 +154,7 @@
     <Compile Include="ConfigSource.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\VoiceController.cs" />
+    <Compile Include="Api\VoiceController.cs" />
     <Compile Include="Data\CallAction.cs" />
     <Compile Include="Data\MemberSignIn.cs" />
     <Compile Include="Data\SarEvent.cs" />
@@ -225,7 +224,6 @@
     <Content Include="Views\Account\SignOutCallback.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Api\" />
     <Folder Include="App_Data\" />
     <Folder Include="Views\Voice\" />
   </ItemGroup>

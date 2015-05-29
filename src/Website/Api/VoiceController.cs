@@ -1,18 +1,23 @@
 ﻿/*
  * Copyright 2015 Matt Cosand
  */
-namespace Kcesar.MissionLine.Website.Controllers
+namespace Kcesar.MissionLine.Website.Api.Controllers
 {
   using System;
   using System.Collections.Generic;
   using System.Linq;
-  using System.Web.Mvc;
-  using System.Web.Routing;
+  using System.Net.Http;
+  using System.Web;
+  using System.Web.Http;
+  using Kcesar.MissionLine.Website.Api.Model;
   using Kcesar.MissionLine.Website.Data;
   using Twilio.TwiML;
-  using Twilio.TwiML.Mvc;
 
-  public class VoiceController : TwilioController
+  /// <summary>
+  /// 
+  /// </summary>
+  [UseTwilioFormatter]
+  public class VoiceController : ApiController
   {
     private string memberId = null;
     private string memberName = null;
@@ -23,11 +28,20 @@ namespace Kcesar.MissionLine.Website.Controllers
     private readonly IMemberSource members;
     private readonly Func<IMissionLineDbContext> dbFactory;
 
+    /// <summary>
+    /// 
+    /// </summary>
     public VoiceController()
       : this(() => new MissionLineDbContext(), new ConfigSource(), new MemberSource(new ConfigSource()))
     {
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="dbFactory"></param>
+    /// <param name="config"></param>
+    /// <param name="members"></param>
     public VoiceController(Func<IMissionLineDbContext> dbFactory, IConfigSource config, IMemberSource members)
     {
       this.dbFactory = dbFactory;
@@ -38,19 +52,31 @@ namespace Kcesar.MissionLine.Website.Controllers
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="From"></param>
-    /// <param name="CallSid"></param>
     /// <returns></returns>
-    public TwiMLResult Answer(string From, string CallSid)
+    [HttpGet]
+    public TwilioResponse Test()
     {
-      SetMemberInfoFromPhone(From);
+      var r = new TwilioResponse();
+      r.Say("This is a test");
+      return r;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public TwilioResponse Answer(TwilioRequest request)
+    {
+      SetMemberInfoFromPhone(request.From);
 
       Db(db =>
       {
         var call = new VoiceCall
         {
-          CallId = CallSid,
-          Number = From,
+          CallId = request.CallSid,
+          Number = request.From,
           CallTime = GetLocalDateTime(),
           Name = memberName
         };
@@ -67,20 +93,20 @@ namespace Kcesar.MissionLine.Website.Controllers
 
       EndMenu(response);
 
-      return TwiML(response);
+      return response;
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="CallSid"></param>
-    /// <param name="Digits"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
-    public TwiMLResult DoMenu(string CallSid, string Digits)
+    [HttpPost]
+    public TwilioResponse DoMenu(TwilioRequest request)
     {
       var response = new TwilioResponse();
 
-      if (Digits == "1")
+      if (request.Digits == "1")
       {
         if (this.memberId == null)
         {
@@ -88,17 +114,17 @@ namespace Kcesar.MissionLine.Website.Controllers
         }
         else
         {
-          SignInOrOut(response, CallSid);
+          SignInOrOut(response, request.CallSid);
         }
       }
-      else if (Digits == "2")
+      else if (request.Digits == "2")
       {
         response.SayVoice(Speeches.StartRecording);
         response.Record(new { maxLength = 120, action = GetAction("StopRecording") });
         BeginMenu(response);
         EndMenu(response);
       }
-      else if (Digits == "3")
+      else if (request.Digits == "3")
       {
         AddLoginPrompt(response);
       }
@@ -109,21 +135,22 @@ namespace Kcesar.MissionLine.Website.Controllers
         EndMenu(response);
       }
 
-      return TwiML(response);
+      return response;
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="Digits"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
-    public TwiMLResult DoLogin(string Digits)
+    [HttpPost]
+    public TwilioResponse DoLogin(TwilioRequest request)
     {
       string newMemberId = null;
       string newName = this.memberName;
       var response = new TwilioResponse();
 
-      if (members.LookupMemberDEM(Digits, out newMemberId, out newName))
+      if (members.LookupMemberDEM(request.Digits, out newMemberId, out newName))
       {
         this.memberId = newMemberId;
         this.memberName = newName;
@@ -135,18 +162,19 @@ namespace Kcesar.MissionLine.Website.Controllers
         AddLoginPrompt(response);
       }
 
-      return TwiML(response);
+      return response;
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="Digits"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
-    public TwiMLResult SetMiles(string Digits)
+    [HttpPost]
+    public TwilioResponse SetMiles(TwilioRequest request)
     {
       int miles;
-      if (int.TryParse(Digits, out miles))
+      if (int.TryParse(request.Digits, out miles))
       {
         Db(db =>
         {
@@ -159,7 +187,7 @@ namespace Kcesar.MissionLine.Website.Controllers
       var response = BeginMenu();
       response.SayVoice("Your miles have been updated.");
       EndMenu(response, true);
-      return TwiML(response);
+      return response;
     }
 
     // =========================================  END PUBLIC METHODS  =============================================
@@ -213,19 +241,15 @@ namespace Kcesar.MissionLine.Website.Controllers
       });
     }
 
-    protected override void Initialize(RequestContext requestContext)
+    protected override void Initialize(System.Web.Http.Controllers.HttpControllerContext controllerContext)
     {
-      base.Initialize(requestContext);
-      memberId = Request.QueryString["memberId"];
-      memberName = Request.QueryString["memberName"];
-      this.hasRecording = (Request.QueryString["hasR"] == "1");
-      this.isSignedIn = (Request.QueryString["isS"] == "1");
-
-      System.Diagnostics.Debug.WriteLine(Request.RawUrl);
-      foreach (var key in Request.Form)
-      {
-        System.Diagnostics.Debug.WriteLine(string.Format("{0}: {1}", key, Request.Form[(string)key]));
-      }
+      base.Initialize(controllerContext);
+      
+      var queries = controllerContext.Request.GetQueryNameValuePairs();
+      this.memberId = queries.Where(f => f.Key == "memberId").Select(f => f.Value).FirstOrDefault();
+      this.memberName = queries.Where(f => f.Key == "memberName").Select(f => f.Value).FirstOrDefault();
+      this.hasRecording = queries.Where(f => f.Key == "hasR").Select(f => f.Value).FirstOrDefault() == "1";
+      this.isSignedIn = queries.Where(f => f.Key == "isS").Select(f => f.Value).FirstOrDefault() == "1";
     }
 
     private TwilioResponse BeginMenu()
@@ -298,7 +322,7 @@ namespace Kcesar.MissionLine.Website.Controllers
       EndMenu(response);
     }
 
-    public TwiMLResult StopRecording(string CallSid, string RecordingUrl, int? RecordingDuration)
+    public TwilioResponse StopRecording(string CallSid, string RecordingUrl, int? RecordingDuration)
     {
       TwilioResponse response = null;
       Db(db =>
@@ -316,10 +340,10 @@ namespace Kcesar.MissionLine.Website.Controllers
         response.SayVoice("Recording saved.");
         EndMenu(response, true);
       });
-      return TwiML(response);
+      return response;
     }
 
-    public TwiMLResult Complete(string CallSid, int? CallDuration)
+    public TwilioResponse Complete(string CallSid, int? CallDuration)
     {
       Db(db =>
       {
@@ -330,7 +354,7 @@ namespace Kcesar.MissionLine.Website.Controllers
 
       var response = new TwilioResponse();
       response.Hangup();
-      return TwiML(response);
+      return response;
     }
 
     private string GetAction(string name)
@@ -350,10 +374,10 @@ namespace Kcesar.MissionLine.Website.Controllers
         args.Add("isS", "1");
       }
 
-      string result = this.config.GetUrlAction(Url, name);
+      string result = this.Url.Content("~/api/voice/" + name);
       if (args.Count > 0)
       {
-        result += "?" + string.Join("&", args.Select(f => f.Key + "=" + Url.Encode(f.Value)));
+        result += "?" + string.Join("&", args.Select(f => f.Key + "=" + HttpUtility.UrlEncode(f.Value)));
       }
 
       System.Diagnostics.Debug.WriteLine("GetAction: " + result);
