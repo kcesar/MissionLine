@@ -1,14 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
-using Kcesar.MissionLine.Website.Api.Model;
-using Kcesar.MissionLine.Website.Data;
-
+﻿/*
+ * Copyright 2015 Matt Cosand
+ */
 namespace Kcesar.MissionLine.Website.Api
 {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Linq.Expressions;
+  using System.Web.Http;
+  using Kcesar.MissionLine.Website.Api.Model;
+  using Kcesar.MissionLine.Website.Data;
+
+  /// <summary>
+  /// 
+  /// </summary>
   public class RosterController : ApiController
   {
     private readonly IConfigSource config;
@@ -47,26 +52,40 @@ namespace Kcesar.MissionLine.Website.Api
                       group s by s.MemberId into g
                       let f = g.OrderByDescending(x => x.TimeIn).FirstOrDefault()
                       orderby f.TimeOut.HasValue ? f.TimeOut : futureDate descending, f.TimeIn
-                      select new RosterEntry
-                      {
-                        Id = f.Id,
-                        Name = f.Name,
-                        TimeIn = f.TimeIn,
-                        TimeOut = f.TimeOut,
-                        State = f.TimeOut.HasValue ? RosterState.SignedOut : RosterState.SignedIn,
-                        Miles = f.Miles
-                      });
+                      select f)
+                      .Select(proj);
 
         return latest.ToArray();
       }
     }
 
     // GET api/<controller>/5
-    public string Get(int id)
+    public RosterEntry Get(int id)
     {
-      return "value";
+      using (var db = this.dbFactory())
+      {
+        return GetRosterEntry(id, db);
+      }
     }
 
+    internal static RosterEntry GetRosterEntry(int id, IMissionLineDbContext db)
+    {
+      return db.SignIns.Where(f => f.Id == id)
+        .Select(proj)
+        .SingleOrDefault();
+    }
+
+    private static Expression<Func<MemberSignIn, RosterEntry>> proj = f => new RosterEntry
+    {
+      Id = f.Id,
+      Name = f.Name,
+      MemberId = f.MemberId,
+      TimeIn = f.TimeIn,
+      TimeOut = f.TimeOut,
+      State = f.TimeOut.HasValue ? RosterState.SignedOut : RosterState.SignedIn,
+      Miles = f.Miles
+    };
+    /*
     // POST api/<controller>
     public void Post([FromBody]string value)
     {
@@ -81,5 +100,6 @@ namespace Kcesar.MissionLine.Website.Api
     public void Delete(int id)
     {
     }
+     * */
   }
 }

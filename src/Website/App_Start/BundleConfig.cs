@@ -14,7 +14,8 @@ namespace Kcesar.MissionLine.Website
                   "~/Scripts/respond.js",
                   "~/Scripts/moment.js",
                   "~/Scripts/knockout-{version}.js",
-                  "~/Scripts/site/ko-bindings.js"));
+                  "~/Scripts/site/ko-bindings.js",
+                  "~/Scripts/jquery.signalR-{version}.js"));
 
       bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                   "~/Scripts/jquery.validate*"));

@@ -11,6 +11,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
   using System.Web.Http;
   using Kcesar.MissionLine.Website.Api.Model;
   using Kcesar.MissionLine.Website.Data;
+  using Microsoft.AspNet.SignalR;
   using Twilio.TwiML;
 
   /// <summary>
@@ -27,6 +28,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     private readonly IConfigSource config;
     private readonly IMemberSource members;
     private readonly Func<IMissionLineDbContext> dbFactory;
+
+    private dynamic CallHubClients { get { return GlobalHost.ConnectionManager.GetHubContext<CallsHub>().Clients.All;  } }
 
     /// <summary>
     /// 
@@ -177,9 +180,10 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       {
         Db(db =>
         {
-          var call = db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefault(f => f.MemberId == memberId);
-          call.Miles = miles;
+          var signin = db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefault(f => f.MemberId == memberId);
+          signin.Miles = miles;
           db.SaveChanges();
+          CallHubClients.updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
         });
       }
 
@@ -287,6 +291,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
           response.EndGather();
         }
         db.SaveChanges();
+        CallHubClients.updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
       });
     }
 
