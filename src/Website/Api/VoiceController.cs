@@ -73,6 +73,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     public TwilioResponse Answer(TwilioRequest request)
     {
       SetMemberInfoFromPhone(request.From);
+      UpdateSigninStatus();
 
       Db(db =>
       {
@@ -156,6 +157,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       {
         this.memberId = lookup.Id;
         this.memberName = lookup.Name;
+        UpdateSigninStatus();
         BeginMenu(response);
         EndMenu(response);
       }
@@ -408,5 +410,20 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       System.Diagnostics.Debug.WriteLine("GetAction: " + result);
       return result;
     }
+    
+    private void UpdateSigninStatus()
+    {
+      if (string.IsNullOrWhiteSpace(this.memberId))
+      {
+        return;
+      }
+
+      Db(db =>
+      {
+        var signin = db.SignIns.Where(f => f.MemberId == this.memberId).OrderByDescending(f => f.TimeIn).FirstOrDefault();
+        this.isSignedIn = (signin != null) && (signin.TimeOut == null);
+      });
+    }
+
   }
 }

@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="InMemoryDbSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VoiceTestContext.cs" />
     <Compile Include="VoiceControllerTests.cs" />
   </ItemGroup>
   <ItemGroup>
