@@ -29,8 +29,6 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     private readonly IMemberSource members;
     private readonly Func<IMissionLineDbContext> dbFactory;
 
-    private dynamic CallHubClients { get { return GlobalHost.ConnectionManager.GetHubContext<CallsHub>().Clients.All;  } }
-
     /// <summary>
     /// 
     /// </summary>
@@ -50,18 +48,6 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       this.dbFactory = dbFactory;
       this.config = config;
       this.members = members;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet]
-    public TwilioResponse Test()
-    {
-      var r = new TwilioResponse();
-      r.Say("This is a test");
-      return r;
     }
 
     /// <summary>
@@ -87,6 +73,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
 
         db.Calls.Add(call);
         db.SaveChanges();
+
+        this.config.GetPushHub<CallsHub>().updatedCall(CallsController.GetCallEntry(call));
       });
 
       var response = BeginMenu();
@@ -185,7 +173,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
           var signin = db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefault(f => f.MemberId == memberId);
           signin.Miles = miles;
           db.SaveChanges();
-          CallHubClients.updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+          this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
         });
       }
 
@@ -215,6 +203,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         call.RecordingUrl = request.RecordingUrl;
         db.SaveChanges();
 
+        this.config.GetPushHub<CallsHub>().updatedCall(CallsController.GetCallEntry(call));
+
         response = BeginMenu();
         response.SayVoice("Recording saved.");
         EndMenu(response, true);
@@ -237,6 +227,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         {
           call.Duration = request.CallDuration;
           db.SaveChanges();
+
+          this.config.GetPushHub<CallsHub>().updatedCall(CallsController.GetCallEntry(call));
         }
       });
 
@@ -293,7 +285,9 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
           response.EndGather();
         }
         db.SaveChanges();
-        CallHubClients.updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+        var hub = this.config.GetPushHub<CallsHub>();
+        hub.updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+        hub.updatedCall(CallsController.GetCallEntry(call));
       });
     }
 
@@ -370,8 +364,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     private void SetMemberInfoFromPhone(string From)
     {
       var lookup = members.LookupMemberPhone(From);
-      this.memberId = lookup.Id;
-      this.memberName = lookup.Name;
+      this.memberId = lookup == null ? null : lookup.Id;
+      this.memberName = lookup == null ? null : lookup.Name;
     }
 
     private void AddLoginPrompt(TwilioResponse response)

@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AC9C4E0F-7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Website.UnitTests", "test\Website.UnitTests\Website.UnitTests.csproj", "{3D1ECE09-6C6D-4CD2-A4F5-D3E3C4A65339}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeTwilio", "test\FakeTwilio\FakeTwilio.csproj", "{DADC4F8D-3796-4BBE-981B-BBCBD3CAB341}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +25,16 @@ Global
 		{3D1ECE09-6C6D-4CD2-A4F5-D3E3C4A65339}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D1ECE09-6C6D-4CD2-A4F5-D3E3C4A65339}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D1ECE09-6C6D-4CD2-A4F5-D3E3C4A65339}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DADC4F8D-3796-4BBE-981B-BBCBD3CAB341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DADC4F8D-3796-4BBE-981B-BBCBD3CAB341}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DADC4F8D-3796-4BBE-981B-BBCBD3CAB341}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DADC4F8D-3796-4BBE-981B-BBCBD3CAB341}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3D1ECE09-6C6D-4CD2-A4F5-D3E3C4A65339} = {AC9C4E0F-71CF-41AC-8D28-731DEDD67260}
+		{DADC4F8D-3796-4BBE-981B-BBCBD3CAB341} = {AC9C4E0F-71CF-41AC-8D28-731DEDD67260}
 	EndGlobalSection
 EndGlobal

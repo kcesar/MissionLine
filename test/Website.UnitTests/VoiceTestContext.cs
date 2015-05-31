@@ -63,10 +63,16 @@ namespace Website.UnitTests
       return DoApiCall(action, "http://localhost/api/voice/" + action.ToLowerInvariant(), this.CreateRequest(digits));
     }
 
+    public class CallsHubImpl
+    {
+      public Action<CallEntry> updatedCall = (e => { });
+      public Action<RosterEntry> updatedRoster = (e => { });
+    }
+
     public TwilioResponse DoApiCall(string action, string url, TwilioRequest args)
     {
-
       var configMock = new Mock<IConfigSource>();
+      configMock.Setup(f => f.GetPushHub<CallsHub>()).Returns(new CallsHubImpl());
       var controller = new VoiceController(() => this.DBMock.Object, configMock.Object, this.MembersMock.Object);
       controller.Request = new HttpRequestMessage(HttpMethod.Post, url);
       controller.Configuration = new HttpConfiguration();
