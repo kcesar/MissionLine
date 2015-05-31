@@ -41,7 +41,7 @@
 
   var fixupCall = function (row) {
     row.time = moment(row.time);
-    row.timeText = row.time.format('ddd D, HHmm');
+    row.timeText = row.time.format('HHmm ddd D');
     row.name = row.name || '';
     return row;
   }
