@@ -31,10 +31,10 @@
   </div>
   <div class="container body-content">
     @RenderBody()
-    @*<hr />
-      <footer>
-          <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-      </footer>*@
+    <hr />
+      <footer class="text-center">
+          <p>&copy; @DateTime.Now.Year - This project is open source. View it on <a href="https://github.com/mcosand/MissionLine">GitHub</a></p>
+      </footer>
   </div>
 
   @Scripts.Render("~/bundles/core")

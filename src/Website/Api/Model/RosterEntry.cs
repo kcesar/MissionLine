@@ -12,6 +12,9 @@ namespace Kcesar.MissionLine.Website.Api.Model
     public DateTime TimeIn { get; set; }
     public DateTime? TimeOut { get; set; }
     public string MemberId { get; set; }
+    public string IsMember { get; set; }
+
+    public int? EventId { get; set; }
 
     public decimal? Hours
     {

@@ -11,11 +11,18 @@ namespace Kcesar.MissionLine.Website
       bundles.Add(new ScriptBundle("~/bundles/core").Include(
                   "~/Scripts/jquery-{version}.js",
                    "~/Scripts/bootstrap.js",
+                   "~/Scripts/bootstrap-select.js",
+                   "~/Scripts/bootstrap-dialog.js",
                   "~/Scripts/respond.js",
                   "~/Scripts/moment.js",
                   "~/Scripts/knockout-{version}.js",
                   "~/Scripts/site/ko-bindings.js",
-                  "~/Scripts/jquery.signalR-{version}.js"));
+                  "~/Scripts/jquery.signalR-{version}.js",
+                  "~/Scripts/jquery.toaster.js",
+                  "~/Scripts/site/forms.js"));
+
+      bundles.Add(new ScriptBundle("~/bundles/page/index").Include(
+                  "~/Scripts/site/page/index.js"));
 
       bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                   "~/Scripts/jquery.validate*"));
@@ -27,6 +34,9 @@ namespace Kcesar.MissionLine.Website
 
       bundles.Add(new StyleBundle("~/Content/css").Include(
                 "~/Content/bootstrap.css",
+                "~/Content/bootstrap-select.css",
+                "~/Content/bootstrap-dialog.css",
+                "~/Content/font-awesome.css",
                 "~/Content/site.css"));
     }
   }

@@ -1,4 +1,26 @@
-﻿ko.bindingHandlers.sort = {
+﻿ko.bindingHandlers.conditionalLink = {
+  init: function (element, valueAccessor, allBindingsAccessor) {
+    var child;
+    var v = valueAccessor();
+    var text = ko.unwrap(allBindingsAccessor().text);
+    if (ko.unwrap(v.test)) {
+      child = $('<a/>').text(text).attr('href', ko.unwrap(v.value));
+    }
+    else {
+      child = $('<span/>').text(text);
+    }
+    $(element).empty().append(child);
+  }
+};
+
+ko.bindingHandlers.selectPickerOptions = {
+  update: function (element, valueAccessor, allBindings) {
+    ko.bindingHandlers.options.update(element, valueAccessor, allBindings);
+    $(element).selectpicker('refresh');
+  }
+};
+
+ko.bindingHandlers.sort = {
   init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
     var asc = false;
 
@@ -82,5 +104,39 @@ ko.bindingHandlers.foreachWithHighlight = {
     }
 
     return { controlsDescendantBindings: true };
+  }
+};
+
+ko.bindingHandlers.href = {
+  update: function (element, valueAccessor) {
+    ko.bindingHandlers.attr.update(element, function () {
+      return { href: valueAccessor() }
+    });
+  }
+};
+
+ko.bindingHandlers.src = {
+  update: function (element, valueAccessor) {
+    ko.bindingHandlers.attr.update(element, function () {
+      return { src: valueAccessor() }
+    });
+  }
+};
+
+ko.bindingHandlers.hidden = {
+  update: function (element, valueAccessor) {
+    var value = ko.utils.unwrapObservable(valueAccessor());
+    ko.bindingHandlers.visible.update(element, function () { return !value; });
+  }
+};
+
+ko.bindingHandlers.toggle = {
+  init: function (element, valueAccessor) {
+    var value = valueAccessor();
+    ko.applyBindingsToNode(element, {
+      click: function () {
+        value(!value());
+      }
+    });
   }
 };

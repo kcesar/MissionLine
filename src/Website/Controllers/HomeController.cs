@@ -1,11 +1,23 @@
-﻿using System.Web.Mvc;
-
-namespace Kcesar.MissionLine.Website.Controllers
+﻿namespace Kcesar.MissionLine.Website.Controllers
 {
+  using System.Web.Mvc;
+
   public class HomeController : Controller
   {
+    private readonly IConfigSource config;
+
+    public HomeController() : this(new ConfigSource())
+    {
+    }
+
+    public HomeController(IConfigSource config)
+    {
+      this.config = config;
+    }
+
     public ActionResult Index()
     {
+      ViewBag.LinkTemplate = this.config.GetConfig("memberLinkTemplate");
       return View();
     }
   }

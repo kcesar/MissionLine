@@ -264,6 +264,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
           signin = new MemberSignIn
           {
             MemberId = this.memberId,
+            isMember = true,
             Name = this.memberName,
             TimeIn = time
           };

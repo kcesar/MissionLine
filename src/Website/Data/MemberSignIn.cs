@@ -12,6 +12,7 @@ namespace Kcesar.MissionLine.Website.Data
 
     public string Name { get; set; }
     public string MemberId { get; set; }
+    public bool isMember { get; set; }
 
     public DateTime TimeIn { get; set; }
     public DateTime? TimeOut { get; set; }
@@ -20,5 +21,10 @@ namespace Kcesar.MissionLine.Website.Data
     [ForeignKey("Event")]
     public int? EventId { get; set; }
     public virtual SarEvent Event { get; set; }
+
+    public override string ToString()
+    {
+      return string.Format("{0} @{1:yyyy-MM-dd HH:mm} - {2:yyyy-MM-dd HH:mm}", this.Name, this.TimeIn, this.TimeOut);
+    }
   }
 }

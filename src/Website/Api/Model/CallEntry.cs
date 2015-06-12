@@ -9,5 +9,7 @@
     public string Name { get; set; }
     public DateTime Time { get; set; }
     public string Recording { get; set; }
+
+    public int? EventId { get; set; }
   }
 }

@@ -1,7 +1,10 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
-    overflow-y: scroll;
+}
+
+body, .modal-open .modal {
+  overflow-y: scroll;
 }
 
 td.roster-state {
@@ -35,4 +38,21 @@ input,
 select,
 textarea {
     max-width: 280px;
+}
+
+.panel-heading .btn-group {
+  height: 20px;
+  margin-top: -5px;
+  margin-left: -5px;
+}
+.panel-heading .btn-group .btn-sm {
+  line-height: 1;
+}
+li button.btn-link {
+  text-align:left;
+  width:100%;
+}
+
+.form-control {
+  font-weight: normal;
 }

@@ -72,7 +72,7 @@ namespace Kcesar.MissionLine.Website.Api
     {
       return db.SignIns.Where(f => f.Id == id)
         .Select(proj)
-        .SingleOrDefault();
+        .SingleOrDefault();      
     }
 
     private static Expression<Func<MemberSignIn, RosterEntry>> proj = f => new RosterEntry
@@ -80,10 +80,12 @@ namespace Kcesar.MissionLine.Website.Api
       Id = f.Id,
       Name = f.Name,
       MemberId = f.MemberId,
+      IsMember = f.isMember ? f.MemberId : null,
       TimeIn = f.TimeIn,
       TimeOut = f.TimeOut,
       State = f.TimeOut.HasValue ? RosterState.SignedOut : RosterState.SignedIn,
-      Miles = f.Miles
+      Miles = f.Miles,
+      EventId = f.EventId
     };
     /*
     // POST api/<controller>

@@ -16,7 +16,7 @@ namespace Website.UnitTests
     [Test]
     public void QuickSignIn()
     {
-      var context = VoiceTestContext.GetDefault();
+      var context = VoiceTestContext.GetDefault<VoiceTestContext>();
 
       var result = context.DoApiCall("Answer", null);
 
@@ -42,7 +42,7 @@ namespace Website.UnitTests
     [Test]
     public void UpdateSigninStatusOnAnswer()
     {
-      var context = VoiceTestContext.GetDefault();
+      var context = VoiceTestContext.GetDefault<VoiceTestContext>();
 
       context.SignIns.Add(new MemberSignIn { MemberId = context.Member.Id, TimeIn = DateTime.Now.AddMinutes(-5), Id = 5 });
 
@@ -63,7 +63,7 @@ namespace Website.UnitTests
     [Test]
     public void UpdateSignStatusOnLogin()
     {
-      var context = VoiceTestContext.GetDefault();
+      var context = VoiceTestContext.GetDefault<VoiceTestContext>();
       string dem = "1234";
 
       var otherMember = new MemberLookupResult { Id = "alternate", Name = "Fuzzy Bunny" };
