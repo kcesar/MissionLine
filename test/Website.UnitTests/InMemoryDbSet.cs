@@ -10,6 +10,8 @@ namespace Website.UnitTests
   public class InMemoryDbSet<T> : IDbSet<T> where T : class
   {
     readonly HashSet<T> _set;
+    readonly IQueryProvider provider;
+
     public IQueryable<T> QueryableSet { get; private set; }
 
 
@@ -25,6 +27,7 @@ namespace Website.UnitTests
       }
 
       QueryableSet = _set.AsQueryable();
+      provider = new TestDbAsyncQueryProvider<T>(QueryableSet.Provider);
     }
 
     public T Add(T entity)
@@ -88,7 +91,7 @@ namespace Website.UnitTests
 
     public IQueryProvider Provider
     {
-      get { return QueryableSet.Provider; }
+      get { return this.provider; }
     }
   }
 }

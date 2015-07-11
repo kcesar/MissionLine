@@ -5,12 +5,14 @@ namespace Kcesar.MissionLine.Website.Api
 {
   using System;
   using System.Collections.Generic;
+  using System.Data.Entity;
   using System.Linq;
   using System.Linq.Expressions;
+  using System.Threading.Tasks;
   using System.Web.Http;
-  using Kcesar.MissionLine.Website.Api.Model;
-  using Kcesar.MissionLine.Website.Data;
-  using Kcesar.MissionLine.Website.Model;
+  using Data;
+  using Model;
+  using Website.Model;
 
   /// <summary>
   /// 
@@ -47,9 +49,18 @@ namespace Kcesar.MissionLine.Website.Api
     {
       using (var db = this.dbFactory())
       {
-        return db.Events.OrderByDescending(f => f.Opened).Select(proj).ToArray();
+        return GetActiveEvents(db, config).Select(proj).ToArray();
       }
     }
+
+    internal static IQueryable<SarEvent> GetActiveEvents(IMissionLineDbContext db, IConfigSource config)
+    {
+      IQueryable<SarEvent> query = db.Events;
+      DateTime cutoff = DateTimeOffset.Now.AddDays(-2).ToOrgTime(config).ToLocalTime();
+      query = query.Where(f => f.Closed == null || f.Closed > cutoff);
+      return db.Events.OrderByDescending(f => f.Opened);
+    }
+
 
     // GET api/<controller>/5
     public EventEntry Get(int id)
@@ -61,14 +72,56 @@ namespace Kcesar.MissionLine.Website.Api
     }
 
     [HttpPost]
-    [Route("api/events/{fromId}/merge/{intoId}")]
-    public SubmitResult<EventEntry> Merge(int fromId, int intoId)
+    [Route("api/events/{id}/close")]
+    public async Task<SubmitResult> Close(int id)
     {
-      var result = new SubmitResult<EventEntry>();
+      var result = new SubmitResult();
       using (var db = dbFactory())
       {
-        var from = db.Events.SingleOrDefault(f => f.Id == fromId);
-        var into = db.Events.SingleOrDefault(f => f.Id == intoId);
+        var rosterCount = await db.SignIns.Where(f => f.EventId == id && f.TimeOut == null).CountAsync();
+        if (rosterCount > 0)
+        {
+          result.Errors.Add(new SubmitError("All members must be signed out before an event can be closed"));
+        }
+
+        if (result.Errors.Count == 0)
+        {
+          var e = await db.Events.SingleOrDefaultAsync(f => f.Id == id);
+          e.Closed = DateTimeOffset.Now.ToOrgTime(this.config);
+          await db.SaveChangesAsync();
+          this.config.GetPushHub<CallsHub>().updatedEvent(compiledProj(e));
+        }
+      }
+      return result;
+    }
+
+    [HttpPost]
+    [Route("api/events/{id}/reopen")]
+    public async Task<SubmitResult> Reopen(int id)
+    {
+      var result = new SubmitResult();
+      using (var db = dbFactory())
+      {
+        var e = await db.Events.SingleOrDefaultAsync(f => f.Id == id);
+        e.Closed = null;
+        await db.SaveChangesAsync();
+        this.config.GetPushHub<CallsHub>().updatedEvent(compiledProj(e));
+      }
+      return result;
+    }
+
+    [HttpPost]
+    [Route("api/events/{fromId}/merge/{intoId}")]
+    public async Task<SubmitResult<EventEntry>> Merge(int fromId, int intoId)
+    {
+      var result = new SubmitResult<EventEntry>();
+      List<Action> notifications = new List<Action>();
+      var hub = this.config.GetPushHub<CallsHub>();
+
+      using (var db = dbFactory())
+      {
+        var from = await db.Events.Include(f => f.SignIns).SingleOrDefaultAsync(f => f.Id == fromId);
+        var into = await db.Events.Include(f => f.SignIns).SingleOrDefaultAsync(f => f.Id == intoId);
 
         var fromSignins = from.SignIns.ToList();
         var intoSignins = into.SignIns.ToList();
@@ -130,9 +183,8 @@ namespace Kcesar.MissionLine.Website.Api
 
         db.Events.Remove(from);
 
-        db.SaveChanges();
+        await db.SaveChangesAsync();
         result.Data = compiledProj(into);
-        var hub = this.config.GetPushHub<CallsHub>();
         hub.removedEvent(from.Id);
         hub.updatedEvent(result.Data);
       }
@@ -168,7 +220,7 @@ namespace Kcesar.MissionLine.Website.Api
       {
         result.Errors.Add(new SubmitError("name", "Required"));
       }
-      DateTime localTime = ToOrgTime(value.Opened);
+      DateTime localTime = value.Opened.ToOrgTime(this.config);
       if (localTime < minDate ||  localTime > maxDate)
       {
         result.Errors.Add(new SubmitError("opened", "Date invalid or out of range"));
@@ -203,9 +255,5 @@ namespace Kcesar.MissionLine.Website.Api
     {
     }
      * */
-    private DateTime ToOrgTime(DateTimeOffset input)
-    {
-      return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(input.UtcDateTime, this.config.GetConfig("timezone") ?? "Pacific Standard Time");
-    }
   }
 }

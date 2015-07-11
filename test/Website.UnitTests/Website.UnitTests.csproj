@@ -90,10 +90,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions.cs" />
+    <Compile Include="RosterControllerTests.cs" />
     <Compile Include="TestContext.cs" />
     <Compile Include="InMemoryDbSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EventControllerTests.cs" />
+    <Compile Include="TestDbAsyncQueryProvider.cs" />
     <Compile Include="VoiceTestContext.cs" />
     <Compile Include="VoiceControllerTests.cs" />
   </ItemGroup>

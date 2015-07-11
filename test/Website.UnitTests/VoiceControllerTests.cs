@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Kcesar.MissionLine.Website;
 using Kcesar.MissionLine.Website.Data;
 using NUnit.Framework;
+using Twilio.TwiML;
 
 namespace Website.UnitTests
 {
@@ -18,7 +20,7 @@ namespace Website.UnitTests
     {
       var context = VoiceTestContext.GetDefault<VoiceTestContext>();
 
-      var result = context.DoApiCall("Answer", null);
+      var result = Task.Run(() => context.DoApiCall("Answer", null)).Result;
 
       Assert.AreEqual(1, context.Calls.Count(), "rows in call table");
       Assert.AreEqual(context.From, context.Calls.Single().Number, "stored phone number");
@@ -27,7 +29,7 @@ namespace Website.UnitTests
       var menuAction = (from e in result.ToXDocument().Descendants("Gather") select e.Attribute("action").Value).FirstOrDefault();
       Assert.IsTrue(menuAction.StartsWith("http://localhost/api/voice/DoMenu"), "action is DoMenu");
 
-      result = context.DoApiCall("DoMenu", menuAction, context.CreateRequest("1"));
+      result = Task.Run(() => context.DoApiCall("DoMenu", menuAction, context.CreateRequest("1"))).Result;
 
       StringAssert.StartsWith("Signed in as Mr. Sandman", (from e in result.ToXDocument().Descendants("Say") select e.Value).FirstOrDefault(), "report signed in");
       Assert.AreEqual(1, context.SignIns.Count(), "sign in rows");
@@ -46,7 +48,7 @@ namespace Website.UnitTests
 
       context.SignIns.Add(new MemberSignIn { MemberId = context.Member.Id, TimeIn = DateTime.Now.AddMinutes(-5), Id = 5 });
 
-      var result = context.DoApiCall("Answer", null);
+      var result = Task.Run(() => context.DoApiCall("Answer", null)).Result;
 
       Assert.IsNotNull((from e in result.ToXDocument().Descendants("Gather")
                         from a in e.Attributes()
@@ -69,9 +71,9 @@ namespace Website.UnitTests
       var otherMember = new MemberLookupResult { Id = "alternate", Name = "Fuzzy Bunny" };
 
       context.SignIns.Add(new MemberSignIn { MemberId = otherMember.Id, TimeIn = DateTime.Now.AddMinutes(-5), Id = 5 });
-      context.MembersMock.Setup(f => f.LookupMemberDEM(dem)).Returns(otherMember);
+      context.MembersMock.Setup(f => f.LookupMemberDEM(dem)).Returns(Task.Factory.StartNew<MemberLookupResult>(() => otherMember));
 
-      var result = context.DoApiCall("DoLogin", dem);
+      var result = Task.Run(() => context.DoApiCall("DoLogin", dem)).Result;
 
       Console.WriteLine(result);
 

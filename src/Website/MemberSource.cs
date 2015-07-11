@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Web;
-using Kcesar.MissionLine.Website.Model;
-using Newtonsoft.Json;
-
-namespace Kcesar.MissionLine.Website
+﻿namespace Kcesar.MissionLine.Website
 {
+  using System;
+  using System.Net;
+  using System.Threading.Tasks;
+  using Kcesar.MissionLine.Website.Model;
+  using Newtonsoft.Json;
+  
   public interface IMemberSource
   {
-    MemberLookupResult LookupMemberPhone(string phone);
-    MemberLookupResult LookupMemberDEM(string workerNumber);
+    Task<MemberLookupResult> LookupMemberPhone(string phone);
+    Task<MemberLookupResult> LookupMemberDEM(string workerNumber);
   }
 
   public class MemberSource : IMemberSource
@@ -25,21 +23,21 @@ namespace Kcesar.MissionLine.Website
       this.credential = new NetworkCredential(config.GetConfig("databaseUsername"), config.GetConfig("databasePassword"));
     }
 
-    public MemberLookupResult LookupMemberPhone(string phone)
+    public Task<MemberLookupResult> LookupMemberPhone(string phone)
     {
       return DoLookup("/api/members/byphonenumber/" + phone.TrimStart('+'));
     }
 
-    public MemberLookupResult LookupMemberDEM(string workerNumber)
+    public Task<MemberLookupResult> LookupMemberDEM(string workerNumber)
     {
       return DoLookup("/api/members/byworkernumber/" + workerNumber);
     }
 
-    private MemberLookupResult DoLookup(string url)
+    private async Task<MemberLookupResult> DoLookup(string url)
     {
       WebClient client = new WebClient() { Credentials = this.credential };
       MemberSummary[] members = JsonConvert.DeserializeObject<MemberSummary[]>(
-        client.DownloadString(this.url + url + "?_auth=basic")
+        await client.DownloadStringTaskAsync(new Uri(this.url + url + "?_auth=basic"))
         );
 
       if (members.Length == 1)

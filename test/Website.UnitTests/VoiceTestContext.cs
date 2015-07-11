@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Routing;
 using Kcesar.MissionLine.Website;
@@ -23,7 +24,7 @@ namespace Website.UnitTests
       Member = new MemberLookupResult { Id = Guid.NewGuid().ToString(), Name = "Mr. Sandman" };
 
       MembersMock = new Mock<IMemberSource>();
-      MembersMock.Setup(f => f.LookupMemberPhone(this.From)).Returns(this.Member);
+      MembersMock.Setup(f => f.LookupMemberPhone(this.From)).Returns(Task.Factory.StartNew<MemberLookupResult>(() => this.Member));
 
     }
 
@@ -40,12 +41,12 @@ namespace Website.UnitTests
 
     public string CallSid { get; private set; }
 
-    public TwilioResponse DoApiCall(string action, string digits)
+    public Task<TwilioResponse> DoApiCall(string action, string digits)
     {
       return DoApiCall(action, "http://localhost/api/voice/" + action.ToLowerInvariant(), this.CreateRequest(digits));
     }
 
-    public TwilioResponse DoApiCall(string action, string url, TwilioRequest args)
+    public async Task<TwilioResponse> DoApiCall(string action, string url, TwilioRequest args)
     {
       var controller = new VoiceController(() => this.DBMock.Object, this.ConfigMock.Object, this.MembersMock.Object);
       controller.Request = new HttpRequestMessage(HttpMethod.Post, url);
@@ -62,7 +63,7 @@ namespace Website.UnitTests
       Console.WriteLine("Posting to " + url);
 
       var method = typeof(VoiceController).GetMethod(action, new[] { typeof(TwilioRequest) });
-      var result = (TwilioResponse)(method.Invoke(controller, new object[] { args }));
+      var result = await (Task<TwilioResponse>)(method.Invoke(controller, new object[] { args }));
       return result;
     }
   }

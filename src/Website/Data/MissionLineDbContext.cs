@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Threading.Tasks;
 
 namespace Kcesar.MissionLine.Website.Data
 {
@@ -14,6 +15,7 @@ namespace Kcesar.MissionLine.Website.Data
     IDbSet<SarEvent> Events { get; set; }
 
     int SaveChanges();
+    Task<int> SaveChangesAsync();
   }
 
   public class MissionLineDbContext : DbContext, IMissionLineDbContext

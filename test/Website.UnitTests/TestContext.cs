@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Kcesar.MissionLine.Website;
 using Kcesar.MissionLine.Website.Api.Model;
 using Kcesar.MissionLine.Website.Data;
@@ -26,6 +27,7 @@ namespace Website.UnitTests
 
       DBMock.Setup(f => f.Dispose());
       DBMock.Setup(f => f.SaveChanges()).Returns(1);
+      DBMock.Setup(f => f.SaveChangesAsync()).Returns(Task.Factory.StartNew<int>(() => 1));
       DBMock.SetupGet(f => f.Calls).Returns(Calls);
       DBMock.SetupGet(f => f.SignIns).Returns(SignIns);
       DBMock.SetupGet(f => f.Events).Returns(Events);
@@ -46,6 +48,7 @@ namespace Website.UnitTests
       public Action<CallEntry> updatedCall = (e => { });
       public Action<RosterEntry> updatedRoster = (e => { });
       public Action<EventEntry> updatedEvent = (e => { });
+      public Action<int> removedEvent = (e => { });
     }
 
   }

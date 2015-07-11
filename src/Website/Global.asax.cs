@@ -19,7 +19,7 @@ namespace Kcesar.MissionLine.Website
     {
       if (ConfigurationManager.AppSettings["autoUpdateDatabase"] != null)
       {
-        Database.SetInitializer(new MigrateDatabaseToLatestVersion<Kcesar.MissionLine.Website.Data.MissionLineDbContext, Kcesar.MissionLine.Website.Migrations.Configuration>());
+        Database.SetInitializer(new MigrateDatabaseToLatestVersion<Data.MissionLineDbContext, Kcesar.MissionLine.Website.Migrations.Configuration>());
       }
       FederatedAuthentication.FederationConfigurationCreated += FederatedAuthentication_FederationConfigurationCreated;
       AreaRegistration.RegisterAllAreas();

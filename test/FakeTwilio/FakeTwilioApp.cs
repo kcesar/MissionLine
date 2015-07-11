@@ -19,7 +19,7 @@
     private string callSid;
     private string phoneNumber;
     private WebClient missionLine = new WebClient();
-    private Uri baseAddress = new Uri((ConfigurationManager.AppSettings["MissionLineUrl"] ?? "http://localhost:47570/").TrimEnd('/') + "/api/voice/");
+    private Uri baseAddress = new Uri((ConfigurationManager.AppSettings["MissionLineUrl"] ?? "http://localhost:47577/").TrimEnd('/') + "/api/voice/");
 
     static void Main(string[] args)
     {

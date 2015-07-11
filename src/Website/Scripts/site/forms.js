@@ -1,8 +1,14 @@
 ﻿var forms = {};
 
 forms.handleServiceError = function handleServiceError(err, model) {
-  if (err.status == 0) return;
-  if (err.status == 401) {
+  if (err.status == 0) {
+    if (err.state() == "rejected") {
+      $.toaster({ title: 'Error', priority: 'danger', message: "Action was rejected. Maybe you've been signed out. Refresh this page" });
+    } else {
+      return;
+    }
+  }
+  else if (err.status == 401) {
     // If you want to get the user to re-authenticate and retry the request, use utils.getJSONRetriable
     $.toaster({ title: 'Error', priority: 'danger', message: 'Permission denied' })
   } else {

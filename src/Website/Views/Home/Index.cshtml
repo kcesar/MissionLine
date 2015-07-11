@@ -5,9 +5,6 @@
   <div class="col-xs-12 col-md-8 col-md-offset-2">
     <div class="panel panel-default">
       <div class="form-inline panel-body">
-        @*<div class="form-group pull-left">
-            <select data-bind="selectPickerOptions: events, selectPickerDataProps: { icon: 'foo' }, optionsText: 'name' , value: currentEvent" class="selectpicker"></select>
-          </div>*@
         <button type="button" class="btn btn-sm btn-primary" data-bind="click: createEvent">New Event</button>
         <div class="form-group pull-right">
           <label>Show:</label>
@@ -35,8 +32,6 @@
             <th style="width:1em" data-bind="sort: { arr: calls, prop: 'time', default: true}">Time</th>
             <th data-bind="sort: { arr: calls, prop: 'name'}">Name</th>
             <th data-bind="sort: { arr: calls, prop: 'number'}" class="hidden-xs">Number</th>
-            @*<th data-bind="sort: { arr: roster, prop: 'hours'}" class=" text-right hidden-xs">Hours</th>
-              <th data-bind="sort: { arr: roster, prop: 'miles'}" class=" text-right hidden-xs">Miles</th>*@
             <th class="hidden-xs">Message</th>
           </tr>
         </thead>
@@ -70,10 +65,11 @@
         <!-- ko if: !isUnassignedEvent -->
         <div class="btn-group">
           <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-            <span class="fa fa-fw" data-bind="css: { 'fa-ban': closed, 'fa-bullhorn': !closed }"></span> <span class="caret"></span>
+            <span class="fa fa-fw" data-bind="css: { 'fa-ban': closed(), 'fa-bullhorn': !closed() }"></span> <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" role="menu">
-            <li data-bind="click: $root.startClose"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Close ...</button></li>
+            <li data-bind="click: $root.startClose, visible: !closed()"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Close ...</button></li>
+            <li data-bind="click: $root.reopen, visible: closed"><button type="button" class="btn-link"><span class="fa fa-fw fa-bullhorn"></span> Reopen</button></li>
             <li data-bind="click: $root.startMerge"><button type="button" class="btn-link"><span class="fa fa-fw fa-code-fork fa-rotate-180"></span> Merge into ...</button></li>
           </ul>
         </div>
@@ -84,30 +80,43 @@
         <thead>
           <tr>
             <th style="width:3%"></th>
-            <th style="width:16%" data-bind="sort: { arr: $root.roster, prop: 'timeIn'}">Time In</th>
+            <th style="width:15%" data-bind="sort: { arr: $root.roster, prop: 'timeIn'}">Time In</th>
             <th style="width:40%" data-bind="sort: { arr: $root.roster, prop: 'name'}">Name</th>
-            <th style="width:16%" data-bind="sort: { arr: $root.roster, prop: 'timeOutSort', default: true}">Time Out</th>
-            <th style="width:13%" data-bind="sort: { arr: $root.roster, prop: 'hours'}" class=" text-right hidden-xs">Hours</th>
-            <th style="width:12%" data-bind="sort: { arr: $root.roster, prop: 'miles'}" class=" text-right hidden-xs">Miles</th>
+            <th style="width:15%" data-bind="sort: { arr: $root.roster, prop: 'timeOutSort', default: true}">Time Out</th>
+            <th style="width:12%" data-bind="sort: { arr: $root.roster, prop: 'hours'}" class=" text-right hidden-xs">Hours</th>
+            <th style="width:11%" data-bind="sort: { arr: $root.roster, prop: 'miles'}" class=" text-right hidden-xs">Miles</th>
+            <th style="width:4%"></th>
           </tr>
         </thead>
         <!-- ko if: (roster().length > 0) -->
         <tbody data-bind="foreachWithHighlight: { data: roster, duration: 3000}">
           <tr>
             <td class="roster" data-bind="css: state"></td>
-            <td data-bind="text: timeIn.fromNow()"></td>
+            <td data-bind="text: $root.formatTime($parent.opened, timeIn)"></td>
             <td><strong data-bind="text: name, conditionalLink: { test: isMember, value: '@(ViewBag.LinkTemplate)'.replace('{0}', memberId) }"></strong></td>
-            <td data-bind="text: timeOutText"></td>
+            <td data-bind="text: $root.formatTime($parent.opened, timeOut)"></td>
             <td class="text-right hidden-xs" data-bind="text: hours"></td>
             <td class="text-right hidden-xs" data-bind="text: miles"></td>
+            <td>
+              <div class="btn-group">
+                <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  <span class="fa fa-fw fa-bars"></span> <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <li data-bind="click: $root.signout.bind($root, $parent, $data), visible: !timeOutText"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Sign Out ...</button></li>
+                  <li data-bind="click: $root.undoSignout.bind($root, $parent, $data), visible: timeOutText"><button type="button" class="btn-link"><span class="fa fa-fw fa-bullhorn"></span> Undo Sign Out</button></li>
+                  <!-- ko foreach: $parent.otherEvents -->
+                  <li data-bind="click: $parent.moveToEvent"><button type="button" class="btn-link"><span class="fa fa-fw fa-share-square-o"></span> Move to <span data-bind="text: $data.name"></span></button></li>
+                  <!-- /ko -->
+                </ul>
+              </div>
+
+            </td>
           </tr>
         </tbody>
         <!-- /ko -->
-        @*<!-- ko if: (roster().length == 0) -->
-          <tbody><tr><td colspan="6">No calls</td></tr></tbody>
-          <!-- /ko -->*@
         <tfoot>
-          <tr><th></th><th colspan="5"><span data-bind="text: roster().length">0</span> responders</th></tr>
+          <tr><th></th><th colspan="6"><span data-bind="text: roster().length">0</span> responders</th></tr>
         </tfoot>
       </table>
     </div>
@@ -131,6 +140,20 @@
     <div class="form-inline">
       <div class="form-group">
         <label>Merge Into: <select class="form-control" data-bind="options: availableEvents, optionsText: 'name', value: targetEvent"></select></label>
+      </div>
+    </div>
+  </script>
+  <script type="text/html" id="signout-template">
+    <p>Sign out <span data-bind="text: rosterName"></span> from <span data-bind="text: eventName"></span></p>
+    <div>
+      <div class="form-group">
+        <label>Date: <input type="text" data-bind="value: timeOut.date" class="form-control" /></label>
+      </div>
+      <div class="form-group">
+        <label>Time: <input type="text" data-bind="value: timeOut.time" class="form-control" /></label>
+      </div>
+      <div class="form-group">
+        <label>Miles: <input type="text" data-bind="value: miles" class="form-control" /></label>
       </div>
     </div>
   </script>

@@ -48,6 +48,14 @@ textarea {
 .panel-heading .btn-group .btn-sm {
   line-height: 1;
 }
+
+.panel-warning > .panel-heading {
+  background-color: #ffea63;
+}
+.panel-warning, .panel-warning > .panel-heading {
+  border-color: #E2C400;
+}
+
 li button.btn-link {
   text-align:left;
   width:100%;

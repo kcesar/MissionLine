@@ -4,6 +4,8 @@
 
 namespace Kcesar.MissionLine.Website
 {
+  using System;
+
   public static class Extensions
   {
     public static string ToCamelCase(this string value)
@@ -19,6 +21,11 @@ namespace Kcesar.MissionLine.Website
       }
       firstChar = char.ToLowerInvariant(firstChar);
       return firstChar + value.Substring(1);
+    }
+
+    public static DateTime ToOrgTime(this DateTimeOffset input, IConfigSource config)
+    {
+      return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(input.UtcDateTime, config.GetConfig("timezone") ?? "Pacific Standard Time");
     }
   }
 }

@@ -5,11 +5,13 @@ namespace Kcesar.MissionLine.Website.Api
 {
   using System;
   using System.Collections.Generic;
+  using System.Data.Entity;
   using System.Linq;
   using System.Linq.Expressions;
+  using System.Threading.Tasks;
   using System.Web.Http;
-  using Kcesar.MissionLine.Website.Api.Model;
-  using Kcesar.MissionLine.Website.Data;
+  using Data;
+  using Model;
 
   /// <summary>
   /// 
@@ -42,20 +44,21 @@ namespace Kcesar.MissionLine.Website.Api
     }
 
     // GET api/<controller>
-    public IEnumerable<CallEntry> Get()
+    public async Task<IEnumerable<CallEntry>> Get()
     {
+      DateTime cutoff = DateTimeOffset.Now.AddDays(-2).ToOrgTime(config).ToLocalTime();
       using (var db = this.dbFactory())
       {
-        return db.Calls.OrderByDescending(f => f.CallTime).Select(proj).ToArray();
+        return await db.Calls.Where(f => f.CallTime > cutoff).OrderByDescending(f => f.CallTime).Select(proj).ToArrayAsync();
       }
     }
 
     // GET api/<controller>/5
-    public CallEntry Get(int id)
+    public async Task<CallEntry> Get(int id)
     {
       using (var db = this.dbFactory())
       {
-        return GetCallEntry(id, db);
+        return await GetCallEntry(id, db);
       }
     }
 
@@ -64,11 +67,11 @@ namespace Kcesar.MissionLine.Website.Api
       return new[] { call }.AsQueryable().Select(proj).Single();
     }
 
-    internal static CallEntry GetCallEntry(int id, IMissionLineDbContext db)
+    internal async static Task<CallEntry> GetCallEntry(int id, IMissionLineDbContext db)
     {
-      return db.Calls.Where(f => f.Id == id)
+      return await db.Calls.Where(f => f.Id == id)
         .Select(proj)
-        .SingleOrDefault();
+        .SingleOrDefaultAsync();
     }
 
     private static Expression<Func<VoiceCall, CallEntry>> proj = f => new CallEntry
