@@ -1,52 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IdentityModel.Claims;
-using System.IdentityModel.Services;
-using System.Linq;
-using System.Web.Helpers;
-using Kcesar.MissionLine.Website.Utils;
-
-namespace Kcesar.MissionLine.Website
+﻿namespace Kcesar.MissionLine.Website
 {
-    // For more information on ASP.NET Identity, please visit http://go.microsoft.com/fwlink/?LinkId=301863
-    public static class IdentityConfig
+  using System.Security.Claims;
+  using System.Threading.Tasks;
+  using Kcesar.MissionLine.Website.Data;
+  using Microsoft.AspNet.Identity;
+  using Microsoft.AspNet.Identity.EntityFramework;
+  using Microsoft.AspNet.Identity.Owin;
+  using Microsoft.Owin;
+  using Microsoft.Owin.Security;
+
+  // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
+  public class ApplicationUserManager : UserManager<ApplicationUser>
+  {
+    public ApplicationUserManager(IUserStore<ApplicationUser> store)
+        : base(store)
     {
-        public static string AudienceUri { get; private set; }
-        public static string Realm { get; private set; }
-
-        public static void ConfigureIdentity()
-        {
-            RefreshValidationSettings();
-            // Set the realm for the application
-            Realm = ConfigurationManager.AppSettings["ida:realm"];
-
-            // Set the audienceUri for the application
-            AudienceUri = ConfigurationManager.AppSettings["ida:AudienceUri"];
-            if (!String.IsNullOrEmpty(AudienceUri))
-            {
-                UpdateAudienceUri();
-            }
-
-            AntiForgeryConfig.UniqueClaimTypeIdentifier = ClaimTypes.Name;
-        }
-
-        public static void RefreshValidationSettings()
-        {
-            string metadataLocation = ConfigurationManager.AppSettings["ida:FederationMetadataLocation"];
-            DatabaseIssuerNameRegistry.RefreshKeys(metadataLocation);
-        }
-
-        public static void UpdateAudienceUri()
-        {
-            int count = FederatedAuthentication.FederationConfiguration.IdentityConfiguration
-                .AudienceRestriction.AllowedAudienceUris.Count(
-                    uri => String.Equals(uri.OriginalString, AudienceUri, StringComparison.OrdinalIgnoreCase));
-            if (count == 0)
-            {
-                FederatedAuthentication.FederationConfiguration.IdentityConfiguration
-                    .AudienceRestriction.AllowedAudienceUris.Add(new Uri(IdentityConfig.AudienceUri));
-            }
-        }
     }
+
+    public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
+    {
+      var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<MissionLineDbContext>()));
+      return manager;
+    }
+  }
+
+  // Configure the application sign-in manager which is used in this application.
+  public class ApplicationSignInManager : SignInManager<ApplicationUser, string>
+  {
+    public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
+        : base(userManager, authenticationManager)
+    {
+    }
+
+    public override Task<ClaimsIdentity> CreateUserIdentityAsync(ApplicationUser user)
+    {
+      return user.GenerateUserIdentityAsync((ApplicationUserManager)UserManager);
+    }
+
+    public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
+    {
+      return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
+    }
+
+    public override Task SignInAsync(ApplicationUser user, bool isPersistent, bool rememberBrowser)
+    {
+      return base.SignInAsync(user, isPersistent, rememberBrowser);
+    }
+  }
 }

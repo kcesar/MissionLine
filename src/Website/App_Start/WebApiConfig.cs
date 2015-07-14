@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Http;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-
-namespace Kcesar.MissionLine.Website
+﻿namespace Kcesar.MissionLine.Website
 {
+  using System.Web.Http;
+  using Newtonsoft.Json.Converters;
+  using Newtonsoft.Json.Serialization;
+
   public static class WebApiConfig
   {
     public static void Register(HttpConfiguration config)
@@ -21,6 +18,8 @@ namespace Kcesar.MissionLine.Website
           routeTemplate: "api/{controller}/{action}/{id}",
           defaults: new { action = RouteParameter.Optional, id = RouteParameter.Optional }
       );
+
+      config.Filters.Add(new AuthorizeAttribute());
 
       var jsonSettings = config.Formatters.JsonFormatter.SerializerSettings;
       jsonSettings.Converters.Add(new StringEnumConverter());

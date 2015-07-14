@@ -9,7 +9,7 @@ namespace Kcesar.MissionLine.Website
   using Newtonsoft.Json.Converters;
   using Owin;
 
-  public class Startup
+  public partial class Startup
   {
     private static readonly Lazy<JsonSerializer> JsonSerializerFactory = new Lazy<JsonSerializer>(GetJsonSerializer);
     private static JsonSerializer GetJsonSerializer()
@@ -24,6 +24,7 @@ namespace Kcesar.MissionLine.Website
 
     public void Configuration(IAppBuilder app)
     {
+      ConfigureAuth(app, new ConfigSource());
       app.MapSignalR();
       GlobalHost.DependencyResolver.Register(
         typeof(JsonSerializer),
