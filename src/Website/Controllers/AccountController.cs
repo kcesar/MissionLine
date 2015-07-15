@@ -4,6 +4,7 @@
   using System.Web;
   using System.Web.Mvc;
   using Data;
+  using Identity;
   using Microsoft.AspNet.Identity;
   using Microsoft.AspNet.Identity.Owin;
   using Microsoft.Owin.Security;
@@ -102,7 +103,7 @@
           if (loginInfo.Login.LoginProvider.StartsWith("https://sts.windows.net/"))
           {
             // If the user does not have an account, then prompt the user to create an account
-            var user = new ApplicationUser { UserName = loginInfo.DefaultUserName, Email = loginInfo.DefaultUserName };
+            var user = new ApplicationUser { UserName = loginInfo.DefaultUserName };
             var createResult = await UserManager.CreateAsync(user);
             if (createResult.Succeeded)
             {

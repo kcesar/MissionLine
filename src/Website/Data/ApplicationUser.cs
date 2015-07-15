@@ -1,16 +1,23 @@
 ﻿namespace Kcesar.MissionLine.Website.Data
 {
-  using System;
   using System.Collections.Generic;
-  using System.Linq;
   using System.Security.Claims;
   using System.Threading.Tasks;
-  using System.Web;
   using Microsoft.AspNet.Identity;
-  using Microsoft.AspNet.Identity.EntityFramework;
 
-  public class ApplicationUser : IdentityUser
+  public class ApplicationUser : IUser
   {
+    public ApplicationUser()
+    {
+      this.Logins = new List<UserLogin>();
+    }
+
+    public string Id { get; set; }
+
+    public string UserName { get; set; }
+
+    public virtual ICollection<UserLogin> Logins { get; set; }
+
     public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
     {
       // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType

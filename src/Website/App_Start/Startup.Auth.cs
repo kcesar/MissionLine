@@ -3,6 +3,7 @@
   using System;
   using System.Web;
   using Data;
+  using Identity;
   using Microsoft.AspNet.Identity;
   using Microsoft.Owin;
   using Microsoft.Owin.Security;
