@@ -10,6 +10,7 @@
   {
     Task<MemberLookupResult> LookupMemberPhone(string phone);
     Task<MemberLookupResult> LookupMemberDEM(string workerNumber);
+    Task<string> LookupExternalLogin(string provider, string login);
   }
 
   public class MemberSource : IMemberSource
@@ -21,6 +22,21 @@
     {
       this.url = config.GetConfig("databaseUrl").TrimEnd('/');
       this.credential = new NetworkCredential(config.GetConfig("databaseUsername"), config.GetConfig("databasePassword"));
+    }
+
+    public async Task<string> LookupExternalLogin(string provider, string login)
+    {
+      string url = this.url + "/api/account/LookupExternalLogin?_auth=basic&memberOf=ESAR";
+      url += "&provider=" + Uri.EscapeUriString(provider) + "&login=" + Uri.EscapeUriString(login);
+      WebClient client = new WebClient() { Credentials = this.credential };
+      string username = JsonConvert.DeserializeObject<string>(await client.DownloadStringTaskAsync(new Uri(url)));
+
+      if (!string.IsNullOrWhiteSpace(username))
+      {
+        username += "@kcesar.org";
+      }
+
+      return username;
     }
 
     public Task<MemberLookupResult> LookupMemberPhone(string phone)

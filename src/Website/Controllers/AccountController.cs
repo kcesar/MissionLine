@@ -12,28 +12,42 @@
   [Authorize]
   public class AccountController : Controller
   {
-    private ApplicationSignInManager _signInManager;
-    private ApplicationUserManager _userManager;
+    private ApplicationSignInManager signInManager;
+    private ApplicationUserManager userManager;
+    private IMemberSource memberSource;
 
     public AccountController()
     {
     }
 
-    public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+    public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IMemberSource memberSource)
     {
       UserManager = userManager;
       SignInManager = signInManager;
+      MemberSource = memberSource;
+    }
+
+    public IMemberSource MemberSource
+    {
+      get
+      {
+        return this.memberSource ?? new MemberSource(new ConfigSource());
+      }
+      private set
+      {
+        this.memberSource = value;
+      }
     }
 
     public ApplicationSignInManager SignInManager
     {
       get
       {
-        return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
+        return signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
       }
       private set
       {
-        _signInManager = value;
+        signInManager = value;
       }
     }
 
@@ -41,11 +55,11 @@
     {
       get
       {
-        return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+        return userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
       }
       private set
       {
-        _userManager = value;
+        userManager = value;
       }
     }
 
@@ -102,26 +116,47 @@
         default:
           if (loginInfo.Login.LoginProvider.StartsWith("https://sts.windows.net/"))
           {
-            // If the user does not have an account, then prompt the user to create an account
-            var user = new ApplicationUser { UserName = loginInfo.DefaultUserName };
-            var createResult = await UserManager.CreateAsync(user);
-            if (createResult.Succeeded)
-            {
-              createResult = await UserManager.AddLoginAsync(user.Id, loginInfo.Login);
-              if (createResult.Succeeded)
-              {
-                await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                return RedirectToLocal(returnUrl);
-              }
-            }
-            return View("RegistrationError");
+            return await GetUserAddLoginAndSignIn(false, loginInfo.DefaultUserName, loginInfo, returnUrl);
           }
           else
           {
-            return Content("Must register this login with your ESAR Office 365 account first.");
+            var username = await this.MemberSource.LookupExternalLogin(loginInfo.Login.LoginProvider, loginInfo.Email);
+            if (username == null)
+            {
+              return View("RegisterLogin");
+            }
+
+            return await GetUserAddLoginAndSignIn(true, username, loginInfo, returnUrl);
           }
       }
     }
+
+    private async Task<ActionResult> GetUserAddLoginAndSignIn(bool findUser, string username, ExternalLoginInfo loginInfo, string returnUrl)
+    {
+      // If the user does not have an account, then prompt the user to create an account
+      ApplicationUser user = null;
+      if (findUser)
+      {
+        user = await UserManager.FindByNameAsync(username);
+      }
+
+      if (user == null)
+      {
+        user = new ApplicationUser { UserName = username };
+        var createResult = await UserManager.CreateAsync(user);
+        if (!createResult.Succeeded)
+        {
+          return View("RegistrationError");
+        }
+      }
+
+      var addLoginResult = await UserManager.AddLoginAsync(user.Id, loginInfo.Login);      if (!addLoginResult.Succeeded)      {
+        return View("RegistrationError");
+      }      
+      await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+      return RedirectToLocal(returnUrl);
+    }
+
 
     //
     // GET: /Account/ExternalLoginFailure
@@ -135,16 +170,16 @@
     {
       if (disposing)
       {
-        if (_userManager != null)
+        if (userManager != null)
         {
-          _userManager.Dispose();
-          _userManager = null;
+          userManager.Dispose();
+          userManager = null;
         }
 
-        if (_signInManager != null)
+        if (signInManager != null)
         {
-          _signInManager.Dispose();
-          _signInManager = null;
+          signInManager.Dispose();
+          signInManager = null;
         }
       }
 
