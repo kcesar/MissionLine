@@ -28,7 +28,7 @@
         <p>
           @foreach (AuthenticationDescription p in loginProviders)
           {
-            <button type="submit" class="btn btn-default" style="line-height:1.4em;" value="@p.AuthenticationType" title="Log in using your @p.Caption account">
+            <button type="submit" class="btn btn-default" style="line-height:1.4em;" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">
               @{
                 var icon = icons.ContainsKey(p.AuthenticationType) ? icons[p.AuthenticationType] : null;
                 if (icon != null)
