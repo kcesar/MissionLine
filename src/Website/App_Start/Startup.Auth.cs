@@ -50,10 +50,6 @@
       //   consumerKey: "",
       //   consumerSecret: "");
 
-      //app.UseFacebookAuthentication(
-      //   appId: "",
-      //   appSecret: "");
-
       if (!string.IsNullOrWhiteSpace(config.GetConfig("O365:ClientId")) && !string.IsNullOrWhiteSpace(config.GetConfig("O365:Authority")))
       {
         app.UseOpenIdConnectAuthentication(
@@ -74,6 +70,13 @@
           ClientId = config.GetConfig("Google:ClientId"),
           ClientSecret = config.GetConfig("Google:ClientSecret")
         });
+      }
+
+      if (!string.IsNullOrWhiteSpace(config.GetConfig("Facebook:AppId")) && !string.IsNullOrWhiteSpace(config.GetConfig("Facebook:AppSecret")))
+      {
+        app.UseFacebookAuthentication(
+         appId: config.GetConfig("Facebook:AppId"),
+         appSecret: config.GetConfig("Facebook:AppSecret"));
       }
     }
 

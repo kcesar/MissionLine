@@ -120,7 +120,7 @@
           }
           else
           {
-            var username = await this.MemberSource.LookupExternalLogin(loginInfo.Login.LoginProvider, loginInfo.Email);
+            var username = await this.MemberSource.LookupExternalLogin(loginInfo.Login.LoginProvider, loginInfo.Login.ProviderKey);
             if (username == null)
             {
               return View("RegisterLogin");

@@ -4,24 +4,43 @@
 <h4>Use another service to log in.</h4>
 <hr />
 @{
-    var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes().Where(f => f.Caption != "ESAR Office 365");
-    if (loginProviders.Count() == 0) {
-        <div>
-            <p>
-                Coming soon.
-            </p>
-        </div>
+  var icons = new Dictionary<string, dynamic>
+  {
+    { "Facebook", new { icon = "fa-facebook-square", color="#3b5998" }},
+    { "Google", new { icon = "fa-google-plus-square", color = "#D50F25" }}
+  };
+
+  var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes().Where(f => f.Caption != "ESAR Office 365");
+  if (loginProviders.Count() == 0)
+  {
+    <div>
+      <p>
+        Coming soon.
+      </p>
+    </div>
+  }
+  else
+  {
+    using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = Model.ReturnUrl }))
+    {
+      @Html.AntiForgeryToken()
+      <div id="socialLoginList">
+        <p>
+          @foreach (AuthenticationDescription p in loginProviders)
+          {
+            <button type="submit" class="btn btn-default" style="line-height:1.4em;" value="@p.AuthenticationType" title="Log in using your @p.Caption account">
+              @{
+                var icon = icons.ContainsKey(p.AuthenticationType) ? icons[p.AuthenticationType] : null;
+                if (icon != null)
+                {
+                  <b class="fa @icon.icon" style="font-size: 1.4em; vertical-align:middle; color:@icon.color; opacity: 0.7"></b>
+                }
+              }
+              @p.AuthenticationType
+            </button>
+          }
+        </p>
+      </div>
     }
-    else {
-        using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = Model.ReturnUrl })) {
-            @Html.AntiForgeryToken()
-            <div id="socialLoginList">
-                <p>
-                    @foreach (AuthenticationDescription p in loginProviders) {
-                        <button type="submit" class="btn btn-default" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">@p.AuthenticationType</button>
-                    }
-                </p>
-            </div>
-        }
-    }
+  }
 }
