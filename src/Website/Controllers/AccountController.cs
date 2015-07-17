@@ -1,5 +1,7 @@
 ﻿namespace Kcesar.MissionLine.Website.Controllers
 {
+  using System;
+  using System.IO;
   using System.Threading.Tasks;
   using System.Web;
   using System.Web.Mvc;
@@ -69,18 +71,49 @@
     public ActionResult Login(string returnUrl)
     {
       ViewBag.ReturnUrl = returnUrl;
+      return View("Login");
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> Link()
+    {
+      var user = await UserManager.FindByNameAsync(User.Identity.Name);
+      user.LinkCode = (Path.GetRandomFileName() + Path.GetRandomFileName() + Path.GetRandomFileName()).Replace(".", "");
+      user.LinkCodeExpires = DateTime.Now.AddMinutes(10);
+      var saveResult = await UserManager.UpdateAsync(user);
+      if (saveResult.Succeeded)
+      {
+        ViewBag.LinkCode = "@" + user.LinkCode;
+        return View();
+      }
+      return Content(string.Join("\n", saveResult.Errors));
+    }
+
+    [Authorize]
+    public ActionResult LinkComplete(string provider)
+    {
+      ViewBag.Provider = provider;
       return View();
     }
+
+    [Authorize]
+    [HttpGet]
+    public ActionResult LinkFailure(string reason)
+    {
+      ViewBag.Message = reason;
+      return View("Error");
+    }
+
 
     //
     // POST: /Account/ExternalLogin
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public ActionResult ExternalLogin(string provider, string returnUrl)
+    public ActionResult ExternalLogin(string provider, string returnUrl, string linkCode)
     {
       // Request a redirect to the external login provider
-      return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
+      return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl, LinkCode = linkCode }));
     }
 
     public ActionResult Signout()
@@ -92,8 +125,9 @@
     //
     // GET: /Account/ExternalLoginCallback
     [AllowAnonymous]
-    public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
+    public async Task<ActionResult> ExternalLoginCallback(string returnUrl, string linkCode)
     {
+      linkCode = linkCode ?? " ";
       var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
       if (loginInfo == null)
       {
@@ -105,7 +139,14 @@
       switch (result)
       {
         case SignInStatus.Success:
-          return RedirectToLocal(returnUrl);
+          if (linkCode[0] == '@')
+          {
+            return RedirectToLocal(Url.Action("LinkFailure", new { reason = "This login is already linked to user " + User.Identity.Name + "." }));
+          }
+          else
+          {
+            return RedirectToLocal(returnUrl);
+          }
         case SignInStatus.LockedOut:
           //return View("Lockout");
           return Content("System states account is locked out. This is not currently supported");
@@ -116,42 +157,37 @@
         default:
           if (loginInfo.Login.LoginProvider.StartsWith("https://sts.windows.net/"))
           {
-            return await GetUserAddLoginAndSignIn(false, loginInfo.DefaultUserName, loginInfo, returnUrl);
+            ApplicationUser user = new ApplicationUser { UserName = loginInfo.DefaultUserName };
+            var createResult = await UserManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+              ViewBag.Message = string.Format("Couldn't create user '{0}': {1}", user.UserName, string.Join(" / ", createResult.Errors));
+              return View("Error");
+            }
+            return await AddLoginAndSignIn(user, loginInfo, returnUrl);
+          }
+          else if (linkCode[0] == '@')
+          {
+            var user = await this.UserManager.FindByLinkCodeAsync(linkCode.Substring(1));
+            if (user == null)
+            {
+              return RedirectToLocal(Url.Action("LinkFailure", new { reason = "Link code not found, or was expired. Please try linking your login again." }));
+            }
+
+            return await AddLoginAndSignIn(user, loginInfo, Url.Action("LinkComplete", new { Provider = loginInfo.Login.LoginProvider }));
           }
           else
           {
-            var username = await this.MemberSource.LookupExternalLogin(loginInfo.Login.LoginProvider, loginInfo.Login.ProviderKey);
-            if (username == null)
-            {
-              return View("RegisterLogin");
-            }
-
-            return await GetUserAddLoginAndSignIn(true, username, loginInfo, returnUrl);
+            return Content("Login unknown. To use an external login you must first login with your ESAR Office 365 account, then go to page " + Url.Action("Link") + ".");
           }
       }
     }
 
-    private async Task<ActionResult> GetUserAddLoginAndSignIn(bool findUser, string username, ExternalLoginInfo loginInfo, string returnUrl)
+    private async Task<ActionResult> AddLoginAndSignIn(ApplicationUser user, ExternalLoginInfo loginInfo, string returnUrl)
     {
-      // If the user does not have an account, then prompt the user to create an account
-      ApplicationUser user = null;
-      if (findUser)
-      {
-        user = await UserManager.FindByNameAsync(username);
-      }
-
-      if (user == null)
-      {
-        user = new ApplicationUser { UserName = username };
-        var createResult = await UserManager.CreateAsync(user);
-        if (!createResult.Succeeded)
-        {
-          return View("RegistrationError");
-        }
-      }
-
       var addLoginResult = await UserManager.AddLoginAsync(user.Id, loginInfo.Login);      if (!addLoginResult.Succeeded)      {
-        return View("RegistrationError");
+        ViewBag.Message = "Couldn't setup user login: " + string.Join(" / ", addLoginResult.Errors);
+        return View("Error");
       }      
       await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
       return RedirectToLocal(returnUrl);

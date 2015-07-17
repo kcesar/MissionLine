@@ -1,0 +1,9 @@
+﻿@using Kcesar.MissionLine.Website.Models
+@{
+    ViewBag.Title = "Link";
+}
+
+<h2>Link</h2>
+<div class="col-xs-8">
+  @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = null, LinkCode = ViewBag.LinkCode })
+</div>

@@ -1,0 +1,12 @@
+﻿@using Kcesar.MissionLine.Website.Models
+@{
+    ViewBag.Title = "Link External Login";
+}
+
+<h2>Link Login</h2>
+<div class="row">
+  <div class="col-xs-8">
+    <p>Link created from your @ViewBag.Provider account to @(User.Identity.Name).</p>
+    <p>Continue to the @Html.ActionLink("main site", "Index", "Home").</p>
+  </div>
+</div>

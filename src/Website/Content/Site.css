@@ -64,3 +64,8 @@ li button.btn-link {
 .form-control {
   font-weight: normal;
 }
+
+footer {
+  margin-top: 2em;
+  text-align: center;
+}

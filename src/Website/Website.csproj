@@ -220,6 +220,10 @@
     <Compile Include="Migrations\201507130422468_OAuthIdentity.Designer.cs">
       <DependentUpon>201507130422468_OAuthIdentity.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507161459462_ExternalAuthLinkCode.cs" />
+    <Compile Include="Migrations\201507161459462_ExternalAuthLinkCode.Designer.cs">
+      <DependentUpon>201507161459462_ExternalAuthLinkCode.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\ExternalLoginListViewModel.cs" />
     <Compile Include="Model\SubmitResult.cs" />
     <Compile Include="Api\RosterController.cs" />
@@ -310,6 +314,7 @@
     <Content Include="fonts\fontawesome-webfont.woff" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="fonts\FontAwesome.otf" />
+    <None Include="Properties\PublishProfiles\mlc-missionline.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\bootstrap-select.min.js" />
     <Content Include="Scripts\bootstrap.js" />
@@ -402,6 +407,8 @@
     <Content Include="Scripts\moment.min.js" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
+    <Content Include="Views\Account\Link.cshtml" />
+    <Content Include="Views\Account\LinkComplete.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -425,6 +432,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507130422468_OAuthIdentity.resx">
       <DependentUpon>201507130422468_OAuthIdentity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507161459462_ExternalAuthLinkCode.resx">
+      <DependentUpon>201507161459462_ExternalAuthLinkCode.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Speeches.resx">
       <Generator>ResXFileCodeGenerator</Generator>

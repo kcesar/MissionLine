@@ -31,9 +31,11 @@
   </div>
   <div class="container body-content">
     @RenderBody()
-    <footer class="text-center">
-      <p>&copy; @DateTime.Now.Year - This project is open source. View it on <a href="https://github.com/mcosand/MissionLine">GitHub</a></p>
-    </footer>
+    <div class="row">
+      <footer class="col-xs-12">
+        <p>&copy; @DateTime.Now.Year - This project is open source. View it on <a href="https://github.com/mcosand/MissionLine">GitHub</a></p>
+      </footer>
+    </div>
   </div>
 
   @Scripts.Render("~/bundles/core")

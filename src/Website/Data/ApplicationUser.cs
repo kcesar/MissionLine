@@ -1,5 +1,6 @@
 ﻿namespace Kcesar.MissionLine.Website.Data
 {
+  using System;
   using System.Collections.Generic;
   using System.Security.Claims;
   using System.Threading.Tasks;
@@ -15,6 +16,10 @@
     public string Id { get; set; }
 
     public string UserName { get; set; }
+
+    public string LinkCode { get; set; }
+
+    public DateTime? LinkCodeExpires { get; set; }
 
     public virtual ICollection<UserLogin> Logins { get; set; }
 
