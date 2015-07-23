@@ -16,30 +16,29 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
   using Data;
   using Twilio.TwiML;
   using System.Net;
-
+  using Services;
 
   /// <summary>
   /// 
   /// </summary>
+  [AllowAnonymous]
   [UseTwilioFormatter]
-  public class VoiceController : ApiController
+  public class VoiceController : BaseVoiceController
   {
     internal static readonly string THEN_SIGNIN_KEY = "thenSignIn";
 
-    private string memberId = null;
-    private string memberName = null;
-    private bool hasRecording = false;
-    private bool isSignedIn = false;
-
-    private readonly IConfigSource config;
     private readonly IMemberSource members;
-    private readonly Func<IMissionLineDbContext> dbFactory;
 
     /// <summary>
     /// 
     /// </summary>
     public VoiceController()
-      : this(() => new MissionLineDbContext(), new ConfigSource(), new MemberSource(new ConfigSource()))
+      : this(() => new MissionLineDbContext(), new ConfigSource())
+    {
+    }
+
+    private VoiceController(Func<IMissionLineDbContext> dbFactory, IConfigSource config)
+      : this(dbFactory, new EventsService(dbFactory, config), config, new MemberSource(config))
     {
     }
 
@@ -49,10 +48,9 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     /// <param name="dbFactory"></param>
     /// <param name="config"></param>
     /// <param name="members"></param>
-    public VoiceController(Func<IMissionLineDbContext> dbFactory, IConfigSource config, IMemberSource members)
+    public VoiceController(Func<IMissionLineDbContext> dbFactory, IEventsService eventService, IConfigSource config, IMemberSource members)
+      : base(dbFactory, eventService, config)
     {
-      this.dbFactory = dbFactory;
-      this.config = config;
       this.members = members;
     }
 
@@ -73,8 +71,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         {
           CallId = request.CallSid,
           Number = request.From,
-          CallTime = GetLocalDateTime(),
-          Name = memberName
+          CallTime = TimeUtils.GetLocalDateTime(this.config),
+          Name = this.session.MemberName
         };
 
         db.Calls.Add(call);
@@ -84,13 +82,22 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       }
 
       var response = BeginMenu();
-      if (this.memberId == null)
+      if (this.session.MemberId == null)
       {
         response.SayVoice(Speeches.WelcomeUnknownCaller);
       }
 
       EndMenu(response);
 
+      return response;
+    }
+
+    [HttpPost]
+    public TwilioResponse Menu()
+    {
+      var response = new TwilioResponse();
+      BeginMenu(response);
+      EndMenu(response);
       return response;
     }
 
@@ -106,7 +113,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
 
       if (request.Digits == "1")
       {
-        if (this.memberId == null)
+        if (this.session.MemberId == null)
         {
           AddLoginPrompt(response, true);
         }
@@ -125,6 +132,10 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       else if (request.Digits == "3")
       {
         AddLoginPrompt(response);
+      }
+      else if (request.Digits == "9")
+      {
+        response.Redirect(GetAction("Menu", controller: "VoiceAdmin"));
       }
       else
       {
@@ -149,8 +160,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       var lookup = await members.LookupMemberDEM(request.Digits);
       if (lookup != null)
       {
-        this.memberId = lookup.Id;
-        this.memberName = lookup.Name;
+        this.session.MemberId = lookup.Id;
+        this.session.MemberName = lookup.Name;
         await UpdateSigninStatus();
         var thenSigninParameter = this.Request.GetQueryNameValuePairs()
                     .Where(f => f.Key == THEN_SIGNIN_KEY)
@@ -187,7 +198,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       {
         using (var db = dbFactory())
         {
-          var signin = db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefault(f => f.MemberId == memberId);
+          var signin = db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefault(f => f.MemberId == this.session.MemberId);
           signin.Miles = miles;
           await db.SaveChangesAsync();
           this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
@@ -203,10 +214,9 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     [HttpPost]
     public async Task<TwilioResponse> SetEvent(TwilioRequest request)
     {
-      var eventIdParameter = this.Request.GetQueryNameValuePairs()
-                          .Where(f => f.Key == "evtIds")
-                          .Select(f => f.Value)
-                          .FirstOrDefault();
+      string eventIdParameter = GetQueryParameter("evtIds");
+      var nextUrl = GetQueryParameter("next");
+
       if (eventIdParameter == null)
       {
         throw new HttpResponseException(this.Request.CreateErrorResponse(HttpStatusCode.BadRequest, "evtIds not included in query"));
@@ -219,43 +229,49 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
                         .ToArray();
 
       TwilioResponse response = null;
-      
-      using (var db = dbFactory())
+
+      //using (var db = dbFactory())
+      //{
+      if (request.Digits.Length > 0)
       {
-        if (request.Digits.Length > 0)
+        int index;
+        if (!int.TryParse(request.Digits, out index))
         {
-          int index;
-          if (!int.TryParse(request.Digits, out index))
-          {
-            throw new HttpResponseException(this.Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Digits not valid"));
-          }
-
-          if (index > 0 && index <= eventIds.Length)
-          {
-            var signin = await db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync(f => f.MemberId == memberId);
-            signin.EventId = eventIds[index - 1];
-            await db.SaveChangesAsync();
-
-            this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
-
-            response = new TwilioResponse();
-            BeginMenu(response);
-            var theEvent = await db.Events.FirstOrDefaultAsync(f => f.Id == signin.EventId);
-            response.SayVoice("You are now assigned to event {0}", theEvent.Name);
-            EndMenu(response);
-          }
+          throw new HttpResponseException(this.Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Digits not valid"));
         }
+
+        this.session.EventId = eventIds[index - 1];
+        response = new TwilioResponse();
+        response.Redirect(nextUrl + this.session.ToQueryString());
+
+        //if (index > 0 && index <= eventIds.Length)
+        //{
+        //  var signin = await db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync(f => f.MemberId == this.session.MemberId);
+        //  signin.EventId = eventIds[index - 1];
+        //  await db.SaveChangesAsync();
+
+        //  this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+
+        //  response = new TwilioResponse();
+        //  BeginMenu(response);
+        //  var theEvent = await db.Events.FirstOrDefaultAsync(f => f.Id == signin.EventId);
+        //  response.SayVoice("You are now assigned to event {0}", theEvent.Name);
+        //  EndMenu(response);
+        //}
+
 
         if (response == null)
         {
           response = new TwilioResponse();
-          BuildSetEventMenu(response, "I don't understand", EventsController.GetActiveEvents(db, this.config).Where(f => f.Closed == null).ToList());
+          using (var db = dbFactory())
+          {
+            BuildSetEventMenu(response, "I don't understand", EventsController.GetActiveEvents(db, this.config).Where(f => f.Closed == null).ToList());
+          }
         }
       }
 
       return response;
     }
-
 
     /// <summary>
     /// 
@@ -285,7 +301,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       }
       return response;
     }
-    private static Regex urlReplace = new Regex("^https?\\:", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     /// <summary>
     /// 
     /// </summary>
@@ -318,18 +334,18 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     {
       using (var db = dbFactory())
       {
-        DateTime time = GetLocalDateTime();
-        var sayDate = GetMiltaryTimeVoiceText(time);
+        DateTime time = TimeUtils.GetLocalDateTime(this.config);
+        var sayDate = TimeUtils.GetMiltaryTimeVoiceText(time);
 
 
         // Get the last time the responder signed in or out.
-        var signin = await db.SignIns.Where(f => f.MemberId == this.memberId).OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync();
+        var signin = await db.SignIns.Where(f => f.MemberId == this.session.MemberId).OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync();
         var call = await db.Calls.SingleAsync(f => f.CallId == callId);
 
         // If they've never signed in or have already signed out:
         if (signin == null || signin.TimeOut.HasValue)
         {
-          if (this.isSignedIn)
+          if (this.session.IsSignedIn)
           {
             throw new InvalidOperationException("Tried to sign out when not signed in.");
           }
@@ -339,42 +355,42 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
           // Sign them in.
           signin = new MemberSignIn
           {
-            MemberId = this.memberId,
+            MemberId = this.session.MemberId,
             isMember = true,
-            Name = this.memberName,
+            Name = this.session.MemberName,
             TimeIn = time
           };
 
           db.SignIns.Add(signin);
-          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed in " + this.memberName });
-          this.isSignedIn = true;
+          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed in " + this.session.MemberName });
+          this.session.IsSignedIn = true;
 
           if (events.Count == 0)
           {
             BeginMenu(response);
-            response.SayVoice(string.Format("Signed in as {0} at {1}", this.memberName, sayDate));
+            response.SayVoice(string.Format("Signed in as {0} at {1}", this.session.MemberName, sayDate));
             EndMenu(response);
           }
           else if (events.Count == 1)
           {
             signin.Event = events[0];
             BeginMenu(response);
-            response.SayVoice(string.Format("Signed in to {0} as {1} at {2}", events[0].Name, this.memberName, sayDate));
+            response.SayVoice(string.Format("Signed in to {0} as {1} at {2}", events[0].Name, this.session.MemberName, sayDate));
             EndMenu(response);
           }
           else
           {
-            BuildSetEventMenu(response, string.Format("Signed in as {0} at {1}. ", this.memberName, sayDate), events);
+            BuildSetEventMenu(response, string.Format("Signed in as {0} at {1}. ", this.session.MemberName, sayDate), events);
           }
         }
         else
         {
           signin.TimeOut = time;
-          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed out " + this.memberName });
-          this.isSignedIn = false;
+          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed out " + this.session.MemberName });
+          this.session.IsSignedIn = false;
           // add prompt for miles
           response.BeginGather(new { timeout = 10, action = GetAction("SetMiles") });
-          response.SayVoice("{0} signed out at {1}. Enter your miles followed by the pound key. Press pound if you did not drive.", this.memberName, sayDate);
+          response.SayVoice("{0} signed out at {1}. Enter your miles followed by the pound key. Press pound if you did not drive.", this.session.MemberName, sayDate);
           response.EndGather();
         }
         await db.SaveChangesAsync();
@@ -400,21 +416,6 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       response.EndGather();
     }
 
-    protected override void Initialize(System.Web.Http.Controllers.HttpControllerContext controllerContext)
-    {
-      base.Initialize(controllerContext);
-
-      ParseQuery(controllerContext.Request.GetQueryNameValuePairs());
-    }
-
-    public void ParseQuery(IEnumerable<KeyValuePair<string, string>> queries)
-    {
-      this.memberId = queries.Where(f => f.Key == "memberId").Select(f => f.Value).FirstOrDefault();
-      this.memberName = queries.Where(f => f.Key == "memberName").Select(f => f.Value).FirstOrDefault();
-      this.hasRecording = queries.Where(f => f.Key == "hasR").Select(f => f.Value).FirstOrDefault() == "1";
-      this.isSignedIn = queries.Where(f => f.Key == "isS").Select(f => f.Value).FirstOrDefault() == "1";
-    }
-
     private TwilioResponse BeginMenu()
     {
       var response = new TwilioResponse();
@@ -433,39 +434,19 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       {
         response.SayVoice("You may hang up or ");
       }
-      string sayAsMember = this.memberName != null ? (" as " + this.memberName) : string.Empty;
-      response.SayVoice("Press 1 to sign {0}{1}", this.isSignedIn ? "out" : "in", sayAsMember);
-      response.SayVoice(this.hasRecording ? "Press 2 to record a new message." : "Press 2 to record a message.");
+      string sayAsMember = this.session.MemberName != null ? (" as " + this.session.MemberName) : string.Empty;
+      response.SayVoice("Press 1 to sign {0}{1}", this.session.IsSignedIn ? "out" : "in", sayAsMember);
+      response.SayVoice(this.session.HasRecording ? "Press 2 to record a new message." : "Press 2 to record a message.");
       response.SayVoice("Press 3 to change current responder");
+      response.SayVoice("Press 9 for admin options");
       response.EndGather();
-    }
-
-    private DateTime GetLocalDateTime()
-    {
-      return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, this.config.GetConfig("timezone") ?? "Pacific Standard Time");
-    }
-
-
-    private static string GetMiltaryTimeVoiceText(DateTime time)
-    {
-      // "m" is giving the same result as "M" (month + day)
-      string minuteText = time.ToString("mm").TrimStart('0');
-      if (time.Minute == 0)
-      {
-        minuteText = "hundred ";
-      }
-      else if (time.Minute < 10)
-      {
-        minuteText = "oh " + minuteText;
-      }
-      return time.ToString("H ") + minuteText;
     }
 
     private async Task SetMemberInfoFromPhone(string From)
     {
       var lookup = await members.LookupMemberPhone(From);
-      this.memberId = lookup == null ? null : lookup.Id;
-      this.memberName = lookup == null ? null : lookup.Name;
+      this.session.MemberId = lookup == null ? null : lookup.Id;
+      this.session.MemberName = lookup == null ? null : lookup.Name;
     }
 
     private void AddLoginPrompt(TwilioResponse response, bool thenSignin = false)
@@ -484,46 +465,18 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       EndMenu(response);
     }
 
-    private string GetAction(string name, Dictionary<string, string> args = null)
-    {
-      args = args ?? new Dictionary<string, string>();
-      if (memberId != null)
-      {
-        args.Add("memberId", memberId);
-        args.Add("memberName", memberName);
-      }
-      if (this.hasRecording)
-      {
-        args.Add("hasR", "1");
-      }
-      if (this.isSignedIn)
-      {
-        args.Add("isS", "1");
-      }
-
-      string result = this.Url.Content("~/api/voice/" + name);
-      if (args.Count > 0)
-      {
-        result += "?" + string.Join("&", args.Select(f => f.Key + "=" + HttpUtility.UrlEncode(f.Value)));
-      }
-
-      System.Diagnostics.Debug.WriteLine("GetAction: " + result);
-      return result;
-    }
-
     private async Task UpdateSigninStatus()
     {
-      if (string.IsNullOrWhiteSpace(this.memberId))
+      if (string.IsNullOrWhiteSpace(this.session.MemberId))
       {
         return;
       }
 
       using (var db = dbFactory())
       {
-        var signin = await db.SignIns.Where(f => f.MemberId == this.memberId).OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync();
-        this.isSignedIn = (signin != null) && (signin.TimeOut == null);
+        var signin = await db.SignIns.Where(f => f.MemberId == this.session.MemberId).OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync();
+        this.session.IsSignedIn = (signin != null) && (signin.TimeOut == null);
       };
     }
-
   }
 }

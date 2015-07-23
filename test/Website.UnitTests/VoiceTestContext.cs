@@ -58,7 +58,7 @@ namespace Website.UnitTests
 
       var collection = new System.Uri(url).ParseQueryString();
       var queries = collection.OfType<string>().ToDictionary(k => k, k => collection[k]);
-      controller.ParseQuery(queries);
+      controller.session.Load(queries);
 
       Console.WriteLine("Posting to " + url);
 

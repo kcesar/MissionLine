@@ -213,15 +213,27 @@ namespace Kcesar.MissionLine.Website.Api
     private static Func<SarEvent, EventEntry> compiledProj = proj.Compile();
     
     // POST api/<controller>
-    public SubmitResult<EventEntry> Post(EventEntry value)
+    public async Task<SubmitResult<EventEntry>> Post(EventEntry value)
+    {
+      return await CreateEvent(value, dbFactory, config);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="dbFactory"></param>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    internal static async Task<SubmitResult<EventEntry>> CreateEvent(EventEntry value, Func<IMissionLineDbContext> dbFactory, IConfigSource config)
     {
       var result = new SubmitResult<EventEntry>();
       if (string.IsNullOrWhiteSpace(value.Name))
       {
         result.Errors.Add(new SubmitError("name", "Required"));
       }
-      DateTime localTime = value.Opened.ToOrgTime(this.config);
-      if (localTime < minDate ||  localTime > maxDate)
+      DateTime localTime = value.Opened.ToOrgTime(config);
+      if (localTime < minDate || localTime > maxDate)
       {
         result.Errors.Add(new SubmitError("opened", "Date invalid or out of range"));
       }
@@ -236,9 +248,9 @@ namespace Kcesar.MissionLine.Website.Api
         using (var db = dbFactory())
         {
           db.Events.Add(evt);
-          db.SaveChanges();
+          await db.SaveChangesAsync();
           result.Data = new[] { evt }.AsQueryable().Select(proj).Single();
-          this.config.GetPushHub<CallsHub>().updatedEvent(result.Data);
+          config.GetPushHub<CallsHub>().updatedEvent(result.Data);
         }
       }
       return result;

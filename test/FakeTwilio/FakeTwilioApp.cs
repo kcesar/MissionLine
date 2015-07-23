@@ -58,6 +58,12 @@
       {
         Console.WriteLine(lastResult);
 
+        var redirect = lastResult.Descendants().Where(f => f.Name == "Redirect").Select(f => f.Value).SingleOrDefault();
+        if (redirect != null)
+        {
+          return Post(redirect, new { CallSid = this.callSid, From = this.phoneNumber });
+        }
+
         var tasks = lastResult.Descendants().Where(f => scriptActionNames.Contains(f.Name.ToString())).ToList();
         int taskIndex = 0;
         if (tasks.Count > 1)

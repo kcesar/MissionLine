@@ -210,6 +210,8 @@
     <Compile Include="Api\CallsController.cs" />
     <Compile Include="Api\Model\CallEntry.cs" />
     <Compile Include="Api\Model\EventEntry.cs" />
+    <Compile Include="Api\BaseVoiceController.cs" />
+    <Compile Include="Api\VoiceAdminController.cs" />
     <Compile Include="Data\UserLogin.cs" />
     <Compile Include="Identity\ApplicationSignInManager.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
@@ -269,6 +271,7 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\MemberSummary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\EventsService.cs" />
     <Compile Include="Speeches.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -280,6 +283,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="TimeUtils.cs" />
     <Compile Include="TwilioExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -314,7 +318,6 @@
     <Content Include="fonts\fontawesome-webfont.woff" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="fonts\FontAwesome.otf" />
-    <None Include="Properties\PublishProfiles\mlc-missionline.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\bootstrap-select.min.js" />
     <Content Include="Scripts\bootstrap.js" />
