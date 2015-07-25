@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Kcesar.MissionLine.Website.Api.Model
 {
+  using System;
+
   public class RosterEntry
   {
     public int Id { get; set; }
@@ -27,7 +27,7 @@ namespace Kcesar.MissionLine.Website.Api.Model
     public int? Miles { get; set; }
     public RosterState State { get; set; }
   }
-  
+
   public enum RosterState
   {
     SignedIn,

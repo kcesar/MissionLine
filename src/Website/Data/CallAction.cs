@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Web;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Kcesar.MissionLine.Website.Data
 {
+  using System;
+  using System.ComponentModel.DataAnnotations.Schema;
+
   public class CallAction
   {
     public int Id { get; set; }

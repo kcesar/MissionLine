@@ -1,4 +1,7 @@
-﻿namespace Kcesar.MissionLine.Website.Models
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace Kcesar.MissionLine.Website.Models
 {
   public class ExternalLoginListViewModel
   {

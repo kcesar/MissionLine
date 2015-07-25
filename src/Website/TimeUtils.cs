@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Kcesar.MissionLine.Website
 {
+  using System;
+
   public static class TimeUtils
   {
     public static DateTime GetLocalDateTime(IConfigSource config)

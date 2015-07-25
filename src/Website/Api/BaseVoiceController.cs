@@ -12,10 +12,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
   using System.Web;
   using System.Web.Http;
   using Data;
-  using Kcesar.MissionLine.Website.Api.Model;
   using Services;
   using Twilio.TwiML;
-
 
   /// <summary>
   /// 

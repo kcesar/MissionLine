@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Website.UnitTests
 {
+  using System.Collections.Generic;
+  using System.Data.Entity.Infrastructure;
+  using System.Linq;
+  using System.Linq.Expressions;
+  using System.Threading;
+  using System.Threading.Tasks;
+
   internal class TestDbAsyncQueryProvider<TEntity> : IDbAsyncQueryProvider
   {
     private readonly IQueryProvider _inner;

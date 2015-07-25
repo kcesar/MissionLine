@@ -1,4 +1,7 @@
-﻿namespace Kcesar.MissionLine.Website.Api
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace Kcesar.MissionLine.Website.Api
 {
   using System;
   using System.IO;

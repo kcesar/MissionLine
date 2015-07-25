@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Website.UnitTests
 {
+  using System;
+
   public static class Extensions
   {
     public static DateTime? TimeToDate(this string input)

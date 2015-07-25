@@ -5,18 +5,12 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
 {
   using System;
   using System.Collections.Generic;
-  using System.Data.Entity;
-  using System.Linq;
-  using System.Net.Http;
-  using System.Text.RegularExpressions;
   using System.Threading.Tasks;
-  using System.Web;
   using System.Web.Http;
-  using Model;
   using Data;
-  using Twilio.TwiML;
-  using System.Net;
+  using Model;
   using Services;
+  using Twilio.TwiML;
 
   /// <summary>
   /// 

@@ -1,8 +1,11 @@
-﻿using System.Web;
-using System.Web.Optimization;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Kcesar.MissionLine.Website
 {
+  using System.Web;
+  using System.Web.Optimization;
+
   public class BundleConfig
   {
     // For more information on bundling, visit http://go.microsoft.com/fwlink/?LinkId=301862

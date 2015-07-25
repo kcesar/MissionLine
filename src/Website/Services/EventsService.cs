@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using Kcesar.MissionLine.Website.Data;
-using System.Data.Entity;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Kcesar.MissionLine.Website.Services
 {
+  using System;
+  using System.Collections.Generic;
+  using System.Data.Entity;
+  using System.Linq;
+  using System.Threading.Tasks;
+  using Kcesar.MissionLine.Website.Data;
+
   public class EventsService : IEventsService
   {
     private readonly Func<IMissionLineDbContext> dbFactory;

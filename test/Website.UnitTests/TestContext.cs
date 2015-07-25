@@ -1,13 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Kcesar.MissionLine.Website;
-using Kcesar.MissionLine.Website.Api.Model;
-using Kcesar.MissionLine.Website.Data;
-using Moq;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Website.UnitTests
 {
+  using System;
+  using System.Linq;
+  using System.Threading.Tasks;
+  using Kcesar.MissionLine.Website;
+  using Kcesar.MissionLine.Website.Api.Model;
+  using Kcesar.MissionLine.Website.Data;
+  using Moq;
+
   public class TestContext
   {
     public static T GetDefault<T>() where T : TestContext, new()

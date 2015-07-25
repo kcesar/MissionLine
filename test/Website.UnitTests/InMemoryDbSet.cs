@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Website.UnitTests
+﻿namespace Website.UnitTests
 {
+  using System;
+  using System.Collections.Generic;
+  using System.Data.Entity;
+  using System.Linq;
+
   public class InMemoryDbSet<T> : IDbSet<T> where T : class
   {
     readonly HashSet<T> _set;

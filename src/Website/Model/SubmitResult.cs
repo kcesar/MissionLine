@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2013-2014 Matthew Cosand
+ * Copyright 2015 Matthew Cosand
  */
 namespace Kcesar.MissionLine.Website.Model
 {

@@ -1,4 +1,7 @@
-﻿namespace Kcesar.MissionLine.Website.Controllers
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace Kcesar.MissionLine.Website.Controllers
 {
   using System;
   using System.IO;

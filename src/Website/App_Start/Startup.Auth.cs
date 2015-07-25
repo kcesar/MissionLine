@@ -1,4 +1,7 @@
-﻿namespace Kcesar.MissionLine.Website
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace Kcesar.MissionLine.Website
 {
   using System;
   using System.Web;

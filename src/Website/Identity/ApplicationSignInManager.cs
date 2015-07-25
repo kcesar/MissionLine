@@ -1,4 +1,7 @@
-﻿namespace Kcesar.MissionLine.Website.Identity
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace Kcesar.MissionLine.Website.Identity
 {
   using System.Security.Claims;
   using System.Threading.Tasks;
@@ -6,8 +9,6 @@
   using Microsoft.AspNet.Identity.Owin;
   using Microsoft.Owin;
   using Microsoft.Owin.Security;
-
-
 
   // Configure the application sign-in manager which is used in this application.
   public class ApplicationSignInManager : SignInManager<ApplicationUser, string>

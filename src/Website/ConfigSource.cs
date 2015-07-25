@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using Microsoft.AspNet.SignalR;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Kcesar.MissionLine.Website
 {
+  using System.Configuration;
+  using System.Web.Mvc;
+  using Microsoft.AspNet.SignalR;
+
   public interface IConfigSource
   {
     string GetConfig(string key);
@@ -21,12 +20,12 @@ namespace Kcesar.MissionLine.Website
     {
       return ConfigurationManager.AppSettings[key];
     }
-    
+
     public string GetUrlAction(UrlHelper url, string action)
     {
       return url.Action(action);
     }
-    
+
     public dynamic GetPushHub<T>() where T : Hub
     {
       return GlobalHost.ConnectionManager.GetHubContext<T>().Clients.All;

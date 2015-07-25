@@ -1,4 +1,7 @@
-﻿namespace FakeTwilio
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace FakeTwilio
 {
   using System;
   using System.Collections.Generic;

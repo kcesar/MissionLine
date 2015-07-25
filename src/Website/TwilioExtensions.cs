@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using Twilio.TwiML;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Kcesar.MissionLine.Website
 {
+  using Twilio.TwiML;
+
   public static class TwilioExtensions
   {
     public static void SayVoice(this TwilioResponse response, string format, params object[] args)

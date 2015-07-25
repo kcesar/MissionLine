@@ -1,10 +1,12 @@
-﻿[assembly: Microsoft.Owin.OwinStartup(typeof(Kcesar.MissionLine.Website.Startup))]
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+[assembly: Microsoft.Owin.OwinStartup(typeof(Kcesar.MissionLine.Website.Startup))]
 
 namespace Kcesar.MissionLine.Website
 {
   using System;
   using Microsoft.AspNet.SignalR;
-  using Microsoft.Owin;
   using Newtonsoft.Json;
   using Newtonsoft.Json.Converters;
   using Owin;

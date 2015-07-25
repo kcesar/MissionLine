@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Kcesar.MissionLine.Website;
-using Kcesar.MissionLine.Website.Api;
-using Kcesar.MissionLine.Website.Data;
-using NUnit.Framework;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Website.UnitTests
 {
+  using System;
+  using System.Linq;
+  using Kcesar.MissionLine.Website.Api;
+  using Kcesar.MissionLine.Website.Data;
+  using NUnit.Framework;
+
   [TestFixture]
   public class EventsControllerTests
   {

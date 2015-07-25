@@ -1,4 +1,7 @@
-﻿namespace Kcesar.MissionLine.Website.Identity
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace Kcesar.MissionLine.Website.Identity
 {
   using System;
   using System.Collections.Generic;

@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Kcesar.MissionLine.Website;
-using Kcesar.MissionLine.Website.Api;
-using Kcesar.MissionLine.Website.Data;
-using Moq;
-using NUnit.Framework;
-
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
 namespace Website.UnitTests
 {
+  using System.Linq;
+  using System.Threading.Tasks;
+  using Kcesar.MissionLine.Website;
+  using Kcesar.MissionLine.Website.Api;
+  using Kcesar.MissionLine.Website.Data;
+  using Moq;
+  using NUnit.Framework;
+
   [TestFixture]
   public class RosterControllerTests
   {
