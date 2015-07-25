@@ -34,7 +34,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     }
 
     private VoiceController(Func<IMissionLineDbContext> dbFactory, IConfigSource config)
-      : this(dbFactory, new EventsService(dbFactory, config), config, new MemberSource(config))
+      : this(dbFactory, new EventsService(dbFactory, config), config, MemberSource.Create(config))
     {
     }
 

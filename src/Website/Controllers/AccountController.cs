@@ -29,14 +29,14 @@ namespace Kcesar.MissionLine.Website.Controllers
     {
       UserManager = userManager;
       SignInManager = signInManager;
-      MemberSource = memberSource;
+      MemberDataSource = memberSource;
     }
 
-    public IMemberSource MemberSource
+    public IMemberSource MemberDataSource
     {
       get
       {
-        return this.memberSource ?? new MemberSource(new ConfigSource());
+        return this.memberSource ?? MemberSource.Create(new ConfigSource());
       }
       private set
       {
@@ -188,10 +188,13 @@ namespace Kcesar.MissionLine.Website.Controllers
 
     private async Task<ActionResult> AddLoginAndSignIn(ApplicationUser user, ExternalLoginInfo loginInfo, string returnUrl)
     {
-      var addLoginResult = await UserManager.AddLoginAsync(user.Id, loginInfo.Login);      if (!addLoginResult.Succeeded)      {
+      var addLoginResult = await UserManager.AddLoginAsync(user.Id, loginInfo.Login);
+      if (!addLoginResult.Succeeded)
+      {
         ViewBag.Message = "Couldn't setup user login: " + string.Join(" / ", addLoginResult.Errors);
         return View("Error");
-      }      
+      }
+
       await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
       return RedirectToLocal(returnUrl);
     }

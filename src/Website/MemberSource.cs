@@ -54,6 +54,13 @@ namespace Kcesar.MissionLine.Website
 
       return null;
     }
+
+    public static IMemberSource Create(IConfigSource config)
+    {
+      // TODO: Maybe it's time to setup DI?
+      string testFile = config.GetConfig("TestMemberSource");
+      return string.IsNullOrWhiteSpace(testFile) ? new MemberSource(config) : (IMemberSource)(new TestMemberSource(testFile));
+    }
   }
 
   public class MemberLookupResult

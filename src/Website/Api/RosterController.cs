@@ -27,7 +27,7 @@ namespace Kcesar.MissionLine.Website.Api
     /// 
     /// </summary>
     public RosterController()
-      : this(() => new MissionLineDbContext(), new ConfigSource(), new MemberSource(new ConfigSource()))
+      : this(() => new MissionLineDbContext(), new ConfigSource(), MemberSource.Create(new ConfigSource()))
     {
     }
 
