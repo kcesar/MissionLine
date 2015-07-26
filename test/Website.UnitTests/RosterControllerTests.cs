@@ -32,7 +32,7 @@ namespace Website.UnitTests
 
       int eventId = 52;
       context.Events.Add(new SarEvent { Id = eventId, Opened = "3:00".TimeToDate().Value, Name = "Test Event" });
-      for (int i=0;i<existingIns.Length;i+=2)
+      for (int i = 0; i < existingIns.Length; i += 2)
       {
         context.SignIns.Add(new MemberSignIn { Id = i, MemberId = memberId, TimeIn = existingIns[i].TimeToDate().Value, TimeOut = existingIns[i + 1].TimeToDate(), EventId = eventId });
       }
@@ -48,7 +48,7 @@ namespace Website.UnitTests
       for (int i = 0; i < results.Count; i++)
       {
         Assert.AreEqual(expectedOuts[2 * i][0] == '*', results[i] == target, "target is in the right place");
-        Assert.AreEqual(expectedOuts[2*i].Trim('*').TimeToDate(), results[i].TimeIn, "expected time in " + i.ToString());
+        Assert.AreEqual(expectedOuts[2 * i].Trim('*').TimeToDate(), results[i].TimeIn, "expected time in " + i.ToString());
         Assert.AreEqual(expectedOuts[2 * i + 1].TimeToDate(), results[i].TimeOut, "expected time out " + i.ToString());
         Assert.AreEqual(eventId, results[i].EventId, "is assigned to event " + i.ToString());
         Assert.AreEqual(memberId, results[i].MemberId, "correct memberid " + i.ToString());

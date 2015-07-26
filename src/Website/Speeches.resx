@@ -117,19 +117,90 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ActiveEventsTemplate" xml:space="preserve">
+    <value>There are {0} active events</value>
+  </data>
+  <data name="AsMemberTemplate" xml:space="preserve">
+    <value>as {0}</value>
+  </data>
   <data name="Bye" xml:space="preserve">
     <value>Goodbye</value>
+  </data>
+  <data name="CurrentEventTemplate" xml:space="preserve">
+    <value>Current event is {0}</value>
   </data>
   <data name="DefaultOutgoing" xml:space="preserve">
     <value>There are no missions at this time. If you would like to know more about King County E sar, visit our web page at w w w dot k c e s a r dot o r g.</value>
   </data>
+  <data name="DEMPrompt" xml:space="preserve">
+    <value>Enter your D E M number followed by the pound key.</value>
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value>To go back, press pound</value>
+  </data>
+  <data name="HangUpOr" xml:space="preserve">
+    <value>You may hang up or</value>
+  </data>
+  <data name="InvalidSelection" xml:space="preserve">
+    <value>I didn't understand.</value>
+  </data>
   <data name="MenuBody" xml:space="preserve">
     <value>Press 1 to sign in or out. Press 2 to record a message. Press 9 for admin options.</value>
+  </data>
+  <data name="MilesPrompt" xml:space="preserve">
+    <value>Enter your miles followed by the pound key. Press pound if you did not drive.</value>
+  </data>
+  <data name="PressOneTemplate" xml:space="preserve">
+    <value>Press 1 to {0}</value>
+  </data>
+  <data name="PromptAdminMenu" xml:space="preserve">
+    <value>Press {0} for admin options</value>
+  </data>
+  <data name="PromptChangeResponder" xml:space="preserve">
+    <value>Press {0} to change current responder</value>
+  </data>
+  <data name="PromptRecordMessageTemplate" xml:space="preserve">
+    <value>Press {0} to record a message</value>
+  </data>
+  <data name="PromptRecordReplacementMessageTemplate" xml:space="preserve">
+    <value>Press {0} to record a new message</value>
+  </data>
+  <data name="PromptSignInTemplate" xml:space="preserve">
+    <value>sign in {0}</value>
+    <comment>sign in {as MyName}</comment>
+  </data>
+  <data name="PromptSignOutTemplate" xml:space="preserve">
+    <value>sign out {0}</value>
+    <comment>sign out {as MyName}</comment>
+  </data>
+  <data name="PromptSwitchEventTemplate" xml:space="preserve">
+    <value>Press {0} to work with a different event</value>
+  </data>
+  <data name="SignedInTemplate" xml:space="preserve">
+    <value>Signed in to {0} as {1} at {2}</value>
+  </data>
+  <data name="SignedInUnassignedTemplate" xml:space="preserve">
+    <value>Signed in as {0} at {1}</value>
+  </data>
+  <data name="SignedOutTemplate" xml:space="preserve">
+    <value>{0} signed out at {1}.</value>
   </data>
   <data name="StartRecording" xml:space="preserve">
     <value>Please record your message after the beep</value>
   </data>
+  <data name="UnknownEvent" xml:space="preserve">
+    <value>Unknown Event</value>
+  </data>
   <data name="WelcomeUnknownCaller" xml:space="preserve">
     <value>This is the King County Explorer Search and Rescue mission line. If you have a search and rescue emergency, hang up now and call 9 1 1.</value>
+  </data>
+  <data name="CallerRecordingSaved" xml:space="preserve">
+    <value>Recording saved.</value>
+  </data>
+  <data name="MilesUpdated" xml:space="preserve">
+    <value>Your miles have been updated.</value>
+  </data>
+  <data name="TimeoutPrompt" xml:space="preserve">
+    <value>Enter the number of minutes it will will take you to get home, then press pound.</value>
   </data>
 </root>

@@ -1,7 +1,7 @@
 ﻿/*
  * Copyright 2015 Matt Cosand
  */
-namespace Kcesar.MissionLine.Website.Api.Controllers
+namespace Kcesar.MissionLine.Website.Api
 {
   using System;
   using System.Collections.Generic;
@@ -94,7 +94,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       {
         using (var db = dbFactory())
         {
-          BuildSetEventMenu(response, string.Empty, Url.Content("~/api/VoiceAdmin/Menu"), await this.eventService.ListActive());
+          BuildSetEventMenu(response, string.Empty, Url.Content("~/api/VoiceAdmin/Menu"));
         }
       }
       else if (request.Digits == "3")
@@ -152,7 +152,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
 
     public async Task<TwilioResponse> SetDescription(TwilioRequest request)
     {
-      await this.eventService.SetRecordedDescription(this.session.EventId.Value, urlReplace.Replace(request.RecordingUrl, string.Empty));
+      await this.eventService.SetRecordedDescription(this.session.EventId.Value, request.RecordingUrl);
 
       TwilioResponse response = new TwilioResponse();
       BeginMenu(response);
@@ -177,20 +177,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     /// <param name="response"></param>
     private async Task EndMenu(TwilioResponse response)
     {
-      var activeEvents = await this.eventService.ListActive();
-      if (activeEvents.Count > 1)
-      {
-        response.SayVoice("There are {0} active events", activeEvents.Count);
-      }
-      if (this.session.EventId != null)
-      {
-        response.SayVoice("Current event is " + activeEvents.Where(f => f.Id == this.session.EventId).Select(f => f.Name).SingleOrDefault() ?? "Unknown event");
-      }
-      response.SayVoice("Press 1 to create a new event");
-      if (activeEvents.Count > 1)
-      {
-        response.SayVoice("Press 2 to work with another event");
-      }
+      await StartMultiEventMenu(response, "create a new event");
 
       if (this.session.EventId != null)
       {

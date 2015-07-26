@@ -4,7 +4,6 @@
 namespace Website.UnitTests
 {
   using System;
-  using System.Linq;
   using System.Threading.Tasks;
   using Kcesar.MissionLine.Website;
   using Kcesar.MissionLine.Website.Api.Model;

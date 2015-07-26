@@ -1,7 +1,7 @@
 ﻿/*
  * Copyright 2015 Matt Cosand
  */
-namespace Kcesar.MissionLine.Website.Api.Controllers
+namespace Kcesar.MissionLine.Website.Api
 {
   using System;
   using System.Collections.Generic;
@@ -21,8 +21,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
   [UseTwilioFormatter]
   public class VoiceController : BaseVoiceController
   {
-    internal static readonly string THEN_SIGNIN_KEY = "thenSignIn";
-
+    internal const string NextKey = "next";
     private readonly IMemberSource members;
 
     /// <summary>
@@ -77,23 +76,24 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         this.config.GetPushHub<CallsHub>().updatedCall(CallsController.GetCallEntry(call));
       }
 
-      var response = BeginMenu();
+      var response = new TwilioResponse();
+      BeginMenu(response);
       if (this.session.MemberId == null)
       {
         response.SayVoice(Speeches.WelcomeUnknownCaller);
       }
 
-      EndMenu(response);
+      await EndMenu(response);
 
       return response;
     }
 
     [HttpPost]
-    public TwilioResponse Menu()
+    public async Task<TwilioResponse> Menu(TwilioRequest request)
     {
       var response = new TwilioResponse();
       BeginMenu(response);
-      EndMenu(response);
+      await EndMenu(response);
       return response;
     }
 
@@ -111,23 +111,23 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       {
         if (this.session.MemberId == null)
         {
-          AddLoginPrompt(response, true);
+          await AddLoginPrompt(response, Url.Content("~/api/Voice/DoSignInOut"));
         }
         else
         {
-          await SignInOrOut(response, request.CallSid);
+          response = await DoSignInOut(request);
         }
       }
-      else if (request.Digits == "2")
+      else if (request.Digits == "3")
       {
         response.SayVoice(Speeches.StartRecording);
         response.Record(new { maxLength = 120, action = GetAction("StopRecording") });
         BeginMenu(response);
-        EndMenu(response);
+        await EndMenu(response);
       }
-      else if (request.Digits == "3")
+      else if (request.Digits == "8")
       {
-        AddLoginPrompt(response);
+        await AddLoginPrompt(response, Url.Content("~/api/voice/Menu"));
       }
       else if (request.Digits == "9")
       {
@@ -135,9 +135,83 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       }
       else
       {
-        response.SayVoice("I didn't understand.");
+        response.SayVoice(Speeches.InvalidSelection);
         BeginMenu(response);
-        EndMenu(response);
+        await EndMenu(response);
+      }
+
+      return response;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public async Task<TwilioResponse> DoSignInOut(TwilioRequest request)
+    {
+      var response = new TwilioResponse();
+
+      using (var db = dbFactory())
+      {
+        var signin = await db.SignIns.Where(f => f.MemberId == this.session.MemberId).OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync();
+        var call = await db.Calls.SingleAsync(f => f.CallId == request.CallSid);
+
+        DateTime time = TimeUtils.GetLocalDateTime(this.config);
+        var sayDate = TimeUtils.GetMiltaryTimeVoiceText(time);
+
+        if (signin == null || signin.TimeOut.HasValue)
+        {
+          if (this.session.IsSignedIn)
+          {
+            throw new InvalidOperationException("Tried to sign out when not signed in");
+          }
+
+          signin = new MemberSignIn
+          {
+            MemberId = this.session.MemberId,
+            isMember = true,
+            Name = this.session.MemberName,
+            TimeIn = time,
+            EventId = this.session.EventId
+          };
+
+          db.SignIns.Add(signin);
+          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = signin.TimeIn, Action = "Signed in " + signin.Name });
+          this.session.IsSignedIn = true;
+
+          if (this.CurrentEvents.Count == 0)
+          {
+            BeginMenu(response);
+            response.SayVoice(Speeches.SignedInUnassignedTemplate, this.session.MemberName, sayDate);
+            await EndMenu(response);
+          }
+          else if (this.CurrentEvents.Count == 1)
+          {
+            signin.Event = this.CurrentEvents[0];
+            BeginMenu(response);
+            response.SayVoice(Speeches.SignedInTemplate, this.CurrentEvents[0].Name, this.session.MemberName, sayDate);
+            await EndMenu(response);
+          }
+          else
+          {
+            BuildSetEventMenu(response, string.Format(Speeches.SignedInUnassignedTemplate, this.session.MemberName, sayDate), Url.Content("~/api/voice/SetSigninEvent"));
+          }
+        }
+        else
+        {
+          signin.TimeOut = time;
+          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed out " + this.session.MemberName });
+          this.session.IsSignedIn = false;
+
+          // add prompt for timeout beyond right now
+          response.BeginGather(new { timeout = 10, action = GetAction("SetTimeOut") });
+          response.SayVoice(Speeches.SignedOutTemplate, this.session.MemberName, sayDate);
+          response.SayVoice(Speeches.TimeoutPrompt);
+          response.EndGather();
+
+        }
       }
 
       return response;
@@ -152,6 +226,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     public async Task<TwilioResponse> DoLogin(TwilioRequest request)
     {
       var response = new TwilioResponse();
+      var next = this.GetQueryParameter(NextKey);
 
       var lookup = await members.LookupMemberDEM(request.Digits);
       if (lookup != null)
@@ -159,36 +234,54 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         this.session.MemberId = lookup.Id;
         this.session.MemberName = lookup.Name;
         await UpdateSigninStatus();
-        var thenSigninParameter = this.Request.GetQueryNameValuePairs()
-                    .Where(f => f.Key == THEN_SIGNIN_KEY)
-                    .Select(f => f.Value)
-                    .FirstOrDefault();
-        if (thenSigninParameter != null)
-        {
-          await SignInOrOut(response, request.CallSid);
-        }
-        else
-        {
-          BeginMenu(response);
-          EndMenu(response);
-        }
+
+        response.Redirect((next ?? Url.Content("~/api/Voice/Menu")) + this.session.ToQueryString());
       }
       else
       {
-        AddLoginPrompt(response);
+        await AddLoginPrompt(response, next);
       }
 
       return response;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary>Records the time out for a member (they've already been signed out for the current time).</summary>
     /// <param name="request"></param>
-    /// <returns></returns>
+    /// <returns>Prompt for miles</returns>
+    [HttpPost]
+    public async Task<TwilioResponse> SetTimeOut(TwilioRequest request)
+    {
+      int minutes;
+      var response = new TwilioResponse();
+      // add prompt for miles
+      response.BeginGather(new { timeout = 10, action = GetAction("SetMiles") });
+      if (int.TryParse(request.Digits, out minutes))
+      {
+        using (var db = dbFactory())
+        {
+          var signin = await GetMembersLatestSignin(db, this.session.MemberId);
+          signin.TimeOut = signin.TimeOut.Value.AddMinutes(minutes);
+          await db.SaveChangesAsync();
+          this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+          var sayDate = TimeUtils.GetMiltaryTimeVoiceText(signin.TimeOut.Value);
+          response.SayVoice(Speeches.SignedOutTemplate, this.session.MemberName, sayDate);
+        }
+      }
+      response.SayVoice(Speeches.MilesPrompt);
+      response.EndGather();
+
+      return response;
+    }
+
+    /// <summary>Records the miles driven for the period. Executed after sign out.</summary>
+    /// <param name="request"></param>
+    /// <returns>Main menu</returns>
     [HttpPost]
     public async Task<TwilioResponse> SetMiles(TwilioRequest request)
     {
+      var response = new TwilioResponse();
+      BeginMenu(response);
+
       int miles;
       if (int.TryParse(request.Digits, out miles))
       {
@@ -199,73 +292,10 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
           await db.SaveChangesAsync();
           this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
         }
+        response.SayVoice(Speeches.MilesUpdated);
       }
 
-      var response = BeginMenu();
-      response.SayVoice("Your miles have been updated.");
-      EndMenu(response, true);
-      return response;
-    }
-
-    [HttpPost]
-    public async Task<TwilioResponse> SetEvent(TwilioRequest request)
-    {
-      string eventIdParameter = GetQueryParameter("evtIds");
-      var nextUrl = GetQueryParameter("next");
-
-      if (eventIdParameter == null)
-      {
-        throw new HttpResponseException(this.Request.CreateErrorResponse(HttpStatusCode.BadRequest, "evtIds not included in query"));
-      }
-
-      // get the list of event ids as they were when the user got the menu
-      var eventIds = eventIdParameter
-                        .Split('.')
-                        .Select(f => { int id; if (!int.TryParse(f, out id)) { throw new HttpResponseException(HttpStatusCode.BadRequest); } return id; })
-                        .ToArray();
-
-      TwilioResponse response = null;
-
-      //using (var db = dbFactory())
-      //{
-      if (request.Digits.Length > 0)
-      {
-        int index;
-        if (!int.TryParse(request.Digits, out index))
-        {
-          throw new HttpResponseException(this.Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Digits not valid"));
-        }
-
-        this.session.EventId = eventIds[index - 1];
-        response = new TwilioResponse();
-        response.Redirect(nextUrl + this.session.ToQueryString());
-
-        //if (index > 0 && index <= eventIds.Length)
-        //{
-        //  var signin = await db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync(f => f.MemberId == this.session.MemberId);
-        //  signin.EventId = eventIds[index - 1];
-        //  await db.SaveChangesAsync();
-
-        //  this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
-
-        //  response = new TwilioResponse();
-        //  BeginMenu(response);
-        //  var theEvent = await db.Events.FirstOrDefaultAsync(f => f.Id == signin.EventId);
-        //  response.SayVoice("You are now assigned to event {0}", theEvent.Name);
-        //  EndMenu(response);
-        //}
-
-
-        if (response == null)
-        {
-          response = new TwilioResponse();
-          using (var db = dbFactory())
-          {
-            BuildSetEventMenu(response, "I don't understand", EventsController.GetActiveEvents(db, this.config).Where(f => f.Closed == null).ToList());
-          }
-        }
-      }
-
+      await EndMenu(response, true);
       return response;
     }
 
@@ -286,14 +316,14 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         //  // Delete previous recording
         //}
         call.RecordingDuration = request.RecordingDuration;
-        call.RecordingUrl = urlReplace.Replace(request.RecordingUrl, string.Empty);
+        call.RecordingUrl = request.RecordingUrl;
         await db.SaveChangesAsync();
 
         this.config.GetPushHub<CallsHub>().updatedCall(CallsController.GetCallEntry(call));
 
-        response = BeginMenu();
-        response.SayVoice("Recording saved.");
-        EndMenu(response, true);
+        BeginMenu(response);
+        response.SayVoice(Speeches.CallerRecordingSaved);
+        await EndMenu(response, true);
       }
       return response;
     }
@@ -325,98 +355,15 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
 
     // =========================================  END PUBLIC METHODS  =============================================
 
-
-    private async Task SignInOrOut(TwilioResponse response, string callId)
+    private Task<MemberSignIn> GetMembersLatestSignin(IMissionLineDbContext db, string memberId)
     {
-      using (var db = dbFactory())
-      {
-        DateTime time = TimeUtils.GetLocalDateTime(this.config);
-        var sayDate = TimeUtils.GetMiltaryTimeVoiceText(time);
-
-
-        // Get the last time the responder signed in or out.
-        var signin = await db.SignIns.Where(f => f.MemberId == this.session.MemberId).OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync();
-        var call = await db.Calls.SingleAsync(f => f.CallId == callId);
-
-        // If they've never signed in or have already signed out:
-        if (signin == null || signin.TimeOut.HasValue)
-        {
-          if (this.session.IsSignedIn)
-          {
-            throw new InvalidOperationException("Tried to sign out when not signed in.");
-          }
-
-          var events = EventsController.GetActiveEvents(db, this.config).Where(f => f.Closed == null).ToList();
-
-          // Sign them in.
-          signin = new MemberSignIn
-          {
-            MemberId = this.session.MemberId,
-            isMember = true,
-            Name = this.session.MemberName,
-            TimeIn = time
-          };
-
-          db.SignIns.Add(signin);
-          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed in " + this.session.MemberName });
-          this.session.IsSignedIn = true;
-
-          if (events.Count == 0)
-          {
-            BeginMenu(response);
-            response.SayVoice(string.Format("Signed in as {0} at {1}", this.session.MemberName, sayDate));
-            EndMenu(response);
-          }
-          else if (events.Count == 1)
-          {
-            signin.Event = events[0];
-            BeginMenu(response);
-            response.SayVoice(string.Format("Signed in to {0} as {1} at {2}", events[0].Name, this.session.MemberName, sayDate));
-            EndMenu(response);
-          }
-          else
-          {
-            BuildSetEventMenu(response, string.Format("Signed in as {0} at {1}. ", this.session.MemberName, sayDate), events);
-          }
-        }
-        else
-        {
-          signin.TimeOut = time;
-          call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed out " + this.session.MemberName });
-          this.session.IsSignedIn = false;
-          // add prompt for miles
-          response.BeginGather(new { timeout = 10, action = GetAction("SetMiles") });
-          response.SayVoice("{0} signed out at {1}. Enter your miles followed by the pound key. Press pound if you did not drive.", this.session.MemberName, sayDate);
-          response.EndGather();
-        }
-        await db.SaveChangesAsync();
-        var hub = this.config.GetPushHub<CallsHub>();
-        hub.updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
-        hub.updatedCall(CallsController.GetCallEntry(call));
-      }
+      return db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync(f => f.MemberId == memberId);
     }
 
-    private void BuildSetEventMenu(TwilioResponse response, string prompt, List<SarEvent> events)
+    internal string GetSignInOutPrompt()
     {
-      Dictionary<string, string> args = new Dictionary<string, string>();
-      args.Add("evtIds", string.Join(".", events.Select(f => f.Id.ToString())));
-
-      response.BeginGather(new { timeout = 10, action = GetAction("SetEvent", args) });
-      response.SayVoice(prompt);
-      response.SayVoice(string.Format("There are {0} events in progress. ", events.Count));
-      // response.SayVoice("Enter the 4 digit D E M number or ");
-      for (int i = 0; i < events.Count; i++)
-      {
-        response.SayVoice(string.Format("Press {0} then pound for {1}. ", i, events[i].Name));
-      }
-      response.EndGather();
-    }
-
-    private TwilioResponse BeginMenu()
-    {
-      var response = new TwilioResponse();
-      BeginMenu(response);
-      return response;
+      string sayAsMember = string.Format(this.session.MemberName != null ? Speeches.AsMemberTemplate : string.Empty, this.session.MemberName);
+      return string.Format(this.session.IsSignedIn ? Speeches.PromptSignOutTemplate : Speeches.PromptSignInTemplate, sayAsMember);
     }
 
     private void BeginMenu(TwilioResponse response)
@@ -424,19 +371,15 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       response.BeginGather(new { numDigits = 1, action = GetAction("DoMenu"), timeout = 10 });
     }
 
-    private void EndMenu(TwilioResponse response, bool isContinuation = false)
+    private async Task EndMenu(TwilioResponse response, bool isContinuation = false)
     {
-      if (isContinuation)
-      {
-        response.SayVoice("You may hang up or ");
-      }
-      string sayAsMember = this.session.MemberName != null ? (" as " + this.session.MemberName) : string.Empty;
-      response.SayVoice("Press 1 to sign {0}{1}", this.session.IsSignedIn ? "out" : "in", sayAsMember);
-      response.SayVoice(this.session.HasRecording ? "Press 2 to record a new message." : "Press 2 to record a message.");
-      response.SayVoice("Press 3 to change current responder");
-      response.SayVoice("Press 9 for admin options");
+      await StartMultiEventMenu(response, GetSignInOutPrompt(), isContinuation);
+      response.SayVoice(this.session.HasRecording ? Speeches.PromptRecordReplacementMessageTemplate : Speeches.PromptRecordMessageTemplate, 3);
+      response.SayVoice(Speeches.PromptChangeResponder, 8);
+      response.SayVoice(Speeches.PromptAdminMenu, 9);
       response.EndGather();
     }
+
 
     private async Task SetMemberInfoFromPhone(string From)
     {
@@ -445,20 +388,17 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       this.session.MemberName = lookup == null ? null : lookup.Name;
     }
 
-    private void AddLoginPrompt(TwilioResponse response, bool thenSignin = false)
+    private async Task AddLoginPrompt(TwilioResponse response, string next)
     {
       Dictionary<string, string> args = new Dictionary<string, string>();
-      if (thenSignin)
-      {
-        args.Add(THEN_SIGNIN_KEY, "yes");
-      }
+      args.Add(NextKey, next ?? Url.Content("~/api/Voice/Menu"));
 
       response.BeginGather(new { timeout = 10, action = GetAction("DoLogin", args) });
-      response.SayVoice("Enter your D E M number followed by the pound key.");
-      response.SayVoice("To go back, press pound");
+      response.SayVoice(Speeches.DEMPrompt);
+      response.SayVoice(Speeches.GoBack);
       response.EndGather();
       BeginMenu(response);
-      EndMenu(response);
+      await EndMenu(response);
     }
 
     private async Task UpdateSigninStatus()

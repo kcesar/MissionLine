@@ -1,12 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Website", "src\Website\Website.csproj", "{B2730484-AA1C-499C-A1D6-449C13A501EA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AC9C4E0F-71CF-41AC-8D28-731DEDD67260}"
 	ProjectSection(SolutionItems) = preProject
+		test\test.runsettings = test\test.runsettings
 		test\TestMembers.xml = test\TestMembers.xml
 	EndProjectSection
 EndProject

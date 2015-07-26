@@ -1,7 +1,7 @@
 ﻿/*
  * Copyright 2015 Matt Cosand
  */
-namespace Kcesar.MissionLine.Website.Api.Controllers
+namespace Kcesar.MissionLine.Website.Api
 {
   using System;
   using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
   /// </summary>
   [AllowAnonymous]
   [UseTwilioFormatter]
-  public class BaseVoiceController : ApiController
+  public abstract class BaseVoiceController : ApiController
   {
     // public for testing.
     public readonly QueryFields session = new QueryFields();
@@ -31,6 +31,8 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     protected List<SarEvent> CurrentEvents { get; set; }
 
     protected static Regex urlReplace = new Regex("^https?\\:", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    protected bool EventWasChanged { get; set; }
 
     /// <summary>
     /// 
@@ -55,24 +57,31 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
     protected override void Initialize(System.Web.Http.Controllers.HttpControllerContext controllerContext)
     {
       base.Initialize(controllerContext);
-      this.session.Load(controllerContext.Request.GetQueryNameValuePairs());
+      var queryArgs = controllerContext.Request.GetQueryNameValuePairs();
+      InitBody(queryArgs);
+    }
 
+    internal void InitBody(IEnumerable<KeyValuePair<string, string>> queryArgs)
+    {
+      this.EventWasChanged = false;
+      this.session.Load(queryArgs);
       LoadActiveEvents();
     }
 
     protected void LoadActiveEvents()
     {
       this.CurrentEvents = Task.Run(() => eventService.ListActive()).Result;
-      if (this.CurrentEvents.Count == 1)
+      if (this.CurrentEvents.Count == 1 && this.session.EventId == null)
       {
         this.session.EventId = this.CurrentEvents[0].Id;
+        this.EventWasChanged = true;
       }
     }
 
-    protected void BuildSetEventMenu(TwilioResponse response, string prompt, string thenUrl, List<SarEvent> events)
+    protected void BuildSetEventMenu(TwilioResponse response, string prompt, string thenUrl)
     {
       Dictionary<string, string> args = new Dictionary<string, string>();
-      args.Add("evtIds", string.Join(".", events.Select(f => f.Id.ToString())));
+      args.Add("evtIds", string.Join(".", this.CurrentEvents.Select(f => f.Id.ToString())));
       args.Add("next", thenUrl);
 
       response.BeginGather(new { timeout = 10, action = GetAction("SetEvent", args) });
@@ -80,10 +89,10 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
       {
         response.SayVoice(prompt);
       }
-      response.SayVoice(string.Format("There are {0} events in progress. ", events.Count));
-      for (int i = 0; i < events.Count; i++)
+      response.SayVoice(string.Format("There are {0} events in progress. ", this.CurrentEvents.Count));
+      for (int i = 0; i < this.CurrentEvents.Count; i++)
       {
-        response.SayVoice(string.Format("Press {0} then pound for {1}. ", i + 1, events[i].Name));
+        response.SayVoice(string.Format("Press {0} then pound for {1}. ", i + 1, this.CurrentEvents[i].Name));
       }
       response.EndGather();
     }
@@ -104,13 +113,51 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
                           .FirstOrDefault();
     }
 
-    public string GetEventName()
+    protected string GetEventName()
     {
       return this.CurrentEvents.Where(f => f.Id == this.session.EventId).Select(f => f.Name).SingleOrDefault();
     }
 
+    protected async Task<List<SarEvent>> StartMultiEventMenu(TwilioResponse response, string pressOnePrompt, bool isContinuation = false)
+    {
+      var activeEvents = await this.eventService.ListActive();
+      if (activeEvents.Count > 1)
+      {
+        response.SayVoice(Speeches.ActiveEventsTemplate, activeEvents.Count);
+      }
+      if (this.session.EventId != null)
+      {
+        var theEvent = activeEvents.Where(f => f.Id == this.session.EventId).SingleOrDefault();
+        response.SayVoice(Speeches.CurrentEventTemplate, theEvent == null ? Speeches.UnknownEvent : theEvent.Name);
+        
+        if (this.EventWasChanged && theEvent != null)
+        {
+          if (!string.IsNullOrWhiteSpace(theEvent.OutgoingUrl))
+          {
+            response.Play(theEvent.OutgoingUrl);
+          }
+          else if (!string.IsNullOrWhiteSpace(theEvent.OutgoingText))
+          {
+            response.SayVoice(theEvent.OutgoingText);
+          }
+        }
+      }
+      if (isContinuation)
+      {
+        response.SayVoice(Speeches.HangUpOr);
+      }
+      response.SayVoice(Speeches.PressOneTemplate, pressOnePrompt);
+      if (activeEvents.Count > 1)
+      {
+        response.SayVoice(Speeches.PromptSwitchEventTemplate, 2);
+      }
+      return activeEvents;
+    }
+
     public class QueryFields
     {
+      internal const string SignedInKey = "s";
+
       public string MemberId { get; set; }
       public string MemberName { get; set; }
       public bool HasRecording { get; set; }
@@ -124,7 +171,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         MemberId = queries.Where(f => f.Key == "m").Select(f => f.Value).FirstOrDefault();
         MemberName = queries.Where(f => f.Key == "n").Select(f => f.Value).FirstOrDefault();
         HasRecording = queries.Where(f => f.Key == "r").Select(f => f.Value).FirstOrDefault() == "1";
-        IsSignedIn = queries.Where(f => f.Key == "s").Select(f => f.Value).FirstOrDefault() == "1";
+        IsSignedIn = queries.Where(f => f.Key == SignedInKey).Select(f => f.Value).FirstOrDefault() == "1";
         IsAdmin = queries.Where(f => f.Key == "a").Select(f => f.Value).FirstOrDefault() == "1";
         EventId = eventId == null ? (int?)null : int.Parse(eventId);        
       }
@@ -148,7 +195,7 @@ namespace Kcesar.MissionLine.Website.Api.Controllers
         }
         if (this.IsSignedIn)
         {
-          fields.Add("s", "1");
+          fields.Add(SignedInKey, "1");
         }
         if (this.IsAdmin)
         {

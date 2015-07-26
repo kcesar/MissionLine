@@ -12,7 +12,7 @@ namespace Website.UnitTests
   using System.Web.Http.Routing;
   using System.Xml.Linq;
   using Kcesar.MissionLine.Website;
-  using Kcesar.MissionLine.Website.Api.Controllers;
+  using Kcesar.MissionLine.Website.Api;
   using Kcesar.MissionLine.Website.Api.Model;
   using Kcesar.MissionLine.Website.Data;
   using Kcesar.MissionLine.Website.Services;
@@ -30,8 +30,10 @@ namespace Website.UnitTests
       Member = new MemberLookupResult { Id = Guid.NewGuid().ToString(), Name = "Mr. Sandman" };
 
       MembersMock = new Mock<IMemberSource>();
-      MembersMock.Setup(f => f.LookupMemberPhone(this.From)).Returns(Task.Factory.StartNew<MemberLookupResult>(() => this.Member));
+      MembersMock.Setup(f => f.LookupMemberPhone(this.From)).Returns(() => Task.Factory.StartNew<MemberLookupResult>(() => this.Member));
 
+      EventsServiceMock = new Mock<IEventsService>(MockBehavior.Strict);
+      EventsServiceMock.Setup(f => f.ListActive()).Returns(() => Task.Factory.StartNew<List<SarEvent>>(() => new List<SarEvent>()));
     }
 
     public TwilioRequest CreateRequest(string digits)
@@ -41,22 +43,23 @@ namespace Website.UnitTests
 
     public Mock<IMemberSource> MembersMock { get; private set; }
 
-    public MemberLookupResult Member { get; private set; }
+    public Mock<IEventsService> EventsServiceMock { get; private set; }
+
+    public MemberLookupResult Member { get; set; }
 
     public string From { get; private set; }
 
     public string CallSid { get; private set; }
 
-    public Task<TwilioResponse> DoApiCall(string action, string digits)
+    public async Task<TwilioResponse> DoApiCall(string action, string url = null, string digits = null, bool redirects = true)
     {
-      return DoApiCall(action, "http://localhost/api/voice/" + action.ToLowerInvariant(), this.CreateRequest(digits));
-    }
+      var args = this.CreateRequest(digits);
+      url = url ?? "http://localhost/api/voice/" + action;
 
-    public async Task<TwilioResponse> DoApiCall(string action, string url, TwilioRequest args)
-    {
-      var controller = new VoiceController(() => this.DBMock.Object, this.ConfigMock.Object, this.MembersMock.Object);
+      var controller = new VoiceController(() => this.DBMock.Object, this.EventsServiceMock.Object, this.ConfigMock.Object, this.MembersMock.Object);
       controller.Request = new HttpRequestMessage(HttpMethod.Post, url);
       controller.Configuration = new HttpConfiguration();
+
       WebApiConfig.Register(controller.Configuration);
       controller.RequestContext.RouteData = new HttpRouteData(
         route: new HttpRoute(),
@@ -64,13 +67,24 @@ namespace Website.UnitTests
 
       var collection = new System.Uri(url).ParseQueryString();
       var queries = collection.OfType<string>().ToDictionary(k => k, k => collection[k]);
-      controller.session.Load(queries);
+      controller.InitBody(queries);
 
       Console.WriteLine("Posting to " + url);
 
       var method = typeof(VoiceController).GetMethod(action, new[] { typeof(TwilioRequest) });
       var result = await (Task<TwilioResponse>)(method.Invoke(controller, new object[] { args }));
+
+      var first = result.ToXDocument().Root.FirstNode as XElement;
+      if (redirects && first != null && first.Name == "Redirect")
+      {
+        result = await DoApiCall(GetActionFromUrl(first.Value), first.Value, null, true);
+      }
       return result;
+    }
+
+    public string GetActionFromUrl(string url)
+    {
+      return url.Split('/', '?')[5];
     }
   }
 }

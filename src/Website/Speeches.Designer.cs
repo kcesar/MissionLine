@@ -61,11 +61,47 @@ namespace Kcesar.MissionLine.Website {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are {0} active events.
+        /// </summary>
+        internal static string ActiveEventsTemplate {
+            get {
+                return ResourceManager.GetString("ActiveEventsTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to as {0}.
+        /// </summary>
+        internal static string AsMemberTemplate {
+            get {
+                return ResourceManager.GetString("AsMemberTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Goodbye.
         /// </summary>
         internal static string Bye {
             get {
                 return ResourceManager.GetString("Bye", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recording saved..
+        /// </summary>
+        internal static string CallerRecordingSaved {
+            get {
+                return ResourceManager.GetString("CallerRecordingSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current event is {0}.
+        /// </summary>
+        internal static string CurrentEventTemplate {
+            get {
+                return ResourceManager.GetString("CurrentEventTemplate", resourceCulture);
             }
         }
         
@@ -79,6 +115,42 @@ namespace Kcesar.MissionLine.Website {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enter your D E M number followed by the pound key..
+        /// </summary>
+        internal static string DEMPrompt {
+            get {
+                return ResourceManager.GetString("DEMPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To go back, press pound.
+        /// </summary>
+        internal static string GoBack {
+            get {
+                return ResourceManager.GetString("GoBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You may hang up or.
+        /// </summary>
+        internal static string HangUpOr {
+            get {
+                return ResourceManager.GetString("HangUpOr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to I didn&apos;t understand..
+        /// </summary>
+        internal static string InvalidSelection {
+            get {
+                return ResourceManager.GetString("InvalidSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Press 1 to sign in or out. Press 2 to record a message. Press 9 for admin options..
         /// </summary>
         internal static string MenuBody {
@@ -88,11 +160,146 @@ namespace Kcesar.MissionLine.Website {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enter your miles followed by the pound key. Press pound if you did not drive..
+        /// </summary>
+        internal static string MilesPrompt {
+            get {
+                return ResourceManager.GetString("MilesPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your miles have been updated..
+        /// </summary>
+        internal static string MilesUpdated {
+            get {
+                return ResourceManager.GetString("MilesUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press 1 to {0}.
+        /// </summary>
+        internal static string PressOneTemplate {
+            get {
+                return ResourceManager.GetString("PressOneTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press {0} for admin options.
+        /// </summary>
+        internal static string PromptAdminMenu {
+            get {
+                return ResourceManager.GetString("PromptAdminMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press {0} to change current responder.
+        /// </summary>
+        internal static string PromptChangeResponder {
+            get {
+                return ResourceManager.GetString("PromptChangeResponder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press {0} to record a message.
+        /// </summary>
+        internal static string PromptRecordMessageTemplate {
+            get {
+                return ResourceManager.GetString("PromptRecordMessageTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press {0} to record a new message.
+        /// </summary>
+        internal static string PromptRecordReplacementMessageTemplate {
+            get {
+                return ResourceManager.GetString("PromptRecordReplacementMessageTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to sign in {0}.
+        /// </summary>
+        internal static string PromptSignInTemplate {
+            get {
+                return ResourceManager.GetString("PromptSignInTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to sign out {0}.
+        /// </summary>
+        internal static string PromptSignOutTemplate {
+            get {
+                return ResourceManager.GetString("PromptSignOutTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press {0} to work with a different event.
+        /// </summary>
+        internal static string PromptSwitchEventTemplate {
+            get {
+                return ResourceManager.GetString("PromptSwitchEventTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signed in to {0} as {1} at {2}.
+        /// </summary>
+        internal static string SignedInTemplate {
+            get {
+                return ResourceManager.GetString("SignedInTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signed in as {0} at {1}.
+        /// </summary>
+        internal static string SignedInUnassignedTemplate {
+            get {
+                return ResourceManager.GetString("SignedInUnassignedTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} signed out at {1}..
+        /// </summary>
+        internal static string SignedOutTemplate {
+            get {
+                return ResourceManager.GetString("SignedOutTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please record your message after the beep.
         /// </summary>
         internal static string StartRecording {
             get {
                 return ResourceManager.GetString("StartRecording", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter the number of minutes it will will take you to get home, then press pound..
+        /// </summary>
+        internal static string TimeoutPrompt {
+            get {
+                return ResourceManager.GetString("TimeoutPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown Event.
+        /// </summary>
+        internal static string UnknownEvent {
+            get {
+                return ResourceManager.GetString("UnknownEvent", resourceCulture);
             }
         }
         
