@@ -20,6 +20,7 @@ namespace Kcesar.MissionLine.Website.Identity
         : base(store)
     {
       this.dbContext = dbContext;
+      ((UserValidator<ApplicationUser, string>)this.UserValidator).AllowOnlyAlphanumericUserNames = false;
     }
 
     public async Task<ApplicationUser> FindByLinkCodeAsync(string code)
