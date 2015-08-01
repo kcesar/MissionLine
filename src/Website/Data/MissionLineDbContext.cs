@@ -33,6 +33,8 @@ namespace Kcesar.MissionLine.Website.Data
     public IDbSet<ApplicationUser> Users { get; set; }
     public IDbSet<UserLogin> UserLogins { get; set; }
 
+    public IDbSet<LogEntry> Logs { get; set; }
+
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);

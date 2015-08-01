@@ -37,6 +37,12 @@ namespace Kcesar.MissionLine.Website.Api
     {
     }
 
+    [HttpGet]
+    public void Throw()
+    {
+      throw new NotImplementedException("blah");
+    }
+
     /// <summary>
     /// 
     /// </summary>

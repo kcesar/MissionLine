@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <log4net>
+    <appender name="GeneralRollingFileAppender1" type="log4net.Appender.RollingFileAppender">
+      <file value="site.log"/>
+      <appendToFile value="true"/>
+      <rollingStyle value="DATE"/>
+      <datePattern value="yyyyMMdd"/>
+      <maxSizeRollBackups value="30"/>
+      <staticLogFilename value="true"/>
+      <immediateFlush value="true" />
+      <layout type="log4net.Layout.PatternLayout">
+        <conversionPattern value="%date %-5level %logger - %message%newline%exception"/>
+      </layout>
+    </appender>
+    <appender name="AdoNetAppender" type="log4net.Appender.AdoNetAppender">
+      <bufferSize value="1" />
+      <connectionType value="System.Data.SqlClient.SqlConnection, System.Data, Version=1.0.3300.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+      <connectionStringName value="DefaultConnection" />
+      <commandText value="INSERT INTO missionline_LogEntry ([time],[user],[level],[source],[message]) VALUES (@time, @user, @level, @source, @message)" />
+      <parameter>
+        <parameterName value="@time" />
+        <dbType value="DateTime" />
+        <layout type="log4net.Layout.RawTimeStampLayout" />
+      </parameter>
+      <parameter>
+        <parameterName value="@user" />
+        <dbType value="String" />
+        <size value="255" />
+        <layout type="log4net.Layout.PatternLayout">
+          <conversionPattern value="%identity" />
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@level" />
+        <dbType value="String" />
+        <size value="50" />
+        <layout type="log4net.Layout.PatternLayout">
+          <conversionPattern value="%level" />
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@source" />
+        <dbType value="String" />
+        <size value="255" />
+        <layout type="log4net.Layout.PatternLayout">
+          <conversionPattern value="%logger" />
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@message" />
+        <dbType value="String" />
+        <size value="4000" />
+        <layout type="log4net.Layout.PatternLayout">
+          <conversionPattern value="%message" />
+        </layout>
+      </parameter>
+    </appender>
+    <appender name="SmtpAppender" type="log4net.Appender.SmtpAppender">
+      <to value="YOUR_ADDRESS" />
+      <from value="FROM_ADDRESS" />
+      <subject value="Error Report" />
+      <username value="USERNAME" />
+      <password value="SAFE_AND_SECURE" />
+      <authentication value="Basic" />
+      <smtpHost value="smtp.YOUR_HOST.com" />
+      <port value="587" />
+      <enableSsl value="true" />
+      <lossy value="false" />
+      <buffer value="512" />
+      <evaluator type="log4net.Core.LevelEvaluator">
+        <threshold value="INFO"/>
+      </evaluator>
+      <layout type="log4net.Layout.PatternLayout">
+        <conversionPattern value="%newline%date %-5level %logger [%property{NDC}] - %message%newline%newline%newline" />
+      </layout>
+    </appender>
+    <root>
+      <!--<appender-ref ref="GeneralRollingFileAppender1">
+        <threshold value="Debug" />
+      </appender-ref>-->
+      <appender-ref ref="AdoNetAppender">
+        <threshold value="Info" />
+      </appender-ref>
+      <appender-ref ref="SmtpAppender">
+        <threshold value="Error" />
+      </appender-ref>
+    </root>
+  </log4net>
+</configuration>

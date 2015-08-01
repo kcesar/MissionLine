@@ -4,6 +4,7 @@
 namespace Kcesar.MissionLine.Website
 {
   using System.Web.Http;
+  using Api;
   using Newtonsoft.Json.Converters;
   using Newtonsoft.Json.Serialization;
 
@@ -23,6 +24,8 @@ namespace Kcesar.MissionLine.Website
       );
 
       config.Filters.Add(new AuthorizeAttribute());
+
+      config.MessageHandlers.Add(new LogExceptionHandler());
 
       var jsonSettings = config.Formatters.JsonFormatter.SerializerSettings;
       jsonSettings.Converters.Add(new StringEnumConverter());

@@ -52,6 +52,10 @@
       <HintPath>..\..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
       <Private>True</Private>
@@ -209,10 +213,12 @@
   <ItemGroup>
     <Compile Include="Api\EventsController.cs" />
     <Compile Include="Api\CallsController.cs" />
+    <Compile Include="Api\LogExceptionHandler.cs" />
     <Compile Include="Api\Model\CallEntry.cs" />
     <Compile Include="Api\Model\EventEntry.cs" />
     <Compile Include="Api\BaseVoiceController.cs" />
     <Compile Include="Api\VoiceAdminController.cs" />
+    <Compile Include="Data\LogEntry.cs" />
     <Compile Include="Data\UserLogin.cs" />
     <Compile Include="Identity\ApplicationSignInManager.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
@@ -226,6 +232,10 @@
     <Compile Include="Migrations\201507161459462_ExternalAuthLinkCode.cs" />
     <Compile Include="Migrations\201507161459462_ExternalAuthLinkCode.Designer.cs">
       <DependentUpon>201507161459462_ExternalAuthLinkCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507310638271_LogTable.cs" />
+    <Compile Include="Migrations\201507310638271_LogTable.Designer.cs">
+      <DependentUpon>201507310638271_LogTable.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\ExternalLoginListViewModel.cs" />
     <Compile Include="Model\SubmitResult.cs" />
@@ -273,6 +283,7 @@
     <Compile Include="Model\MemberSummary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\EventsService.cs" />
+    <Compile Include="Services\LogService.cs" />
     <Compile Include="Speeches.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -440,6 +451,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507161459462_ExternalAuthLinkCode.resx">
       <DependentUpon>201507161459462_ExternalAuthLinkCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507310638271_LogTable.resx">
+      <DependentUpon>201507310638271_LogTable.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Speeches.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -6,11 +6,14 @@
   using System.Web.Mvc;
   using System.Web.Optimization;
   using System.Web.Routing;
+  using Services;
 
   public class MvcApplication : System.Web.HttpApplication
   {
     protected void Application_Start()
     {
+      LogService.ProcessSetup();
+
       if (ConfigurationManager.AppSettings["autoUpdateDatabase"] != null)
       {
         Database.SetInitializer(new MigrateDatabaseToLatestVersion<Data.MissionLineDbContext, Kcesar.MissionLine.Website.Migrations.Configuration>());
