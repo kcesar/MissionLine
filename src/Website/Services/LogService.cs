@@ -12,10 +12,10 @@ namespace Kcesar.MissionLine.Website.Services
     public static void ProcessSetup()
     {
       string thisFile = new Uri(typeof(LogService).Assembly.CodeBase).LocalPath;
-      if (File.Exists(thisFile))
+      string configFile = Path.Combine(Path.GetDirectoryName(thisFile), "..", "log4net.config");
+      if (File.Exists(configFile))
       {
-        System.IO.FileInfo fi = new System.IO.FileInfo(Path.Combine(Path.GetDirectoryName(thisFile), "..", "log4net.config"));
-        XmlConfigurator.ConfigureAndWatch(fi);
+        XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(configFile));
       }
     }
   }

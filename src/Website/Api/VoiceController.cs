@@ -6,6 +6,7 @@ namespace Kcesar.MissionLine.Website.Api
   using System;
   using System.Collections.Generic;
   using System.Data.Entity;
+  using System.IO;
   using System.Linq;
   using System.Threading.Tasks;
   using System.Web.Http;
@@ -35,6 +36,14 @@ namespace Kcesar.MissionLine.Website.Api
     private VoiceController(Func<IMissionLineDbContext> dbFactory, IConfigSource config)
       : this(dbFactory, new EventsService(dbFactory, config), config, MemberSource.Create(config))
     {
+    }
+
+    [HttpGet]
+    public string Info()
+    {
+      string thisFile = new System.Uri(typeof(LogService).Assembly.CodeBase).LocalPath;
+      string configFile = Path.Combine(Path.GetDirectoryName(thisFile), "..", "log4net.config");
+      return configFile + ":" + File.Exists(configFile).ToString();
     }
 
     [HttpGet]
