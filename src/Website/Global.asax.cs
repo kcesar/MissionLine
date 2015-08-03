@@ -1,8 +1,10 @@
-﻿namespace Kcesar.MissionLine.Website
+﻿/*
+ * Copyright 2015 Matthew Cosand
+ */
+namespace Kcesar.MissionLine.Website
 {
   using System.Configuration;
   using System.Data.Entity;
-  using System.Web.Http;
   using System.Web.Mvc;
   using System.Web.Optimization;
   using System.Web.Routing;
@@ -19,10 +21,11 @@
         Database.SetInitializer(new MigrateDatabaseToLatestVersion<Data.MissionLineDbContext, Kcesar.MissionLine.Website.Migrations.Configuration>());
       }
       AreaRegistration.RegisterAllAreas();
-      GlobalConfiguration.Configure(WebApiConfig.Register);
       FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
       RouteConfig.RegisterRoutes(RouteTable.Routes);
       BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+      ControllerBuilder.Current.SetControllerFactory(new DIControllerFactory(DIConfig.CreateKernel.Value));
     }
   }
 }

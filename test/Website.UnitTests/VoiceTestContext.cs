@@ -56,7 +56,7 @@ namespace Website.UnitTests
       var args = this.CreateRequest(digits);
       url = url ?? "http://localhost/api/voice/" + action;
 
-      var controller = new VoiceController(() => this.DBMock.Object, this.EventsServiceMock.Object, this.ConfigMock.Object, this.MembersMock.Object);
+      var controller = new VoiceController(() => this.DBMock.Object, this.EventsServiceMock.Object, this.ConfigMock.Object, this.MembersMock.Object, new ConsoleLogger());
       controller.Request = new HttpRequestMessage(HttpMethod.Post, url);
       controller.Configuration = new HttpConfiguration();
 

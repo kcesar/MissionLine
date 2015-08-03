@@ -13,7 +13,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Kcesar.MissionLine.Website</RootNamespace>
     <AssemblyName>Kcesar.MissionLine.Website</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort>44304</IISExpressSSLPort>
@@ -114,6 +114,34 @@
       <HintPath>..\..\packages\Microsoft.Owin.Security.OpenIdConnect.3.0.1\lib\net45\Microsoft.Owin.Security.OpenIdConnect.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Extensions.ContextPreservation, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Extensions.ContextPreservation.3.2.0.0\lib\net45-full\Ninject.Extensions.ContextPreservation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Extensions.NamedScope, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Extensions.NamedScope.3.2.0.0\lib\net45-full\Ninject.Extensions.NamedScope.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Web.Common, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Web.Common.3.2.3.0\lib\net45-full\Ninject.Web.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Web.Common.OwinHost, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Web.Common.OwinHost.3.2.3.0\lib\net45-full\Ninject.Web.Common.OwinHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Web.WebApi, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Web.WebApi.3.2.4.0\lib\net45-full\Ninject.Web.WebApi.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Web.WebApi.OwinHost, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Web.WebApi.OwinHost.3.2.4.0\lib\net45-full\Ninject.Web.WebApi.OwinHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
@@ -122,6 +150,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel" />
     <Reference Include="System.IdentityModel.Services" />
@@ -137,6 +166,10 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Http.Owin, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Owin.5.0.0\lib\net45\System.Web.Http.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Web.Routing" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
@@ -213,13 +246,18 @@
   <ItemGroup>
     <Compile Include="Api\EventsController.cs" />
     <Compile Include="Api\CallsController.cs" />
-    <Compile Include="Api\LogExceptionHandler.cs" />
+    <Compile Include="Api\Log4NetExceptionLogger.cs" />
     <Compile Include="Api\Model\CallEntry.cs" />
     <Compile Include="Api\Model\EventEntry.cs" />
     <Compile Include="Api\BaseVoiceController.cs" />
     <Compile Include="Api\VoiceAdminController.cs" />
     <Compile Include="Data\LogEntry.cs" />
     <Compile Include="Data\UserLogin.cs" />
+    <Compile Include="DIConfig.cs" />
+    <Compile Include="DIControllerFactory.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
     <Compile Include="Identity\ApplicationSignInManager.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="Data\ApplicationUser.cs" />
@@ -258,9 +296,6 @@
     <Compile Include="Data\VoiceCall.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FilteredCamelCasePropertyNamesContractResolver.cs" />
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
     <Compile Include="Data\MissionLineDbContext.cs" />
     <Compile Include="MemberSource.cs" />
     <Compile Include="Migrations\201505280555220_Initial.cs" />
@@ -313,7 +348,6 @@
     <Content Include="favicon.ico" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
@@ -321,6 +355,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="Global.asax" />
     <Content Include="Scripts\bootstrap-dialog.js" />
     <Content Include="Scripts\bootstrap-dialog.min.js" />
     <Content Include="Scripts\bootstrap-select.js" />
@@ -430,7 +465,9 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>

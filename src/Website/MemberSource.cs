@@ -7,8 +7,9 @@ namespace Kcesar.MissionLine.Website
   using System.Net;
   using System.Threading.Tasks;
   using Kcesar.MissionLine.Website.Model;
+  using log4net;
   using Newtonsoft.Json;
-  
+
   public interface IMemberSource
   {
     Task<MemberLookupResult> LookupMemberPhone(string phone);
@@ -19,11 +20,13 @@ namespace Kcesar.MissionLine.Website
   {
     private readonly string url;
     private readonly NetworkCredential credential;
+    private readonly ILog log;
 
-    public MemberSource(IConfigSource config)
+    public MemberSource(IConfigSource config, ILog log)
     {
       this.url = config.GetConfig("databaseUrl").TrimEnd('/');
       this.credential = new NetworkCredential(config.GetConfig("databaseUsername"), config.GetConfig("databasePassword"));
+      this.log = log;
     }
 
     public Task<MemberLookupResult> LookupMemberPhone(string phone)
@@ -39,9 +42,19 @@ namespace Kcesar.MissionLine.Website
     private async Task<MemberLookupResult> DoLookup(string url)
     {
       WebClient client = new WebClient() { Credentials = this.credential };
-      MemberSummary[] members = JsonConvert.DeserializeObject<MemberSummary[]>(
-        await client.DownloadStringTaskAsync(new Uri(this.url + url + "?_auth=basic"))
-        );
+      Uri uri = new Uri(this.url + url + "?_auth=basic");
+      string response;
+      try
+      {
+        response = await client.DownloadStringTaskAsync(uri);
+      }
+      catch (Exception ex)
+      {
+        this.log.Error("While querying " + uri.AbsoluteUri, ex);
+        throw;
+      }
+
+      MemberSummary[] members = JsonConvert.DeserializeObject<MemberSummary[]>(response);
 
       if (members.Length == 1)
       {
@@ -53,13 +66,6 @@ namespace Kcesar.MissionLine.Website
       }
 
       return null;
-    }
-
-    public static IMemberSource Create(IConfigSource config)
-    {
-      // TODO: Maybe it's time to setup DI?
-      string testFile = config.GetConfig("TestMemberSource");
-      return string.IsNullOrWhiteSpace(testFile) ? new MemberSource(config) : (IMemberSource)(new TestMemberSource(testFile));
     }
   }
 

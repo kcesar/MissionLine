@@ -8,6 +8,7 @@ namespace Kcesar.MissionLine.Website.Api
   using System.Threading.Tasks;
   using System.Web.Http;
   using Data;
+  using log4net;
   using Model;
   using Services;
   using Twilio.TwiML;
@@ -22,18 +23,10 @@ namespace Kcesar.MissionLine.Website.Api
     /// <summary>
     /// 
     /// </summary>
-    public VoiceAdminController()
-      : this(() => new MissionLineDbContext(), new EventsService(() => new MissionLineDbContext(), new ConfigSource()), new ConfigSource())
-    {
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="dbFactory"></param>
     /// <param name="config"></param>
-    private VoiceAdminController(Func<IMissionLineDbContext> dbFactory, IEventsService eventsService, IConfigSource config)
-      :base (dbFactory, eventsService, config)
+    public VoiceAdminController(Func<IMissionLineDbContext> dbFactory, IEventsService eventsService, IConfigSource config, ILog log)
+      :base (dbFactory, eventsService, config, log)
     {
     }
     

@@ -12,6 +12,7 @@ namespace Kcesar.MissionLine.Website.Api
   using System.Web;
   using System.Web.Http;
   using Data;
+  using log4net;
   using Services;
   using Twilio.TwiML;
 
@@ -28,6 +29,7 @@ namespace Kcesar.MissionLine.Website.Api
     protected readonly IConfigSource config;
     protected readonly Func<IMissionLineDbContext> dbFactory;
     protected readonly IEventsService eventService;
+    protected readonly ILog log;
     protected List<SarEvent> CurrentEvents { get; set; }
 
     protected static Regex urlReplace = new Regex("^https?\\:", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -37,21 +39,14 @@ namespace Kcesar.MissionLine.Website.Api
     /// <summary>
     /// 
     /// </summary>
-    public BaseVoiceController()
-      : this(() => new MissionLineDbContext(), new EventsService(() => new MissionLineDbContext(), new ConfigSource()), new ConfigSource())
-    {
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="dbFactory"></param>
     /// <param name="config"></param>
-    public BaseVoiceController(Func<IMissionLineDbContext> dbFactory, IEventsService eventService, IConfigSource config)
+    public BaseVoiceController(Func<IMissionLineDbContext> dbFactory, IEventsService eventService, IConfigSource config, ILog log)
     {
       this.dbFactory = dbFactory;
       this.config = config;
       this.eventService = eventService;
+      this.log = log;
     }
 
     protected override void Initialize(System.Web.Http.Controllers.HttpControllerContext controllerContext)
@@ -152,6 +147,13 @@ namespace Kcesar.MissionLine.Website.Api
         response.SayVoice(Speeches.PromptSwitchEventTemplate, 2);
       }
       return activeEvents;
+    }
+
+
+    protected T LogResponse<T>(T result)
+    {
+      this.log.DebugFormat("Response from {0}\r\n{1}", Request.RequestUri, result);
+      return result;
     }
 
     public class QueryFields

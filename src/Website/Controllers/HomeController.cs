@@ -9,10 +9,6 @@ namespace Kcesar.MissionLine.Website.Controllers
   {
     private readonly IConfigSource config;
 
-    public HomeController() : this(new ConfigSource())
-    {
-    }
-
     public HomeController(IConfigSource config)
     {
       this.config = config;

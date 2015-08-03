@@ -21,7 +21,7 @@
       <parameter>
         <parameterName value="@time" />
         <dbType value="DateTime" />
-        <layout type="log4net.Layout.RawTimeStampLayout" />
+        <layout type="log4net.Layout.RawUtcTimeStampLayout" />
       </parameter>
       <parameter>
         <parameterName value="@user" />

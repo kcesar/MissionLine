@@ -21,27 +21,20 @@ namespace Kcesar.MissionLine.Website.Controllers
     private ApplicationUserManager userManager;
     private IMemberSource memberSource;
 
-    public AccountController()
+    /// <summary>
+    ///  Production constructor
+    /// </summary>
+    /// <param name="memberSource"></param>
+    public AccountController(IMemberSource memberSource)
     {
+      this.memberSource = memberSource;
     }
 
     public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IMemberSource memberSource)
+      : this(memberSource)
     {
       UserManager = userManager;
       SignInManager = signInManager;
-      MemberDataSource = memberSource;
-    }
-
-    public IMemberSource MemberDataSource
-    {
-      get
-      {
-        return this.memberSource ?? MemberSource.Create(new ConfigSource());
-      }
-      private set
-      {
-        this.memberSource = value;
-      }
     }
 
     public ApplicationSignInManager SignInManager

@@ -11,6 +11,7 @@ namespace Kcesar.MissionLine.Website.Api
   using System.Threading.Tasks;
   using System.Web.Http;
   using Data;
+  using log4net;
   using Model;
   using Services;
   using Twilio.TwiML;
@@ -24,19 +25,6 @@ namespace Kcesar.MissionLine.Website.Api
   {
     internal const string NextKey = "next";
     private readonly IMemberSource members;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public VoiceController()
-      : this(() => new MissionLineDbContext(), new ConfigSource())
-    {
-    }
-
-    private VoiceController(Func<IMissionLineDbContext> dbFactory, IConfigSource config)
-      : this(dbFactory, new EventsService(dbFactory, config), config, MemberSource.Create(config))
-    {
-    }
 
     [HttpGet]
     public string Info()
@@ -58,8 +46,8 @@ namespace Kcesar.MissionLine.Website.Api
     /// <param name="dbFactory"></param>
     /// <param name="config"></param>
     /// <param name="members"></param>
-    public VoiceController(Func<IMissionLineDbContext> dbFactory, IEventsService eventService, IConfigSource config, IMemberSource members)
-      : base(dbFactory, eventService, config)
+    public VoiceController(Func<IMissionLineDbContext> dbFactory, IEventsService eventService, IConfigSource config, IMemberSource members, ILog log)
+      : base(dbFactory, eventService, config, log)
     {
       this.members = members;
     }
@@ -100,7 +88,7 @@ namespace Kcesar.MissionLine.Website.Api
 
       await EndMenu(response);
 
-      return response;
+      return LogResponse(response);
     }
 
     [HttpPost]
@@ -109,7 +97,7 @@ namespace Kcesar.MissionLine.Website.Api
       var response = new TwilioResponse();
       BeginMenu(response);
       await EndMenu(response);
-      return response;
+      return LogResponse(response);
     }
 
     /// <summary>
@@ -155,7 +143,7 @@ namespace Kcesar.MissionLine.Website.Api
         await EndMenu(response);
       }
 
-      return response;
+      return LogResponse(response);
     }
 
     /// <summary>
@@ -229,7 +217,7 @@ namespace Kcesar.MissionLine.Website.Api
         }
       }
 
-      return response;
+      return LogResponse(response);
     }
 
     /// <summary>
@@ -257,7 +245,7 @@ namespace Kcesar.MissionLine.Website.Api
         await AddLoginPrompt(response, next);
       }
 
-      return response;
+      return LogResponse(response);
     }
 
     /// <summary>Records the time out for a member (they've already been signed out for the current time).</summary>
@@ -285,7 +273,7 @@ namespace Kcesar.MissionLine.Website.Api
       response.SayVoice(Speeches.MilesPrompt);
       response.EndGather();
 
-      return response;
+      return LogResponse(response);
     }
 
     /// <summary>Records the miles driven for the period. Executed after sign out.</summary>
@@ -311,7 +299,7 @@ namespace Kcesar.MissionLine.Website.Api
       }
 
       await EndMenu(response, true);
-      return response;
+      return LogResponse(response);
     }
 
     /// <summary>
@@ -340,7 +328,7 @@ namespace Kcesar.MissionLine.Website.Api
         response.SayVoice(Speeches.CallerRecordingSaved);
         await EndMenu(response, true);
       }
-      return response;
+      return LogResponse(response);
     }
 
     /// <summary>
@@ -365,7 +353,7 @@ namespace Kcesar.MissionLine.Website.Api
 
       var response = new TwilioResponse();
       response.Hangup();
-      return response;
+      return LogResponse(response);
     }
 
     // =========================================  END PUBLIC METHODS  =============================================
