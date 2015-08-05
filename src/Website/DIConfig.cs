@@ -35,7 +35,9 @@ namespace Kcesar.MissionLine.Website
 
       kernel.Bind<IConfigSource>().ToConstant(config);
       kernel.Bind<IEventsService>().To<EventsService>();
-      kernel.Bind<ILog>().ToMethod(ctx => LogManager.GetLogger(ctx.Request.ParentContext.Request.ParentContext.Request.Service.FullName));
+      kernel.Bind<ILog>().ToMethod(ctx => 
+      LogManager.GetLogger(ctx.Request.ParentContext.Request.Service.FullName)
+      );
 
       DIConfig.databaseLogTarget = LogManager.GetLogger("database");
       Func<IMissionLineDbContext> dbFactory = () =>

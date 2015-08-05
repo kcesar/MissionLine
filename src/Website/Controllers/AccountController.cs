@@ -10,6 +10,7 @@ namespace Kcesar.MissionLine.Website.Controllers
   using System.Web.Mvc;
   using Data;
   using Identity;
+  using log4net;
   using Microsoft.AspNet.Identity;
   using Microsoft.AspNet.Identity.Owin;
   using Microsoft.Owin.Security;
@@ -20,18 +21,20 @@ namespace Kcesar.MissionLine.Website.Controllers
     private ApplicationSignInManager signInManager;
     private ApplicationUserManager userManager;
     private IMemberSource memberSource;
+    private ILog log;
 
     /// <summary>
     ///  Production constructor
     /// </summary>
     /// <param name="memberSource"></param>
-    public AccountController(IMemberSource memberSource)
+    public AccountController(IMemberSource memberSource, ILog log)
     {
       this.memberSource = memberSource;
+      this.log = log;
     }
 
-    public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IMemberSource memberSource)
-      : this(memberSource)
+    public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IMemberSource memberSource, ILog log)
+      : this(memberSource, log)
     {
       UserManager = userManager;
       SignInManager = signInManager;
@@ -81,6 +84,10 @@ namespace Kcesar.MissionLine.Website.Controllers
       {
         ViewBag.LinkCode = "@" + user.LinkCode;
         return View();
+      }
+      else
+      {
+        this.log.ErrorFormat("Failed to set user's linkCode: " + string.Join("\n", saveResult.Errors));
       }
       return Content(string.Join("\n", saveResult.Errors));
     }
@@ -137,6 +144,14 @@ namespace Kcesar.MissionLine.Website.Controllers
         case SignInStatus.Success:
           if (linkCode[0] == '@')
           {
+            this.log.ErrorFormat(
+              "User with link code {0} tried to link {1} account {2} ({3}), which is already in use by {4}.",
+              linkCode,
+              loginInfo.Login.LoginProvider,
+              loginInfo.Login.ProviderKey,
+              loginInfo.ExternalIdentity.Name,
+              User.Identity.Name
+              );
             return RedirectToLocal(Url.Action("LinkFailure", new { reason = "This login is already linked to user " + User.Identity.Name + "." }));
           }
           else
@@ -145,9 +160,11 @@ namespace Kcesar.MissionLine.Website.Controllers
           }
         case SignInStatus.LockedOut:
           //return View("Lockout");
+          this.log.ErrorFormat("System states {0} account {1} is locked out.", loginInfo.Login.LoginProvider, loginInfo.Login.ProviderKey);
           return Content("System states account is locked out. This is not currently supported");
         case SignInStatus.RequiresVerification:
           //return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = false });
+          this.log.ErrorFormat("System requires verification of {0} user {1}", loginInfo.Login.LoginProvider, loginInfo.Login.ProviderKey);
           return Content("System requires verification. This is not currently supported");
         case SignInStatus.Failure:
         default:
@@ -158,6 +175,7 @@ namespace Kcesar.MissionLine.Website.Controllers
             if (!createResult.Succeeded)
             {
               ViewBag.Message = string.Format("Couldn't create user '{0}': {1}", user.UserName, string.Join(" / ", createResult.Errors));
+              this.log.Error(ViewBag.Message);
               return View("Error");
             }
             return await AddLoginAndSignIn(user, loginInfo, returnUrl);
@@ -167,6 +185,7 @@ namespace Kcesar.MissionLine.Website.Controllers
             var user = await this.UserManager.FindByLinkCodeAsync(linkCode.Substring(1));
             if (user == null)
             {
+              this.log.Warn("Link code not found, or was expired. Please try linking your login again.");
               return RedirectToLocal(Url.Action("LinkFailure", new { reason = "Link code not found, or was expired. Please try linking your login again." }));
             }
 
@@ -174,6 +193,7 @@ namespace Kcesar.MissionLine.Website.Controllers
           }
           else
           {
+            this.log.WarnFormat("Unrecognized external login. {0} user {1} ({2})", loginInfo.Login.LoginProvider, loginInfo.Login.ProviderKey, loginInfo.ExternalIdentity.Name);
             return Content("Login unknown. To use an external login you must first login with your ESAR Office 365 account, then go to page " + Url.Action("Link") + ".");
           }
       }
@@ -185,9 +205,11 @@ namespace Kcesar.MissionLine.Website.Controllers
       if (!addLoginResult.Succeeded)
       {
         ViewBag.Message = "Couldn't setup user login: " + string.Join(" / ", addLoginResult.Errors);
+        this.log.Error(ViewBag.Message);
         return View("Error");
       }
 
+      this.log.InfoFormat("Linked {0} user {1} to {2}", loginInfo.Login.LoginProvider, loginInfo.ExternalIdentity.Name, user.UserName);
       await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
       return RedirectToLocal(returnUrl);
     }
