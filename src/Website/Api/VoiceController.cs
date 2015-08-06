@@ -177,11 +177,12 @@ namespace Kcesar.MissionLine.Website.Api
             isMember = true,
             Name = this.session.MemberName,
             TimeIn = time,
-            EventId = this.session.EventId
+            EventId = (this.CurrentEvents.Count == 1) ? this.CurrentEvents[0].Id : this.session.EventId,
           };
 
           db.SignIns.Add(signin);
           call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = signin.TimeIn, Action = "Signed in " + signin.Name });
+          await db.SaveChangesAsync();
           this.session.IsSignedIn = true;
 
           if (this.CurrentEvents.Count == 0)
@@ -207,6 +208,7 @@ namespace Kcesar.MissionLine.Website.Api
           signin.TimeOut = time;
           call.Actions.Add(new CallAction { Call = call, CallId = call.Id, Time = time, Action = "Signed out " + this.session.MemberName });
           this.session.IsSignedIn = false;
+          await db.SaveChangesAsync();
 
           // add prompt for timeout beyond right now
           response.BeginGather(new { timeout = 10, action = GetAction("SetTimeOut") });

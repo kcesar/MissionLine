@@ -22,11 +22,20 @@ namespace FakeTwilio
     private string callSid;
     private string phoneNumber;
     private WebClient missionLine = new WebClient();
-    private Uri baseAddress = new Uri((ConfigurationManager.AppSettings["MissionLineUrl"] ?? "http://localhost:47577/").TrimEnd('/') + "/api/voice/");
+    private readonly Uri baseAddress;
 
     static void Main(string[] args)
     {
-      new FakeTwilioApp().Run();
+      var baseUrl = (args.Length > 0)
+                    ? args[0]
+                    : ConfigurationManager.AppSettings["MissionLineUrl"]
+                    ?? "http://localhost:47577/";
+      new FakeTwilioApp(baseUrl).Run();
+    }
+
+    public FakeTwilioApp(string baseUrl)
+    {
+      this.baseAddress = new Uri(baseUrl.TrimEnd('/') + "/api/voice/");
     }
 
     private void Run()
