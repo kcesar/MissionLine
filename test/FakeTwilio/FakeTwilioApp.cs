@@ -128,7 +128,7 @@ namespace FakeTwilio
       NameValueCollection formData = new NameValueCollection();
       foreach (var prop in values.GetType().GetProperties())
       {
-        formData.Add(prop.Name, prop.GetValue(values).ToString());
+        formData.Add(prop.Name, prop.GetValue(values, null).ToString());
       }
 
       var address = new Uri(this.baseAddress, url);
