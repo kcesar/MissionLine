@@ -15,6 +15,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Website.UnitTests", "test\W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeTwilio", "test\FakeTwilio\FakeTwilio.csproj", "{DADC4F8D-3796-4BBE-981B-BBCBD3CAB341}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C4E35C56-870D-4D07-A634-89528B91A95C}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		testing.md = testing.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
