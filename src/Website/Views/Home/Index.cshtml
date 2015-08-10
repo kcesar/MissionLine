@@ -131,8 +131,8 @@
         <label>Opened Date: <input type="text" data-bind="value: opened.date" class="form-control" /></label>
         <label>Opened Time: <input type="text" data-bind="value: opened.time" class="form-control" /></label>
       </div>
-      <div data-bind="text: ko.toJSON($data)"></div>
-      <div data-bind="text: ko.toJSON(opened.isValid)"></div>
+      <div style="display:none" data-bind="text: ko.toJSON($data)"></div>
+      <div style="display:none" data-bind="text: ko.toJSON(opened.isValid)"></div>
     </div>
   </script>
   <script type="text/html" id="merge-dialog-template">
