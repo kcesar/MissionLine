@@ -298,7 +298,7 @@ namespace Kcesar.MissionLine.Website.Api
     [HttpPost]
     public async Task<TwilioResponse> StopRecording(TwilioRequest request)
     {
-      TwilioResponse response = null;
+      TwilioResponse response = new TwilioResponse();
       using (var db = dbFactory())
       {
         var call = db.Calls.Single(f => f.CallId == request.CallSid);
@@ -309,6 +309,8 @@ namespace Kcesar.MissionLine.Website.Api
         call.RecordingDuration = request.RecordingDuration;
         call.RecordingUrl = request.RecordingUrl;
         await db.SaveChangesAsync();
+
+        this.session.HasRecording = true;
 
         this.config.GetPushHub<CallsHub>().updatedCall(CallsController.GetCallEntry(call));
 

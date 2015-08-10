@@ -77,7 +77,7 @@ namespace Website.UnitTests
 
     private static XDocument AnswerCallCheckResult(VoiceTestContext context, string expectedText)
     {
-      var result = Task.Run(() => context.DoApiCall("Answer", null)).Result.ToXDocument();
+      var result = Task.Run(() => context.DoApiCall("Answer", (string)null)).Result.ToXDocument();
       var gather = result.Root.FirstNode as XElement;
 
       var menuAction = gather.Attribute("action").Value;
@@ -98,7 +98,7 @@ namespace Website.UnitTests
     {
       var context = VoiceTestContext.GetDefault<VoiceTestContext>();
 
-      var result = Task.Run(() => context.DoApiCall("Answer", null)).Result;
+      var result = Task.Run(() => context.DoApiCall("Answer", (string)null)).Result;
 
       Assert.AreEqual(1, context.Calls.Count(), "rows in call table");
       Assert.AreEqual(context.From, context.Calls.Single().Number, "stored phone number");
@@ -162,7 +162,7 @@ namespace Website.UnitTests
 
       context.SignIns.Add(new MemberSignIn { MemberId = context.Member.Id, TimeIn = DateTime.Now.AddMinutes(-5), Id = 5 });
 
-      var result = Task.Run(() => context.DoApiCall("Answer", null)).Result;
+      var result = Task.Run(() => context.DoApiCall("Answer", (string)null)).Result;
 
       Assert.IsNotNull((from e in result.ToXDocument().Descendants("Gather")
                         from a in e.Attributes()
@@ -200,6 +200,55 @@ namespace Website.UnitTests
       string firstOption = element.Descendants("Say").First().Value;
       Assert.True(firstOption.Contains("sign out"), firstOption + " contains text 'sign out'");
       Assert.True(firstOption.Contains(otherMember.Name), firstOption + " contains new member name");
+    }
+
+    private const string RecordMessageKey = "3";
+
+    [Test]
+    public void RecordInMenu()
+    {
+      var context = VoiceTestContext.GetDefault<VoiceTestContext>();
+
+      var result = Task.Run(() => context.DoApiCall("Answer")).Result;
+
+      Assert.IsTrue(result.ToString().Contains(string.Format(Speeches.PromptRecordMessageTemplate, RecordMessageKey)), "answer menu has record prompt");
+    }
+
+    [Test]
+    public void RecordMessagePrompt()
+    {
+      var context = VoiceTestContext.GetDefault<VoiceTestContext>();
+
+      var result = Task.Run(() => context.DoApiCall("Answer")).Result;
+
+      var nodes = Task.Run(() => context.DoApiCall("DoMenu", digits: RecordMessageKey)).Result.ToXDocument()
+                      .Root.Descendants().Cast<XElement>().ToArray();
+
+      Assert.AreEqual(Speeches.StartRecording, nodes[0].Value, "record prompt");
+
+      var recordNode = nodes[1];
+      Assert.AreEqual("Record", recordNode.Name.LocalName, "tag name");
+      Assert.AreEqual("http://localhost/api/voice/StopRecording", recordNode.Attribute("action").Value, "action value");
+    }
+
+    [Test]
+    public void FinishRecordMessage()
+    {
+      var context = VoiceTestContext.GetDefault<VoiceTestContext>();
+
+      string recordingUrl = "http://somelocation.tld/" + Guid.NewGuid().ToString();
+      int recordingDuration = 43;
+
+      var request = context.CreateRequest(null);
+      request.RecordingUrl = recordingUrl;
+      request.RecordingDuration = recordingDuration;
+
+      var result = Task.Run(() => context.DoApiCall("Answer")).Result;
+      
+      result = Task.Run(() => context.DoApiCall("StopRecording", request)).Result;
+
+      Assert.AreEqual(recordingDuration, context.Calls.Single().RecordingDuration, "duration");
+      Assert.AreEqual(recordingUrl, context.Calls.Single().RecordingUrl, "url");
     }
 
     [Test]

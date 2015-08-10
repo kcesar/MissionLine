@@ -51,9 +51,14 @@ namespace Website.UnitTests
 
     public string CallSid { get; private set; }
 
-    public async Task<TwilioResponse> DoApiCall(string action, string url = null, string digits = null, bool redirects = true)
+    public Task<TwilioResponse> DoApiCall(string action, string url = null, string digits = null, bool redirects = true)
     {
       var args = this.CreateRequest(digits);
+      return DoApiCall(action, args, url: url, redirects: redirects);
+    }
+
+    public async Task<TwilioResponse> DoApiCall(string action, TwilioRequest request, string url = null, bool redirects = true)
+    {
       url = url ?? "http://localhost/api/voice/" + action;
 
       var controller = new VoiceController(() => this.DBMock.Object, this.EventsServiceMock.Object, this.ConfigMock.Object, this.MembersMock.Object, new ConsoleLogger());
@@ -72,7 +77,7 @@ namespace Website.UnitTests
       Console.WriteLine("Posting to " + url);
 
       var method = typeof(VoiceController).GetMethod(action, new[] { typeof(TwilioRequest) });
-      var result = await (Task<TwilioResponse>)(method.Invoke(controller, new object[] { args }));
+      var result = await (Task<TwilioResponse>)(method.Invoke(controller, new object[] { request }));
 
       var first = result.ToXDocument().Root.FirstNode as XElement;
       if (redirects && first != null && first.Name == "Redirect")
