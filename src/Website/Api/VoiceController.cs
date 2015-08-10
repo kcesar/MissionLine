@@ -26,20 +26,6 @@ namespace Kcesar.MissionLine.Website.Api
     internal const string NextKey = "next";
     private readonly IMemberSource members;
 
-    [HttpGet]
-    public string Info()
-    {
-      string thisFile = new System.Uri(typeof(LogService).Assembly.CodeBase).LocalPath;
-      string configFile = Path.Combine(Path.GetDirectoryName(thisFile), "..", "log4net.config");
-      return configFile + ":" + File.Exists(configFile).ToString();
-    }
-
-    [HttpGet]
-    public void Throw()
-    {
-      throw new NotImplementedException("blah");
-    }
-
     /// <summary>
     /// 
     /// </summary>
