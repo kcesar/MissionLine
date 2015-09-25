@@ -27,7 +27,7 @@ namespace Kcesar.MissionLine.Website.Controllers
     [AllowAnonymous]
     public ActionResult Heartbeat()
     {
-      log.Info("Heartbeat");
+      log.Debug("Heartbeat");
       return Content("OK");
     }
   }
