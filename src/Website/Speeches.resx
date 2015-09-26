@@ -203,4 +203,7 @@
   <data name="TimeoutPrompt" xml:space="preserve">
     <value>Enter the number of minutes it will will take you to get home, then press pound.</value>
   </data>
+  <data name="ChangeEventTemplate" xml:space="preserve">
+    <value>Changed to {0}.</value>
+  </data>
 </root>

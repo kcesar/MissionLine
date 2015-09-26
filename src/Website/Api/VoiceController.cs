@@ -6,8 +6,8 @@ namespace Kcesar.MissionLine.Website.Api
   using System;
   using System.Collections.Generic;
   using System.Data.Entity;
-  using System.IO;
   using System.Linq;
+  using System.Text.RegularExpressions;
   using System.Threading.Tasks;
   using System.Web.Http;
   using Data;
@@ -107,6 +107,10 @@ namespace Kcesar.MissionLine.Website.Api
           response = await DoSignInOut(request);
         }
       }
+      else if (request.Digits == "2")
+      {
+        BuildSetEventMenu(response, string.Empty, Url.Content("~/api/voice/Menu"));
+      }
       else if (request.Digits == "3")
       {
         response.SayVoice(Speeches.StartRecording);
@@ -128,6 +132,66 @@ namespace Kcesar.MissionLine.Website.Api
         BeginMenu(response);
         await EndMenu(response);
       }
+
+      return LogResponse(response);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="evtIds"></param>
+    /// <param name="next"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public TwilioResponse SetEvent([FromUri]string evtIds, [FromUri] string next, TwilioRequest request)
+    {
+      var response = new TwilioResponse();
+      if (!Regex.IsMatch(evtIds, "^[\\.0-9]+$"))
+      {
+        log.ErrorFormat("Offered events in bad format: {0}", evtIds);
+        BuildSetEventMenu(response, Speeches.InvalidSelection, next);
+        return response;
+      }
+
+      var offeredEvents = evtIds.Split('.').Select(f => int.Parse(f)).ToArray();
+      int selected;
+      if (!int.TryParse(request.Digits, out selected))
+      {
+        log.ErrorFormat("Digits {0} are not an integer", request.Digits);
+        BuildSetEventMenu(response, Speeches.InvalidSelection, next);
+        return response;
+      }
+      if (selected < 1 || selected > offeredEvents.Length)
+      {
+        BuildSetEventMenu(response, Speeches.InvalidSelection, next);
+        return response;
+      }
+
+      session.EventId = offeredEvents[selected - 1];
+      response.Redirect((next ?? Url.Content("~/api/Voice/Menu")) + session.ToQueryString());
+
+      return LogResponse(response);
+    }
+
+
+    [HttpPost]
+    public async Task<TwilioResponse> SetSigninEvent(TwilioRequest request)
+    {
+      var response = new TwilioResponse();
+      using (var db = dbFactory())
+      {
+        var signin = await GetMembersLatestSignin(db, session.MemberId);
+        signin.EventId = session.EventId;
+
+        var name = CurrentEvents.Where(f => f.Id == session.EventId).Select(f => f.Name).SingleOrDefault();
+        response.SayVoice(Speeches.ChangeEventTemplate, name);
+
+        await db.SaveChangesAsync();
+        this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+      }
+
+      response.Redirect(Url.Content("~/api/Voice/Menu") + session.ToQueryString());
 
       return LogResponse(response);
     }

@@ -32,8 +32,6 @@ namespace Kcesar.MissionLine.Website.Api
     protected readonly ILog log;
     protected List<SarEvent> CurrentEvents { get; set; }
 
-    protected static Regex urlReplace = new Regex("^https?\\:", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
     protected bool EventWasChanged { get; set; }
 
     /// <summary>
@@ -94,7 +92,9 @@ namespace Kcesar.MissionLine.Website.Api
 
     protected string GetAction(string name, Dictionary<string, string> args = null, string controller = "voice")
     {
-      string result = this.Url.Content(string.Format("~/api/{0}/{1}", controller, name)) + this.session.ToQueryString(args);
+      var siteRoot = (config.GetConfig("SiteRoot") ?? Url.Content("~/")).TrimEnd('/');
+
+      string result = siteRoot + string.Format("/api/{0}/{1}", controller, name) + this.session.ToQueryString(args);
 
       System.Diagnostics.Debug.WriteLine("GetAction: " + result);
       return result;

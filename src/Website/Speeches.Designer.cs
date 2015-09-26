@@ -97,6 +97,15 @@ namespace Kcesar.MissionLine.Website {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Changed to {0}..
+        /// </summary>
+        internal static string ChangeEventTemplate {
+            get {
+                return ResourceManager.GetString("ChangeEventTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Current event is {0}.
         /// </summary>
         internal static string CurrentEventTemplate {
