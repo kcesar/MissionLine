@@ -58,7 +58,7 @@ namespace Kcesar.MissionLine.Website.Api
       IQueryable<SarEvent> query = db.Events;
       DateTime cutoff = DateTimeOffset.Now.AddDays(-2).ToOrgTime(config).ToLocalTime();
       query = query.Where(f => f.Closed == null || f.Closed > cutoff);
-      return db.Events.OrderByDescending(f => f.Opened);
+      return query.OrderByDescending(f => f.Opened);
     }
 
 
