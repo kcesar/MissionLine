@@ -136,6 +136,8 @@
       buttons: [{
         label: 'Save',
         action: function (dialogRef) {
+          var btn = this;
+          btn.disable().spin();
           $.ajax({ url: window.appRoot + 'api/events', method: 'POST', contentType: 'application/json', data: ko.toJSON(self.editingEvent) })
           .done(function (r) {
             if (r['errors'] && r['errors'].length > 0) {
@@ -146,6 +148,9 @@
             dialogRef.close();
           })
           .fail(function (err) { forms.handleServiceError(err, self.editingEvent); })
+          .always(function () {
+            btn.enable().stopSpin();
+          })
         }
       }, {
         label: 'Cancel',
@@ -267,6 +272,8 @@ var SignoutModel = function (roster, fromEvent) {
       buttons: [{
         label: 'Sign Out',
         action: function (dialogRef) {
+          var btn = this;
+          btn.disable().spin();
           $.ajax({
             url: window.appRoot + 'api/roster/' + self.id + '/signout?when=' + self.timeOut().format() + '&miles=' + self.miles() || '',
             method: 'POST',
@@ -287,6 +294,7 @@ var SignoutModel = function (roster, fromEvent) {
               forms.handleServiceError(err, self.editingEvent);
             }
           })
+          .always(function () { btn.enable().stopSpin(); })
         }
       },
       {
@@ -318,6 +326,8 @@ var MergeModel = function (fromEvent, events) {
       buttons: [{
         label: 'Merge',
         action: function (dialogRef) {
+          var btn = this;
+          btn.disable().spin();
           $.ajax({ url: window.appRoot + 'api/events/' + self.fromEvent.id + '/merge/' + self.targetEvent().id, method: 'POST', contentType: 'application/json' })
           .done(function (r) {
             if (r['errors'] && r['errors'].length > 0) {
@@ -328,6 +338,7 @@ var MergeModel = function (fromEvent, events) {
             dialogRef.close();
           })
           .fail(function (err) { forms.handleServiceError(err, self.editingEvent); })
+          .always(function () { btn.enable().stopSpin(); })
         }
       }, {
         label: 'Cancel',
