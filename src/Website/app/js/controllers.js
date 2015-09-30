@@ -1,4 +1,15 @@
-﻿var missionlineApp = angular.module('missionlineApp', ['angularModalService']);
+﻿var missionlineApp = angular.module('missionlineApp', ['angularModalService', 'ngAnimate']);
+
+missionlineApp.animation('.animate-card', function () {
+  return {
+    enter: function (element, done) {
+      element.css({
+        position: 'relative',
+      });
+      element.hide().slideDown(done)
+    }
+  };
+});
 
 var EventModel = function (name, mmnt) {
   mmnt = mmnt || moment();
@@ -14,26 +25,42 @@ var EventModel = function (name, mmnt) {
 };
 EventModel.fromServer = function (data) {
   if (data.opened) { data.opened = moment(data.opened); }
+  data.roster = data.roster || [];
   return data;
 }
 
 //==============================================
-missionlineApp.service('eventsService', ['$sce', '$http', '$q', 'pushService', function ($sce, $http, $q, pushService) {
+missionlineApp.service('eventsService', ['$sce', '$http', '$q', '$rootScope', 'pushService',
+  function ($sce, $http, $q, $rootScope, pushService) {
   var self = this;
   $.extend(this, {
     list: [
       {
         id: 1, name: 'Mailbox missing hiker', roster: [
-          { name: 'Matthew', timeIn: moment(new Date(2015, 09, 28, 5, 46)) },
-          { name: 'Amber', timeIn: moment(new Date(2015, 09, 28, 5, 47)), isMember: true, memberId: 'asdfasdf' }
-        ], opened: moment(new Date(2015, 09, 27, 0))
+          { name: 'Matthew', timeIn: moment(new Date(2015, 09-1, 28, 5, 46)) },
+          { name: 'Amber', timeIn: moment(new Date(2015, 09-1, 28, 5, 47)), isMember: true, memberId: 'asdfasdf' }
+        ], opened: moment(new Date(2015, 09-1, 27, 8))
       },
-      { id: 2, 'name': 'Something else', roster: [], opened: moment(new Date(2015, 09, 26, 20, 45)) }
+      { id: 2, 'name': 'Something else', roster: [], opened: moment(new Date(2015, 09-1, 26, 20, 45)) },
+      { id: 3, 'name': 'closed', roster: [], opened: moment(new Date(2015, 09-1,27)), closed: moment(new Date(2015,09-1,28)) }
     ],
     calls: [
         { number: '206-776-2036', timeText: 'yesterday', name: 'Matt', recording: $sce.trustAsResourceUrl('//example.com/foo.mp3') },
         { number: '206-776-0055', timeText: 'yesterday', name: 'Amber', recording: $sce.trustAsResourceUrl('//example.com/foo.mp3') }
     ],
+    load: function() {
+      self.list.length = 0;
+      self.list.loading = true;
+      $http({
+        method: 'GET',
+        url: window.appRoot + 'api/events',
+      }).success(function (data) {
+        $.each(data, function (idx, event) {
+          self.list.push(EventModel.fromServer(event));
+        });
+        delete self.list.loading;
+      })
+    },
     create: function (eventModel) {
       var deferred = $q.defer();
       $http({
@@ -51,7 +78,9 @@ missionlineApp.service('eventsService', ['$sce', '$http', '$q', 'pushService', f
     },
   });
   pushService.listenTo('updatedEvent', function (data) {
+    console.log(data);
     self.list.push(EventModel.fromServer(data));
+    $rootScope.$digest();
   });
   pushService.listenTo('removedEvent', function (data) {
     debugger;
@@ -156,9 +185,16 @@ missionlineApp.controller('IndexCtrl', ['$scope', '$q', 'ModalService', 'eventsS
     rosterSort: 'timeOut',
     rosterSortDesc: true,
     events: eventsService.list,
+    eventsSortPredicate: function (event) {
+      var v = -event.opened.unix() + (event.closed ? 100000000 : 0);
+      console.log({ n: event.name, t: event.opened.format(), v: v });
+      return v;
+    },
     calls: eventsService.calls,
     createEvent: this.createHandler
   })
+
+  eventsService.load();
 }]);
 
 //==============================================

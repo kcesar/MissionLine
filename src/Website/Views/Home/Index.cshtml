@@ -16,12 +16,12 @@
       </div>
       <div ng-show="showRoster">
         <roster ng-show="unassignedEvent.roster.length" event="unassignedEvent" sort="rosterSort" sort-dir="rosterSortDesc"></roster>
-        <div ng-repeat="event in events">
+        <div ng-repeat="event in events | orderBy:eventsSortPredicate" class="animate-card">
             <roster event="event" sort="rosterSort" sort-dir="rosterSortDesc"></roster>
         </div>
       </div>
       <div ng-if="showRoster && events.length == 0" ng-cloak class="panel panel-default">
-        <div class="panel-body">No recent events</div>
+        <div class="panel-body">{{events.loading ? "Loading ..." : "No recent events"}}</div>
       </div>
     </div>
   </div>
@@ -74,7 +74,7 @@
           <li ng-click="rosterCtrl.startMerge()"><button type="button" class="btn-link"><span class="fa fa-fw fa-code-fork fa-rotate-180"></span> Merge into ...</button></li>
         </ul>
       </div>
-      Roster :: <span>{{event.name}}</span>
+      Roster :: {{event.name}}
     </div>
     <table class="table table-striped table-condensed">
       <thead>

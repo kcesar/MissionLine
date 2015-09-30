@@ -19,16 +19,13 @@ namespace Kcesar.MissionLine.Website
                   "~/Scripts/respond.js",
                   "~/Scripts/moment.js",
                   "~/Scripts/angular.js",
+                  "~/Scripts/angular-animate.js",
                   "~/Scripts/angular-modal-service.js",
-            //      "~/Scripts/knockout-{version}.js",
-            //      "~/Scripts/site/ko-bindings.js",
                   "~/Scripts/jquery.signalR-{version}.js",
                   "~/Scripts/jquery.toaster.js"
-           //       "~/Scripts/site/forms.js"
            ));
 
       bundles.Add(new ScriptBundle("~/bundles/page/index").Include(
-              //    "~/Scripts/site/page/index.js"));
               "~/app/js/controllers.js"));
 
       bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
