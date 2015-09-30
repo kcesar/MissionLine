@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en" @(ViewBag.NgApp != null ? new HtmlString("ng-app=\"" + ViewBag.NgApp + "\"") : new HtmlString(string.Empty))>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

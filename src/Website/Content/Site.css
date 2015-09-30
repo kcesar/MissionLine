@@ -69,3 +69,7 @@ footer {
   margin-top: 2em;
   text-align: center;
 }
+
+[ng-cloak] {
+  display: none !important;
+}

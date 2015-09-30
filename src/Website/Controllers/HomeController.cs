@@ -20,6 +20,7 @@ namespace Kcesar.MissionLine.Website.Controllers
 
     public ActionResult Index()
     {
+      ViewBag.NgApp = "missionlineApp";
       ViewBag.LinkTemplate = this.config.GetConfig("memberLinkTemplate");
       return View();
     }
