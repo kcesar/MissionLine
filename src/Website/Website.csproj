@@ -340,7 +340,7 @@
     <Compile Include="TwilioExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="app\js\controllers.js" />
+    <Content Include="Scripts\site\animations.js" />
     <Content Include="Content\bootstrap-dialog.css" />
     <Content Include="Content\bootstrap-dialog.min.css" />
     <Content Include="Content\bootstrap-select.css" />
@@ -451,9 +451,19 @@
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\site\directives\roster.js" />
+    <Content Include="Scripts\site\directives\what-scope.js" />
+    <Content Include="Scripts\site\filters\event-time.js" />
+    <Content Include="Scripts\site\filters\except-id.js" />
     <Content Include="Scripts\site\forms.js" />
     <Content Include="Scripts\site\ko-bindings.js" />
+    <Content Include="Scripts\site\missionline-app.js" />
+    <Content Include="Scripts\site\models\event-model.js" />
     <Content Include="Scripts\site\page\index.js" />
+    <Content Include="Scripts\site\services\events-service.js" />
+    <Content Include="Scripts\site\services\modals-service.js" />
+    <Content Include="Scripts\site\services\push-service.js" />
+    <Content Include="Scripts\site\services\toaster-service.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

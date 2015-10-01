@@ -25,8 +25,14 @@ namespace Kcesar.MissionLine.Website
                   "~/Scripts/jquery.toaster.js"
            ));
 
-      bundles.Add(new ScriptBundle("~/bundles/page/index").Include(
-              "~/app/js/controllers.js"));
+      bundles.Add(new ScriptBundle("~/bundles/app").Include(
+        "~/Scripts/site/missionline-app.js",
+        "~/Scripts/site/animations.js",
+        "~/Scripts/site/models/*.js",
+        "~/Scripts/site/filters/*.js",
+        "~/Scripts/site/directives/*.js",
+        "~/Scripts/site/services/*-service.js"
+        ));
 
       bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                   "~/Scripts/jquery.validate*"));

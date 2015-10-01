@@ -209,8 +209,28 @@
 </script>
 
 @section scripts {
-  @Scripts.Render("~/bundles/page/index")
+@Scripts.Render("~/bundles/app")
 <script type="text/javascript">
-    window.hasHubs = true;
+  angular.module('missionlineApp').controller('IndexCtrl', ['$scope', 'EditModalService', 'eventsService', function ($scope, EditModalService, eventsService) {
+    $.extend($scope, {
+      showRoster: true,
+      showCalls: false,
+      unassignedEvent: { 'name': 'Unassigned', roster: [{ name: 'Matt' }], isUnassigned: true },
+      callsSort: 'time',
+      callsSortDesc: true,
+      rosterSort: 'timeOut',
+      rosterSortDesc: true,
+      events: eventsService.list,
+      eventsSortPredicate: function (event) {
+        return -event.opened.unix() + (event.closed ? 100000000 : 0);
+      },
+      calls: eventsService.calls,
+      createEvent: function () { EditModalService.edit('Create New Event', new EventModel(), eventsService.save); }
+    })
+
+    eventsService.load();
+  }]);
+
+  window.hasHubs = true;
 </script>
 }
