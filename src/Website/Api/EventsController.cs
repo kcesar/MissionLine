@@ -215,17 +215,23 @@ namespace Kcesar.MissionLine.Website.Api
     // POST api/<controller>
     public async Task<SubmitResult<EventEntry>> Post(EventEntry value)
     {
-      return await CreateEvent(value, dbFactory, config);
+      return await SaveEvent(value, true, dbFactory, config);
+    }
+
+    public async Task<SubmitResult<EventEntry>> Put(EventEntry value)
+    {
+      return await SaveEvent(value, false, dbFactory, config);
     }
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="value"></param>
+    /// <param name="isNew"></param>
     /// <param name="dbFactory"></param>
     /// <param name="config"></param>
     /// <returns></returns>
-    internal static async Task<SubmitResult<EventEntry>> CreateEvent(EventEntry value, Func<IMissionLineDbContext> dbFactory, IConfigSource config)
+    internal static async Task<SubmitResult<EventEntry>> SaveEvent(EventEntry value, bool isNew, Func<IMissionLineDbContext> dbFactory, IConfigSource config)
     {
       var result = new SubmitResult<EventEntry>();
       if (string.IsNullOrWhiteSpace(value.Name))
@@ -240,14 +246,26 @@ namespace Kcesar.MissionLine.Website.Api
 
       if (result.Errors.Count == 0)
       {
-        var evt = new SarEvent
-        {
-          Name = value.Name,
-          Opened = localTime
-        };
         using (var db = dbFactory())
         {
-          db.Events.Add(evt);
+          SarEvent evt;
+          if (isNew)
+          {
+            evt = new SarEvent
+            {
+              Name = value.Name,
+              Opened = localTime
+            };
+            db.Events.Add(evt);
+          }
+          else
+          {
+            evt = db.Events.Single(f => f.Id == value.Id);
+          }
+
+          if (value.Name != evt.Name) { evt.Name = value.Name; }
+          if (localTime != evt.Opened) { evt.Opened = localTime; }
+
           await db.SaveChangesAsync();
           result.Data = new[] { evt }.AsQueryable().Select(proj).Single();
           config.GetPushHub<CallsHub>().updatedEvent(result.Data);

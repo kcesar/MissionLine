@@ -65,6 +65,19 @@ li button.btn-link {
   font-weight: normal;
 }
 
+.has-error .help-block div:before {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  content: "\f06a\00a0";
+}
+
+
+.inline-form-group {
+  vertical-align: top;
+  display: inline-block;
+  margin-right: 1em;
+}
+
 footer {
   margin-top: 2em;
   text-align: center;

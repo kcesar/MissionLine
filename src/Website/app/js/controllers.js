@@ -11,23 +11,27 @@ missionlineApp.animation('.animate-card', function () {
   };
 });
 
-var EventModel = function (name, mmnt) {
-  mmnt = mmnt || moment();
+var EventModel = function (data) {
+  $.extend(this, {
+    opened: new Date(),
+    roster: []
+  }, data);
+  this.opened = moment(this.opened);
+
   var self = this;
   $.extend(this, {
-    name: name,
-    datePart: mmnt.format("YYYY-MM-DD"),
-    timePart: mmnt.format("HH:mm"),
+    datePart: this.opened.format("YYYY-MM-DD"),
+    timePart: this.opened.format("HH:mm"),
+    jsOpened: this.opened.toDate(),
     getData: function () {
-      return { name: self.name, opened: moment() }
+      return {
+        id: self.id,
+        name: self.name,
+        opened: moment(self.datePart + 'T' + ("00:00".substring(0, 5 - self.timePart.length) + self.timePart))
+      }
     }
   })
 };
-EventModel.fromServer = function (data) {
-  if (data.opened) { data.opened = moment(data.opened); }
-  data.roster = data.roster || [];
-  return data;
-}
 
 //==============================================
 missionlineApp.service('eventsService', ['$sce', '$http', '$q', '$rootScope', 'pushService',
@@ -56,15 +60,15 @@ missionlineApp.service('eventsService', ['$sce', '$http', '$q', '$rootScope', 'p
         url: window.appRoot + 'api/events',
       }).success(function (data) {
         $.each(data, function (idx, event) {
-          self.list.push(EventModel.fromServer(event));
+          self.list.push(new EventModel(event));
         });
         delete self.list.loading;
       })
     },
-    create: function (eventModel) {
+    save: function(eventModel) {
       var deferred = $q.defer();
       $http({
-        method: 'POST',
+        method: eventModel.id ? 'PUT' : 'POST',
         url: window.appRoot + 'api/events',
         data: eventModel.getData(),
         headers: { 'Content-Type': 'application/json' }
@@ -75,11 +79,20 @@ missionlineApp.service('eventsService', ['$sce', '$http', '$q', '$rootScope', 'p
         deferred.resolve();
       });
       return deferred.promise;
-    },
+    }
   });
   pushService.listenTo('updatedEvent', function (data) {
     console.log(data);
-    self.list.push(EventModel.fromServer(data));
+    var event = new EventModel(data);
+    var found = false;
+    for (var i = 0; i < self.list.length; i++) {
+      if (self.list[i].id == data.id) {
+        self.list[i] = event;
+        found = true;
+        break;
+      }
+    }
+    if (!found) { self.list.push(event); }
     $rootScope.$digest();
   });
   pushService.listenTo('removedEvent', function (data) {
@@ -117,7 +130,7 @@ missionlineApp.service('pushService', ['toasterService', function (toaster) {
 //==============================================
 missionlineApp.controller('ModalController', [
   '$scope', '$element', '$q', 'title', 'model', 'save', 'close',
-    function ($scope, $element, $q, title, model, save, close) {
+    function ($scope, $element, $q, title, model, save,  close) {
       var self = this;
 
       $scope.close = function () {
@@ -130,6 +143,16 @@ missionlineApp.controller('ModalController', [
         buttons: [{
           label: 'Save',
           action: function (dialogRef) {
+            var invalid = false;
+            $element.find('form[name]').addBack('form[name]').each(function (idx, item) {
+              var ngForm = $scope[item.getAttribute('name')];
+              ngForm.$setSubmitted();
+              invalid = invalid || ngForm.$invalid;
+            })
+            if (invalid) {
+              $scope.$digest();
+              return;
+            }
             var btn = this;
             btn.disable().spin();
             save(model)
@@ -150,32 +173,32 @@ missionlineApp.controller('ModalController', [
       self.open = bootstrapDialog.open.bind(bootstrapDialog);
 
       $scope.model = model;
+      $scope.isInvalid = function (form, name) {
+        return form[name].$invalid && (form[name].$dirty || form.$submitted);
+      }
     }]);
 
-//==============================================
-missionlineApp.controller('IndexCtrl', ['$scope', '$q', 'ModalService', 'eventsService', function ($scope, $q, ModalService, eventsService) {
-  this.createHandler = function () {
+missionlineApp.service('EditModalService', ['ModalService', function (ModalService) {
+  this.edit = function (title, model, saveAction) {
     ModalService.showModal({
       templateUrl: "editDialogTemplate.html",
       controller: "ModalController",
       inputs: {
-        title: 'Create New Event',
-        model: new EventModel(),
+        title: title,
+        model: model,
         save: function (model) {
           console.log(model);
-          return eventsService.create(model);
-          var saveDeferred = $q.defer();
-          if (model.name == "fred") {
-            saveDeferred.reject();
-          } else { saveDeferred.resolve(); }
-          return saveDeferred.promise;
+          return saveAction(model);
         }
       }
     }).then(function (modal) {
       modal.controller.open();
     });
   }
+}]);
 
+//==============================================
+missionlineApp.controller('IndexCtrl', ['$scope', 'EditModalService', 'eventsService', function ($scope, EditModalService, eventsService) {
   $.extend($scope, {
     showRoster: true,
     showCalls: false,
@@ -186,19 +209,17 @@ missionlineApp.controller('IndexCtrl', ['$scope', '$q', 'ModalService', 'eventsS
     rosterSortDesc: true,
     events: eventsService.list,
     eventsSortPredicate: function (event) {
-      var v = -event.opened.unix() + (event.closed ? 100000000 : 0);
-      console.log({ n: event.name, t: event.opened.format(), v: v });
-      return v;
+      return -event.opened.unix() + (event.closed ? 100000000 : 0);
     },
     calls: eventsService.calls,
-    createEvent: this.createHandler
+    createEvent: function () { EditModalService.edit('Create New Event', new EventModel(), eventsService.save); }
   })
 
   eventsService.load();
 }]);
 
 //==============================================
-missionlineApp.directive('roster', ['eventsService', function (eventsService) {
+missionlineApp.directive('roster', ['eventsService', 'EditModalService', function (eventsService, EditModalService) {
   return {
     restrict: 'E',
     templateUrl: 'roster.html',
@@ -220,9 +241,8 @@ missionlineApp.directive('roster', ['eventsService', function (eventsService) {
       this.undoSignout = function (responder) {
         console.log('should undo signout for ' + responder.name);
       };
-      this.startEdit = function () {
-        console.log('start edit');
-      };
+      this.startEdit = function () { EditModalService.edit('Edit Event', new EventModel(this.event.getData()), eventsService.save); };
+        
       this.startClose = function () {
         console.log('start close');
       };
