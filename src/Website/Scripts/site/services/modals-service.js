@@ -1,6 +1,6 @@
 ﻿angular.module('missionlineApp').controller('ModalController', [
-  '$scope', '$element', '$q', 'title', 'model', 'save', 'close',
-    function ($scope, $element, $q, title, model, save, close) {
+  '$scope', '$element', '$q', 'title', 'model', 'save', 'saveText', 'close',
+    function ($scope, $element, $q, title, model, save, saveText, close) {
       var self = this;
 
       $scope.close = function () {
@@ -11,7 +11,7 @@
         title: title,
         message: $element,
         buttons: [{
-          label: 'Save',
+          label: saveText || 'Save',
           action: function (dialogRef) {
             var invalid = false;
             $element.find('form[name]').addBack('form[name]').each(function (idx, item) {
@@ -49,9 +49,9 @@
     }]);
 
 angular.module('missionlineApp').service('EditModalService', ['ModalService', function (ModalService) {
-  this.edit = function (title, model, saveAction) {
+  this.edit = function (template, title, model, saveAction, saveText) {
     ModalService.showModal({
-      templateUrl: "editDialogTemplate.html",
+      templateUrl: template,
       controller: "ModalController",
       inputs: {
         title: title,
@@ -59,7 +59,8 @@ angular.module('missionlineApp').service('EditModalService', ['ModalService', fu
         save: function (model) {
           console.log(model);
           return saveAction(model);
-        }
+        },
+        saveText: saveText
       }
     }).then(function (modal) {
       modal.controller.open();

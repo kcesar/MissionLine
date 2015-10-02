@@ -2,16 +2,7 @@
   function ($sce, $http, $q, $rootScope, pushService) {
     var self = this;
     $.extend(this, {
-      list: [
-        {
-          id: 1, name: 'Mailbox missing hiker', roster: [
-            { name: 'Matthew', timeIn: moment(new Date(2015, 09 - 1, 28, 5, 46)) },
-            { name: 'Amber', timeIn: moment(new Date(2015, 09 - 1, 28, 5, 47)), isMember: true, memberId: 'asdfasdf' }
-          ], opened: moment(new Date(2015, 09 - 1, 27, 8))
-        },
-        { id: 2, 'name': 'Something else', roster: [], opened: moment(new Date(2015, 09 - 1, 26, 20, 45)) },
-        { id: 3, 'name': 'closed', roster: [], opened: moment(new Date(2015, 09 - 1, 27)), closed: moment(new Date(2015, 09 - 1, 28)) }
-      ],
+      list: [],
       calls: [
           { number: '206-776-2036', timeText: 'yesterday', name: 'Matt', recording: $sce.trustAsResourceUrl('//example.com/foo.mp3') },
           { number: '206-776-0055', timeText: 'yesterday', name: 'Amber', recording: $sce.trustAsResourceUrl('//example.com/foo.mp3') }
@@ -37,11 +28,37 @@
           data: eventModel.getData(),
           headers: { 'Content-Type': 'application/json' }
         }).success(function (data) {
-          deferred.resolve();
+          deferred.resolve(data);
         })
         .error(function (response) {
-          deferred.resolve();
+          deferred.reject(response);
         });
+        return deferred.promise;
+      },
+      _updateCloseTime: function (eventModel, newClosed) {
+        var deferred = $q.defer();
+        if ($.grep(eventModel.roster, function (item) { return item.timeOut }, true).length > 0) {
+          deferred.reject("Can\t close event until everyone is signed out");
+        }
+        var shadow = new EventModel(eventModel.getData());
+        shadow.closed = newClosed;
+        self.save(shadow)
+        .then(
+          function (result) { deferred.resolve(result) },
+          function (error) { deferred.reject(result); }
+        );
+        return deferred.promise;
+      },
+      close: function (eventModel) { return self._updateCloseTime(eventModel, moment()); },
+      reopen: function (eventModel) { return self._updateCloseTime(eventModel, null); },
+      merge: function (mergeModel) {
+        var deferred = $q.defer();
+        $http({
+          method: 'POST',
+          url: window.appRoot + 'api/events/' + mergeModel.from.id + '/merge/' + mergeModel.into.id
+        })
+        .success(function (data) { deferred.resolve(data); })
+        .error(function (response) { deferred.reject(response); })
         return deferred.promise;
       }
     });
@@ -60,6 +77,11 @@
       $rootScope.$digest();
     });
     pushService.listenTo('removedEvent', function (data) {
-      debugger;
+      var index = -1;
+      $.each(self.list, function (idx, item) {
+        if (item.id == data.id) { index = idx; }
+        return index === -1;
+      })
+      self.list.splice(index, 1);
     })
   }]);
