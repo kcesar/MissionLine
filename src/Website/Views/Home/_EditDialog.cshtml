@@ -1,0 +1,25 @@
+﻿<script type="text/ng-template" id="editDialog.html">
+  <form name="eventForm">
+    <div class="form-group" ng-class="{ 'has-error': isInvalid(eventForm, 'name')}">
+      <label for="name" class="control-label">Title: </label>
+      <input name="name" type="text" ng-model="model.name" class="form-control" required />
+      <div class="help-block" ng-if="isInvalid(eventForm, 'name')">
+        <div ng-if="eventForm.name.$error.required">Event title is required.</div>
+      </div>
+    </div>
+    <div class="form-group inline-form-group" ng-class="{ 'has-error': isInvalid(eventForm, 'date')}">
+      <label for="date" class="control-label">Opened Date:</label>
+      <input name="date" type="{{Modernizr.touch?'date':'text'}}" ng-attr-pattern="{{Modernizr.touch?null:'^\\d{4}-\\d{2}-\\d{2}$'}}" ng-model="model.datePart" class="form-control" /></label>
+      <div class="help-block" ng-if="isInvalid(eventForm, 'date')">
+        <div ng-if="eventForm.date.$error.pattern">Must be in form YYYY-MM-DD.</div>
+      </div>
+    </div>
+    <div class="form-group inline-form-group" ng-class="{ 'has-error': isInvalid(eventForm, 'time')}">
+      <label for="time" class="control-label">Opened Time:</label>
+      <input name="time" type="{{Modernizr.touch?'time':'text'}}" ng-model="model.timePart" ng-attr-pattern="{{Modernizr.touch?null:'^[012]?\\d:[0-5]\\d$'}}" class="form-control" />
+      <div class="help-block" ng-if="isInvalid(eventForm, 'time')">
+        <div ng-if="eventForm.time.$error.pattern">Must be in form HH:MM.</div>
+      </div>
+    </div>
+  </form>
+</script>

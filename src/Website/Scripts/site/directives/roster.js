@@ -23,7 +23,7 @@
         undoSignout: function (responder) {
           console.log('should undo signout for ' + responder.name);
         },
-        startEdit: function () { EditModalService.edit('editDialogTemplate.html', 'Edit Event', new EventModel(this.event.getData()), eventsService.save); },
+        startEdit: function () { EditModalService.edit('editDialog.html', 'Edit Event', new EventModel(this.event.getData()), eventsService.save); },
         startClose: function () {
           eventsService.close(this.event)
             .catch(function (error) { toasterService.toast('Error', 'danger', error); });
@@ -33,7 +33,7 @@
             .catch(function (error) { toasterService.toast('Error', 'danger', error); })
         },
         startMerge: function (otherEvent) {
-          EditModalService.edit('mergeDialogTemplate.html', 'Merge Event', { from: this.event, available: eventsService.list, into: null, eventOrderBy: this.eventOrderBy }, eventsService.merge, 'Merge');
+          EditModalService.edit('mergeDialog.html', 'Merge Event', { from: this.event, available: eventsService.list, into: null, eventOrderBy: this.eventOrderBy }, eventsService.merge, 'Merge');
         }
       })
     }]

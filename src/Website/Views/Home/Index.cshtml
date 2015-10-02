@@ -56,125 +56,10 @@
   </div>
 </div>
 
-
-<script type="text/ng-template" id="roster.html">
-  <div class="panel" ng-class="{'panel-warning': event.isUnassigned, 'panel-default': event.closed, 'panel-primary': !event.closed && !event.isUnassigned}">
-    <div class="panel-heading">
-      <span class="fa fa-ban" ng-if="event.isUnassigned"></span>
-      <div class="btn-group" ng-if="!event.isUnassigned">
-        <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-          <span class="fa fa-fw" ng-class="{'fa-ban': event.closed, 'fa-bullhorn': !event.closed }"></span> <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-          <li ng-click="rosterCtrl.startEdit()"><button type="button" class="btn-link"><span class="fa fa-fw fa-edit"></span> Edit ...</button></li>
-          <li ng-click="rosterCtrl.startClose()" ng-if="!event.closed"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Close ...</button></li>
-          <li ng-if="event.closed" ng-click="rosterCtrl.reopen()"><button type="button" class="btn-link"><span class="fa fa-fw fa-bullhorn"></span> Reopen</button></li>
-          <li ng-click="rosterCtrl.startMerge()"><button type="button" class="btn-link"><span class="fa fa-fw fa-code-fork fa-rotate-180"></span> Merge into ...</button></li>
-        </ul>
-      </div>
-      Roster :: {{event.name}}
-    </div>
-    <table class="table table-striped table-condensed">
-      <thead>
-        <tr>
-          <th style="width:3%"></th>
-          <th style="width:15%" ng-click="sort='timeIn'; sortDesc=!sortDesc">Time In</th>
-          <th style="width:40%" ng-click="sort='name'; sortDesc=!sortDesc">Name</th>
-          <th style="width:15%" ng-click="sort='timeOutSort'; sortDesc=!sortDesc">Time Out</th>
-          <th style="width:12%" ng-click="sort='hours'; sortDesc=!sortDesc" class="text-right hidden-xs">Hours</th>
-          <th style="width:11%" ng-click="sort='miles'; sortDesc=!sortDesc" class="text-right hidden-xs">Miles</th>
-          <th style="width:4%"></th>
-        </tr>
-      </thead>
-      <tbody ng-if="event.roster.length" ng-repeat="responder in event.roster | orderBy:sort:sortDesc">
-        <tr>
-          <td class="roster" ng-class="responder.state"></td>
-          <td>{{responder.timeIn | eventTime : event.opened}}</td>
-          <td><strong ng-if="!responder.isMember">{{responder.name}}</strong><strong ng-if="responder.isMember"><a ng-href="{{'@(ViewBag.LinkTemplate)'.replace('{0}', responder.memberId)}}">{{responder.name}}</a></strong></td>
-          <td>{{responder.timeOut | eventTime : event.opened}}</td>
-          <td class="text-right hidden-xs">{{responder.hours}}</td>
-          <td class="text-right hidden-xs">{{responder.miles}}</td>
-          <td>
-            <div class="btn-group">
-              <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                <span class="fa fa-fw fa-bars"></span> <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" role="menu">
-                <li ng-if="!responder.timeOut" ng-click="rosterCtrl.signout(responder)"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Sign Out ...</button></li>
-                <li ng-if="responder.timeOut" ng-click="rosterCtrl.undoSignout(responder)"><button type="button" class="btn-link"><span class="fa fa-fw fa-bullhorn"></span> Undo Sign Out</button></li>
-                <li ng-repeat="other in rosterCtrl.events | exceptId:event" ng-click="rosterCtrl.moveToEvent(responder, other)"><button type="button" class="btn-link"><span class="fa fa-fw fa-share-square-o"></span> Move to {{other.name}}</button></li>
-              </ul>
-            </div>
-
-          </td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr><th></th><th colspan="6">{{event.roster.length}} responders<span ng-if="!event.isUnassigned" style="float:right;font-weight:normal">Opened {{event.opened.fromNow()}}</span></th></tr>
-      </tfoot>
-    </table>
-  </div>
-</script>
-
-
-<script type="text/ng-template" id="editDialogTemplate.html">
-  <form name="eventForm">
-    <div class="form-group" ng-class="{ 'has-error': isInvalid(eventForm, 'name')}">
-      <label for="name" class="control-label">Title: </label>
-      <input name="name" type="text" ng-model="model.name" class="form-control" required />
-      <div class="help-block" ng-if="isInvalid(eventForm, 'name')">
-        <div ng-if="eventForm.name.$error.required">Event title is required.</div>
-      </div>
-    </div>
-    <div class="form-group inline-form-group" ng-class="{ 'has-error': isInvalid(eventForm, 'date')}">
-      <label for="date" class="control-label">Opened Date:</label>
-      <input name="date" type="{{Modernizr.touch?'date':'text'}}" ng-attr-pattern="{{Modernizr.touch?null:'^\\d{4}-\\d{2}-\\d{2}$'}}" ng-model="model.datePart" class="form-control"/></label>
-      <div class="help-block" ng-if="isInvalid(eventForm, 'date')">
-        <div ng-if="eventForm.date.$error.pattern">Must be in form YYYY-MM-DD.</div>
-      </div>
-      </div>
-    <div class="form-group inline-form-group" ng-class="{ 'has-error': isInvalid(eventForm, 'time')}">
-      <label for="time" class="control-label">Opened Time:</label>
-      <input name="time" type="{{Modernizr.touch?'time':'text'}}" ng-model="model.timePart" ng-attr-pattern="{{Modernizr.touch?null:'^[012]?\\d:[0-5]\\d$'}}" class="form-control" />
-      <div class="help-block" ng-if="isInvalid(eventForm, 'time')">
-        <div ng-if="eventForm.time.$error.pattern">Must be in form HH:MM.</div>
-      </div>
-    </div>
-  </form>
-</script>
-
-<script type="text/ng-template" id="mergeDialogTemplate.html">
-  <form name="mergeForm">
-    <p>This form will allow you to merge event &quot;<strong>{{model.from.name}}</strong>&quot; into another existing event.</p>
-    <div class="form-inline">
-      <div class="form-group" ng-class="{ 'has-error': isInvalid(mergeForm, 'into')}">
-        <label for="into" class="control-label">Merge Into: </label>
-        <select name="into" class="form-control" ng-model="model.into" required="required"
-                ng-options="item.name disable when item.id == model.from.id for item in model.available | orderBy:model.eventOrderBy">
-          <option value="">-- Select an event --</option>
-        </select>
-        <div class="help-block" style="display:inline-block" ng-if="isInvalid(mergeForm, 'into')">
-          <div ng-if="mergeForm.into.$error.required">Required.</div>
-        </div>
-      </div>
-    </div>
-  </form>
-</script>
-
-<script type="text/html" id="signout-template">
-  <p>Sign out <span data-bind="text: rosterName"></span> from <span data-bind="text: eventName"></span></p>
-  <div>
-    <div class="form-group">
-      <label>Date: <input type="text" data-bind="value: timeOut.date" class="form-control" /></label>
-    </div>
-    <div class="form-group">
-      <label>Time: <input type="text" data-bind="value: timeOut.time" class="form-control" /></label>
-    </div>
-    <div class="form-group">
-      <label>Miles: <input type="text" data-bind="value: miles" class="form-control" /></label>
-    </div>
-  </div>
-</script>
+@RenderPage("_Roster.cshtml")
+@RenderPage("_EditDialog.cshtml")
+@RenderPage("_MergeDialog.cshtml")
+@RenderPage("_SignoutDialog.cshtml")
 
 @section scripts {
 @Scripts.Render("~/bundles/app")
@@ -193,7 +78,7 @@
         return -event.opened.unix() + (event.closed ? 100000000 : 0);
       },
       calls: eventsService.calls,
-      createEvent: function () { EditModalService.edit('editDialogTemplate.html', 'Create New Event', new EventModel(), eventsService.save); }
+      createEvent: function () { EditModalService.edit('editDialog.html', 'Create New Event', new EventModel(), eventsService.save); }
     })
 
     eventsService.load();

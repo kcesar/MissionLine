@@ -1,0 +1,58 @@
+﻿<script type="text/ng-template" id="roster.html">
+  <div class="panel" ng-class="{'panel-warning': event.isUnassigned, 'panel-default': event.closed, 'panel-primary': !event.closed && !event.isUnassigned}">
+    <div class="panel-heading">
+      <span class="fa fa-ban" ng-if="event.isUnassigned"></span>
+      <div class="btn-group" ng-if="!event.isUnassigned">
+        <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+          <span class="fa fa-fw" ng-class="{'fa-ban': event.closed, 'fa-bullhorn': !event.closed }"></span> <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li ng-click="rosterCtrl.startEdit()"><button type="button" class="btn-link"><span class="fa fa-fw fa-edit"></span> Edit ...</button></li>
+          <li ng-click="rosterCtrl.startClose()" ng-if="!event.closed"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Close ...</button></li>
+          <li ng-if="event.closed" ng-click="rosterCtrl.reopen()"><button type="button" class="btn-link"><span class="fa fa-fw fa-bullhorn"></span> Reopen</button></li>
+          <li ng-click="rosterCtrl.startMerge()"><button type="button" class="btn-link"><span class="fa fa-fw fa-code-fork fa-rotate-180"></span> Merge into ...</button></li>
+        </ul>
+      </div>
+      Roster :: {{event.name}}
+    </div>
+    <table class="table table-striped table-condensed">
+      <thead>
+        <tr>
+          <th style="width:3%"></th>
+          <th style="width:15%" ng-click="sort='timeIn'; sortDesc=!sortDesc">Time In</th>
+          <th style="width:40%" ng-click="sort='name'; sortDesc=!sortDesc">Name</th>
+          <th style="width:15%" ng-click="sort='timeOutSort'; sortDesc=!sortDesc">Time Out</th>
+          <th style="width:12%" ng-click="sort='hours'; sortDesc=!sortDesc" class="text-right hidden-xs">Hours</th>
+          <th style="width:11%" ng-click="sort='miles'; sortDesc=!sortDesc" class="text-right hidden-xs">Miles</th>
+          <th style="width:4%"></th>
+        </tr>
+      </thead>
+      <tbody ng-if="event.roster.length" ng-repeat="responder in event.roster | orderBy:sort:sortDesc">
+        <tr>
+          <td class="roster" ng-class="responder.state"></td>
+          <td>{{responder.timeIn | eventTime : event.opened}}</td>
+          <td><strong ng-if="!responder.isMember">{{responder.name}}</strong><strong ng-if="responder.isMember"><a ng-href="{{'@(ViewBag.LinkTemplate)'.replace('{0}', responder.memberId)}}">{{responder.name}}</a></strong></td>
+          <td>{{responder.timeOut | eventTime : event.opened}}</td>
+          <td class="text-right hidden-xs">{{responder.hours}}</td>
+          <td class="text-right hidden-xs">{{responder.miles}}</td>
+          <td>
+            <div class="btn-group">
+              <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="fa fa-fw fa-bars"></span> <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li ng-if="!responder.timeOut" ng-click="rosterCtrl.signout(responder)"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Sign Out ...</button></li>
+                <li ng-if="responder.timeOut" ng-click="rosterCtrl.undoSignout(responder)"><button type="button" class="btn-link"><span class="fa fa-fw fa-bullhorn"></span> Undo Sign Out</button></li>
+                <li ng-repeat="other in rosterCtrl.events | exceptId:event" ng-click="rosterCtrl.moveToEvent(responder, other)"><button type="button" class="btn-link"><span class="fa fa-fw fa-share-square-o"></span> Move to {{other.name}}</button></li>
+              </ul>
+            </div>
+
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr><th></th><th colspan="6">{{event.roster.length}} responders<span ng-if="!event.isUnassigned" style="float:right;font-weight:normal">Opened {{event.opened.fromNow()}}</span></th></tr>
+      </tfoot>
+    </table>
+  </div>
+</script>

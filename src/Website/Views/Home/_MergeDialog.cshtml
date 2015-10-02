@@ -1,0 +1,17 @@
+﻿<script type="text/ng-template" id="mergeDialog.html">
+  <form name="mergeForm">
+    <p>This form will allow you to merge event &quot;<strong>{{model.from.name}}</strong>&quot; into another existing event.</p>
+    <div class="form-inline">
+      <div class="form-group" ng-class="{ 'has-error': isInvalid(mergeForm, 'into')}">
+        <label for="into" class="control-label">Merge Into: </label>
+        <select name="into" class="form-control" ng-model="model.into" required="required"
+                ng-options="item.name disable when item.id == model.from.id for item in model.available | orderBy:model.eventOrderBy">
+          <option value="">-- Select an event --</option>
+        </select>
+        <div class="help-block" style="display:inline-block" ng-if="isInvalid(mergeForm, 'into')">
+          <div ng-if="mergeForm.into.$error.required">Required.</div>
+        </div>
+      </div>
+    </div>
+  </form>
+</script>
