@@ -3,10 +3,6 @@
     var self = this;
     $.extend(this, {
       list: [],
-      calls: [
-          { number: '206-776-2036', timeText: 'yesterday', name: 'Matt', recording: $sce.trustAsResourceUrl('//example.com/foo.mp3') },
-          { number: '206-776-0055', timeText: 'yesterday', name: 'Amber', recording: $sce.trustAsResourceUrl('//example.com/foo.mp3') }
-      ],
       load: function () {
         self.list.length = 0;
         self.list.loading = true;
@@ -63,7 +59,6 @@
       }
     });
     pushService.listenTo('updatedEvent', function (data) {
-      console.log(data);
       var event = new EventModel(data);
       var found = false;
       for (var i = 0; i < self.list.length; i++) {

@@ -460,6 +460,7 @@
     <Content Include="Scripts\site\missionline-app.js" />
     <Content Include="Scripts\site\models\event-model.js" />
     <Content Include="Scripts\site\page\index.js" />
+    <Content Include="Scripts\site\services\calls-service.js" />
     <Content Include="Scripts\site\services\events-service.js" />
     <Content Include="Scripts\site\services\modals-service.js" />
     <Content Include="Scripts\site\services\push-service.js" />
