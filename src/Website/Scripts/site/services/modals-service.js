@@ -1,7 +1,10 @@
 ﻿angular.module('missionlineApp').controller('ModalController', [
-  '$scope', '$element', '$q', 'title', 'model', 'save', 'saveText', 'close',
-    function ($scope, $element, $q, title, model, save, saveText, close) {
+  '$scope', '$element', '$q', 'title', 'model', 'save', 'options', 'close',
+    function ($scope, $element, $q, title, model, save, options, close) {
       var self = this;
+      options = $.extend({
+        saveText: 'Save'
+      }, options);
 
       $scope.close = function () {
         self.close();
@@ -11,7 +14,7 @@
         title: title,
         message: $element,
         buttons: [{
-          label: saveText || 'Save',
+          label: options.saveText,
           action: function (dialogRef) {
             var invalid = false;
             $element.find('form[name]').addBack('form[name]').each(function (idx, item) {
@@ -43,13 +46,15 @@
       self.open = bootstrapDialog.open.bind(bootstrapDialog);
 
       $scope.model = model;
+      $scope.options = options;
+
       $scope.isInvalid = function (form, name) {
         return form[name].$invalid && (form[name].$dirty || form.$submitted);
       }
     }]);
 
 angular.module('missionlineApp').service('EditModalService', ['ModalService', function (ModalService) {
-  this.edit = function (template, title, model, saveAction, saveText) {
+  this.edit = function (template, title, model, saveAction, options) {
     ModalService.showModal({
       templateUrl: template,
       controller: "ModalController",
@@ -60,7 +65,7 @@ angular.module('missionlineApp').service('EditModalService', ['ModalService', fu
           console.log(model);
           return saveAction(model);
         },
-        saveText: saveText
+        options: options
       }
     }).then(function (modal) {
       modal.controller.open();

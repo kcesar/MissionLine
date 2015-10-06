@@ -86,3 +86,7 @@ footer {
 [ng-cloak] {
   display: none !important;
 }
+
+tr.highlight {
+    background-color: yellow;
+}

@@ -1,15 +1,27 @@
 ﻿<script type="text/ng-template" id="signoutDialog.html">
   <form name="signoutForm">
-    <p>Sign out <span data-bind="text: rosterName"></span> from <span data-bind="text: eventName"></span></p>
+    <p>Sign out {{model.name}}<span data-bind="text: rosterName"></span> from {{options.event.name}} <span data-bind="text: eventName"></span></p>
     <div>
-      <div class="form-group">
-        <label>Date: <input type="text" data-bind="value: timeOut.date" class="form-control" /></label>
+      <div class="form-group inline-form-group" ng-class="{ 'has-error': isInvalid(signoutForm, 'date')}">
+        <label for="date" class="control-label">Date:</label>
+        <input name="date" type="{{Modernizr.touch?'date':'text'}}" ng-attr-pattern="{{Modernizr.touch?null:'^\\d{4}-\\d{2}-\\d{2}$'}}" ng-model="model.outDatePart" class="form-control" />
+        <div class="help-block" ng-if="isInvalid(signoutForm, 'date')">
+          <div ng-if="signoutForm.date.$error.pattern">Must be in form YYYY-MM-DD.</div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Time: <input type="text" data-bind="value: timeOut.time" class="form-control" /></label>
+      <div class="form-group inline-form-group" ng-class="{ 'has-error': isInvalid(signoutForm, 'time')}">
+        <label for="time" class="control-label">Time:</label>
+        <input name="time" type="{{Modernizr.touch?'time':'text'}}" ng-model="model.outTimePart" ng-attr-pattern="{{Modernizr.touch?null:'^[012]?\\d:[0-5]\\d$'}}" class="form-control" />
+        <div class="help-block" ng-if="isInvalid(signoutForm, 'time')">
+          <div ng-if="signoutForm.time.$error.pattern">Must be in form HH:MM.</div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Miles: <input type="text" data-bind="value: miles" class="form-control" /></label>
+      <div class="form-group inline-form-group" ng-class="{ 'has-error': isInvalid(signoutForm, 'miles')}">
+        <label for="miles" class="control-label">Miles:</label>
+        <input name="miles" type="text" ng-model="model.miles" ng-attr-pattern="^[12]?\d+$" class="form-control" />
+        <div class="help-block" ng-if="isInvalid(signoutForm, 'miles')">
+          <div ng-if="signoutForm.miles.$error.pattern">Must be a number.</div>
+        </div>
       </div>
     </div>
   </form>

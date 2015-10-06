@@ -70,7 +70,7 @@
         $.extend($scope, {
           showRoster: true,
           showCalls: false,
-          unassignedEvent: { 'name': 'Unassigned', roster: [{ name: 'Matt' }], isUnassigned: true },
+          unassignedEvent: eventsService.unassigned,
           callsSort: 'time',
           callsSortDesc: true,
           rosterSort: 'timeOut',

@@ -27,8 +27,8 @@
           <th style="width:4%"></th>
         </tr>
       </thead>
-      <tbody ng-if="event.roster.length" ng-repeat="responder in event.roster | orderBy:sort:sortDesc">
-        <tr>
+      <tbody ng-if="event.roster.length">
+        <tr ng-repeat="responder in event.roster | orderBy:sort:sortDesc" ng-class="{highlight: responder.highlight}">
           <td class="roster" ng-class="responder.state"></td>
           <td>{{responder.timeIn | eventTime : event.opened}}</td>
           <td><strong ng-if="!responder.isMember">{{responder.name}}</strong><strong ng-if="responder.isMember"><a ng-href="{{'@(ViewBag.LinkTemplate)'.replace('{0}', responder.memberId)}}">{{responder.name}}</a></strong></td>
@@ -40,7 +40,7 @@
               <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                 <span class="fa fa-fw fa-bars"></span> <span class="caret"></span>
               </button>
-              <ul class="dropdown-menu" role="menu">
+              <ul class="dropdown-menu dropdown-menu-right" role="menu">
                 <li ng-if="!responder.timeOut" ng-click="rosterCtrl.signout(responder)"><button type="button" class="btn-link"><span class="fa fa-fw fa-ban"></span> Sign Out ...</button></li>
                 <li ng-if="responder.timeOut" ng-click="rosterCtrl.undoSignout(responder)"><button type="button" class="btn-link"><span class="fa fa-fw fa-bullhorn"></span> Undo Sign Out</button></li>
                 <li ng-repeat="other in rosterCtrl.events | exceptId:event" ng-click="rosterCtrl.moveToEvent(responder, other)"><button type="button" class="btn-link"><span class="fa fa-fw fa-share-square-o"></span> Move to {{other.name}}</button></li>

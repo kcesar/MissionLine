@@ -1,9 +1,13 @@
-﻿angular.module('missionlineApp').service('eventsService', ['$sce', '$http', '$q', '$rootScope', 'pushService',
-  function ($sce, $http, $q, $rootScope, pushService) {
+﻿angular.module('missionlineApp').service('eventsService', ['$sce', '$http', '$q', '$rootScope', 'pushService', 'rosterService',
+  function ($sce, $http, $q, $rootScope, pushService, rosterService) {
     var self = this;
     $.extend(this, {
       list: [],
+      _lookup: {},
+      unassigned: new EventModel({ 'name': 'Unassigned', roster: [], isUnassigned: true }),
       load: function () {
+        var deferred = $q.defer();
+        var rosterPromise = rosterService.load();
         self.list.length = 0;
         self.list.loading = true;
         $http({
@@ -11,10 +15,16 @@
           url: window.appRoot + 'api/events',
         }).success(function (data) {
           $.each(data, function (idx, event) {
-            self.list.push(new EventModel(event));
+            var model = new EventModel(event);
+            self.list.push(model);
+            self._lookup[event.id] = model;
           });
           delete self.list.loading;
+          deferred.resolve(data);
         })
+        .error(function (response) { deferred.reject(response); });
+        
+        return $q.all([rosterPromise, deferred.promise]).then(function () { self.populateRosters(); });
       },
       save: function (eventModel) {
         var deferred = $q.defer();
@@ -56,14 +66,29 @@
         .success(function (data) { deferred.resolve(data); })
         .error(function (response) { deferred.reject(response); })
         return deferred.promise;
+      },
+      populateRosters: function () {
+        self.unassigned.roster.length = 0;
+        for (var i = 0; i < self.list.length; i++) { self.list[i].roster.length = 0; }
+        $.each(rosterService.signins, function (idx, item) {
+          item.event = self._lookup[item.eventId];
+          if (!item.event) {
+            console.log('no event found for '); console.log(item);
+          }
+          item.eventId ? item.event.roster.push(item) : self.unassigned.roster.push(item);
+        })
       }
     });
+
+    $rootScope.$on('roster-updated', self.populateRosters);
+
     pushService.listenTo('updatedEvent', function (data) {
       var event = new EventModel(data);
       var found = false;
       for (var i = 0; i < self.list.length; i++) {
         if (self.list[i].id == data.id) {
           self.list[i] = event;
+          self._lookup[event.id] = event;
           found = true;
           break;
         }
@@ -74,9 +99,9 @@
     pushService.listenTo('removedEvent', function (data) {
       var index = -1;
       $.each(self.list, function (idx, item) {
-        if (item.id == data.id) { index = idx; }
+        if (item.id == data.id) { index = idx; delete self._lookup[data.id]; }
         return index === -1;
       })
       self.list.splice(index, 1);
-    })
+    });
   }]);

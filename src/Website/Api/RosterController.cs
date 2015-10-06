@@ -44,7 +44,7 @@ namespace Kcesar.MissionLine.Website.Api
         var futureDate = DateTime.Now.AddYears(1);
         var closedEventCutoff = DateTimeOffset.Now.AddDays(-2).ToOrgTime(config).ToLocalTime();
 
-        var latest = (from s in db.SignIns where s.TimeOut == null || (s.EventId == null && s.TimeOut > closedEventCutoff) || (s.EventId.HasValue && s.Event.Closed == null)
+        var latest = (from s in db.SignIns where s.TimeOut == null || s.TimeOut > closedEventCutoff || (s.EventId.HasValue && s.Event.Closed == null)
                       group s by new { s.MemberId, s.EventId } into g
                       let f = g.OrderByDescending(x => x.TimeIn).FirstOrDefault()
                       orderby f.TimeOut.HasValue ? f.TimeOut : futureDate descending, f.TimeIn
@@ -223,6 +223,28 @@ namespace Kcesar.MissionLine.Website.Api
       return db.SignIns.Where(f => f.Id == id)
         .Select(proj)
         .SingleOrDefault();
+    }
+
+    public async Task<SubmitResult<RosterEntry>> Put(MemberSignIn value)
+    {
+      var result = new SubmitResult<RosterEntry>();
+
+      if (result.Errors.Count == 0)
+      {
+        using (var db = dbFactory())
+        {
+          MemberSignIn signin;
+          signin = db.SignIns.Single(f => f.Id == value.Id);
+
+          if (signin.TimeOut != value.TimeOut) { signin.TimeOut = value.TimeOut; }
+          if (signin.Miles != value.Miles) { signin.Miles = value.Miles; }
+
+          await db.SaveChangesAsync();
+          result.Data = new[] { signin }.AsQueryable().Select(proj).Single();
+          this.config.GetPushHub<CallsHub>().updatedRoster(result.Data);
+        }
+      }
+      return result;
     }
 
     private static Expression<Func<MemberSignIn, RosterEntry>> proj = f => new RosterEntry

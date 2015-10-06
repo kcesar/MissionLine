@@ -10,18 +10,22 @@
     },
     bindToController: true,
     controllerAs: 'rosterCtrl',
-    controller: ['eventsService', 'toasterService', '$scope', function (eventsService, toasterService, $scope) {
+    controller: ['rosterService', 'eventsService', 'toasterService', '$scope', function (rosterService, eventsService, toasterService, $scope) {
       $scope.event = this.event;
       $.extend(this, {
         events: eventsService.list,
         moveToEvent: function (responder, otherEvent) {
           eventsService.moveResponder(responder, this.event, otherEvent);
         },
-        signout: function (responder) {
-          console.log('should sign out' + responder.name);
+        signout: function (signin) {
+          var data = signin.getData();
+          data.timeOut = moment();
+          EditModalService.edit('signoutDialog.html', 'Sign Out', new SigninModel(data), rosterService.signout, { event: this.event });
         },
-        undoSignout: function (responder) {
-          console.log('should undo signout for ' + responder.name);
+        undoSignout: function (signin) {
+          var data = signin.getData();
+          data.timeOut = null;
+          rosterService.signout(new SigninModel(data));
         },
         startEdit: function () { EditModalService.edit('editDialog.html', 'Edit Event', new EventModel(this.event.getData()), eventsService.save); },
         startClose: function () {
@@ -33,7 +37,7 @@
             .catch(function (error) { toasterService.toast('Error', 'danger', error); })
         },
         startMerge: function (otherEvent) {
-          EditModalService.edit('mergeDialog.html', 'Merge Event', { from: this.event, available: eventsService.list, into: null, eventOrderBy: this.eventOrderBy }, eventsService.merge, 'Merge');
+          EditModalService.edit('mergeDialog.html', 'Merge Event', { from: this.event, available: eventsService.list, into: null, eventOrderBy: this.eventOrderBy }, eventsService.merge, { saveText: 'Merge' });
         }
       })
     }]
