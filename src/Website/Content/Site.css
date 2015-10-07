@@ -15,6 +15,7 @@ td.SignedIn, .table-striped > tbody > tr:nth-child(odd) > td.SignedIn {
 }
 td.SignedOut, .table-striped > tbody > tr:nth-child(odd) > td.SignedOut {
   background-color:#3b3b3b !important;
+  color:white;
 }
 
 
@@ -88,5 +89,5 @@ footer {
 }
 
 tr.highlight {
-    background-color: yellow;
+    background-color: yellow !important;
 }

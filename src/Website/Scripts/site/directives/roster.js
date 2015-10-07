@@ -11,21 +11,26 @@
     bindToController: true,
     controllerAs: 'rosterCtrl',
     controller: ['rosterService', 'eventsService', 'toasterService', '$scope', function (rosterService, eventsService, toasterService, $scope) {
-      $scope.event = this.event;
+      $.extend($scope, {
+        event: this.event,
+        sort: this.sort,
+        sortDesc: this.sortDir
+      });
+     
       $.extend(this, {
         events: eventsService.list,
-        moveToEvent: function (responder, otherEvent) {
-          eventsService.moveResponder(responder, this.event, otherEvent);
+        moveToEvent: function (signin, otherEvent) {
+          rosterService.moveResponder(signin, this.event, otherEvent);
         },
         signout: function (signin) {
           var data = signin.getData();
           data.timeOut = moment();
-          EditModalService.edit('signoutDialog.html', 'Sign Out', new SigninModel(data), rosterService.signout, { event: this.event });
+          EditModalService.edit('signoutDialog.html', 'Sign Out', new SigninModel(data), rosterService.save, { event: this.event });
         },
         undoSignout: function (signin) {
           var data = signin.getData();
           data.timeOut = null;
-          rosterService.signout(new SigninModel(data));
+          rosterService.save(new SigninModel(data));
         },
         startEdit: function () { EditModalService.edit('editDialog.html', 'Edit Event', new EventModel(this.event.getData()), eventsService.save); },
         startClose: function () {

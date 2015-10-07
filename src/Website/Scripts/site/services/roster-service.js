@@ -20,7 +20,7 @@
         .error(function (response) { deferred.reject(response); });
         return deferred.promise;
       },
-      signout: function (model) {
+      save: function (model) {
         var deferred = $q.defer();
         $http({
           method: model.id ? 'PUT' : 'POST',
@@ -34,14 +34,28 @@
         });
         return deferred.promise;
       },
+      moveResponder: function (signin, fromEvent, toEvent) {
+        var deferred = $q.defer();
+        $http({
+          method: 'POST',
+          url: window.appRoot + 'api/roster/' + signin.id + '/reassign/' + toEvent.id,
+          headers: { 'Content-Type': 'application/json' }
+        }).success(function (data) {
+          deferred.resolve(data);
+        }).error(function (response) {
+          deferred.reject(response);
+        });
+        return deferred.promise;
+      }
     });
     pushService.listenTo('updatedRoster', function (data) {
       var signin = new SigninModel(data);
       var found = false;
+      signin.highlight = true;
+      $timeout(function () { signin.highlight = false; }, 2000);
+
       for (var i = 0; i < self.signins.length; i++) {
         if (self.signins[i].id == data.id) {
-          signin.highlight = true;
-          $timeout(function () { signin.highlight = false; }, 2000);
           self.signins[i] = signin;
           found = true;
           break;

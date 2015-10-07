@@ -19,7 +19,7 @@
       load: function () {
         self.calls.length = 0;
         self.calls.loading = true;
-        $http({
+        return $http({
           method: 'GET',
           url: window.appRoot + 'api/calls',
         }).success(function (data) {
