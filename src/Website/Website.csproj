@@ -340,6 +340,8 @@
     <Compile Include="TwilioExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\angular-modal-service.js" />
+    <Content Include="Scripts\angular-modal-service.min.js" />
     <Content Include="Scripts\site\animations.js" />
     <Content Include="Content\bootstrap-dialog.css" />
     <Content Include="Content\bootstrap-dialog.min.css" />
@@ -379,6 +381,7 @@
     <Content Include="Content\bootstrap-theme.css.map" />
     <Content Include="Scripts\angular.min.js.map" />
     <Content Include="Scripts\angular-animate.min.js.map" />
+    <Content Include="Scripts\angular-modal-service.min.js.map" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\bootstrap-select.min.js" />
     <Content Include="Scripts\bootstrap.js" />
