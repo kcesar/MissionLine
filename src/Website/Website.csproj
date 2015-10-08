@@ -468,9 +468,9 @@
     <Content Include="Scripts\site\services\push-service.js" />
     <Content Include="Scripts\site\services\toaster-service.js" />
     <Content Include="Scripts\_references.js" />
-    <None Include="Views\Home\_EditDialog.cshtml" />
-    <None Include="Views\Home\_Roster.cshtml" />
-    <None Include="Views\Home\_SignoutDialog.cshtml" />
+    <Content Include="Views\Home\_EditDialog.cshtml" />
+    <Content Include="Views\Home\_Roster.cshtml" />
+    <Content Include="Views\Home\_SignoutDialog.cshtml" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -489,7 +489,7 @@
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
     <Content Include="Views\Account\Link.cshtml" />
     <Content Include="Views\Account\LinkComplete.cshtml" />
-    <None Include="Views\Home\_MergeDialog.cshtml" />
+    <Content Include="Views\Home\_MergeDialog.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
