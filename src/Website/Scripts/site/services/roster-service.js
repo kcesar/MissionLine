@@ -62,6 +62,7 @@
             self.signins[i] = signin;
           } else {
             self.signins.splice(i, 1);
+          }
           found = true;
           break;
         }
