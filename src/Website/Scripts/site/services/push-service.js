@@ -10,7 +10,13 @@
   this.listenTo = function (actionName, handler) {
     if (handlers[actionName] === undefined) {
       handlers[actionName] = [handler];
-      hubClient[actionName] = function (data) { $.each(handlers[actionName], function (idx, h) { h(data); }) }
+      hubClient[actionName] = function () {
+        var args = arguments;
+        var _this = this;
+        $.each(handlers[actionName], function (idx, h) {
+          h.apply(_this, args);
+        })
+      }
     } else {
       handlers[actionName].push(handler);
     }

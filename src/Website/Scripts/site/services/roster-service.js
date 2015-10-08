@@ -48,20 +48,27 @@
         return deferred.promise;
       }
     });
-    pushService.listenTo('updatedRoster', function (data) {
+    pushService.listenTo('updatedRoster', function (data, isLatest) {
       var signin = new SigninModel(data);
       var found = false;
-      signin.highlight = true;
-      $timeout(function () { signin.highlight = false; }, 2000);
+      if (isLatest) {
+        signin.highlight = true;
+        $timeout(function () { signin.highlight = false; }, 2000);
+      }
 
       for (var i = 0; i < self.signins.length; i++) {
         if (self.signins[i].id == data.id) {
-          self.signins[i] = signin;
+          if (isLatest) {
+            self.signins[i] = signin;
+          } else {
+            self.signins.splice(i, 1);
           found = true;
           break;
         }
       }
-      if (!found) { self.signins.push(signin); }
+      if (!found && isLatest) {
+        self.signins.push(signin);
+      }
       $rootScope.$emit('roster-updated');
       $rootScope.$digest();
     });

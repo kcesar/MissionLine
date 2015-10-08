@@ -68,96 +68,125 @@ namespace Kcesar.MissionLine.Website.Api
     [Route("api/roster/{rosterId}/reassign/{eventId}")]
     public async Task<SubmitResult> Assign(int rosterId, int eventId)
     {
-      var result = new SubmitResult();
-      var notifications = new List<Action>();
-      var hub = this.config.GetPushHub<CallsHub>();
       using (var db = dbFactory())
       {
-        var roster = await db.SignIns.SingleOrDefaultAsync(f => f.Id == rosterId);
-        if (roster == null)
+        var signin = await db.SignIns.SingleOrDefaultAsync(f => f.Id == rosterId);
+        if (signin == null)
         {
+          var result = new SubmitResult();
           result.Errors.Add(new SubmitError("Roster entry not found"));
+          return result;
+        }
+        return await AssignInternal(signin, eventId, db, this.config);
+      }
+    }
+
+    internal static async Task<SubmitResult> AssignInternal(MemberSignIn signin, int? eventId, IMissionLineDbContext db, IConfigSource config)
+    { 
+      var result = new SubmitResult();
+      var notifications = new List<Action>();
+      var hub = config.GetPushHub<CallsHub>();
+
+      var exposedSignin = await db.SignIns
+        .Where(f => f.MemberId == signin.MemberId && f.EventId == signin.EventId && f.Id != signin.Id)
+        .OrderByDescending(f => f.TimeIn)
+        .FirstOrDefaultAsync();
+      if (exposedSignin != null)
+      {
+        notifications.Add(() => hub.updatedRoster(compiledProj(exposedSignin), true));
+      }
+
+      var others = db.SignIns.Where(f => f.EventId == eventId && f.MemberId == signin.MemberId).OrderBy(f => f.TimeIn).ToList();
+      DateTime effectiveTimeOut = signin.TimeOut ?? DateTime.MaxValue;
+      bool rosterisLatest = true;
+
+      foreach (var other in others)
+      {
+        var otherTimeOut = other.TimeOut ?? DateTime.MaxValue;
+        // R: [---------->
+        // O:      [----------]
+
+        // R: [---------->
+        // O:       [-------->
+
+        // R: [----------]        
+        // O:         [----->
+
+        // R: [--------------------]
+        // O:       [-------]
+
+        // R: [---------]
+        // O:     [--->
+
+        // R: [------]
+        // O:    [------]
+
+        // R: [---]
+        // O:       [----]
+
+        // R:      [-----]
+        // O:   [-----]
+
+        // R:        [---]
+        // O: [---]
+
+
+
+        // Trim signins that overlap our time in.
+        if (signin.TimeIn <= other.TimeIn)
+        {
+          if (effectiveTimeOut >= other.TimeIn && effectiveTimeOut <= otherTimeOut)
+          {
+            // roster is before the other one. It is not the latest
+            rosterisLatest = false;
+            notifications.Add(() => hub.updatedRoster(compiledProj(other), true));
+            signin.TimeOut = other.TimeIn;
+          }
+          else if (effectiveTimeOut > otherTimeOut)
+          {
+            // split roster around other.
+            // roster is the most recent, other and front are not.
+            var front = SplitSignin(eventId, signin, other, db, config);
+            notifications.Add(() => hub.updatedRoster(compiledProj(front), false));
+            notifications.Add(() => hub.updatedRoster(compiledProj(other), false));
+          }
         }
         else
         {
-          var others = db.SignIns.Where(f => f.EventId == eventId && f.MemberId == roster.MemberId).OrderBy(f => f.TimeIn).ToList();
-          DateTime effectiveTimeOut = roster.TimeOut ?? DateTime.MaxValue;
-
-          foreach (var other in others)
+          if (otherTimeOut > signin.TimeIn && otherTimeOut <= effectiveTimeOut)
           {
-            var otherTimeOut = other.TimeOut ?? DateTime.MaxValue;
-            // R: [---------->
-            // O:      [----------]
-
-            // R: [---------->
-            // O:       [-------->
-
-            // R: [----------]        
-            // O:         [----->
-
-            // R: [--------------------]
-            // O:       [-------]
-
-            // R: [---------]
-            // O:     [--->
-
-            // R: [------]
-            // O:    [------]
-
-            // R: [---]
-            // O:       [----]
-
-            // R:      [-----]
-            // O:   [-----]
-
-            // R:        [---]
-            // O: [---]
-
-
-
-            // Trim signins that overlap our time in.
-            if (roster.TimeIn <= other.TimeIn)
-            {
-              if (effectiveTimeOut > other.TimeIn && effectiveTimeOut <= otherTimeOut)
-              {
-                roster.TimeOut = other.TimeIn;
-              }
-              else if (effectiveTimeOut > otherTimeOut)
-              {
-                // split roster around other
-                var front = SplitSignin(eventId, roster, other, db);
-                notifications.Add(() => hub.updatedRoster(compiledProj(front)));
-              }
-            }
-            else
-            {
-              if (otherTimeOut > roster.TimeIn && otherTimeOut <= effectiveTimeOut)
-              {
-                other.TimeOut = roster.TimeIn;
-                notifications.Add(() => hub.updatedRoster(compiledProj(other)));
-              }
-              else if (otherTimeOut > effectiveTimeOut)
-              {
-                //split other around roster
-                var front = SplitSignin(eventId, other, roster, db);
-                notifications.Add(() => hub.updatedRoster(compiledProj(front)));
-              }
-            }
+            // other overlaps on the early side
+            other.TimeOut = signin.TimeIn;
+            notifications.Add(() => hub.updatedRoster(compiledProj(other), false));
           }
-
-          roster.EventId = eventId;
-          notifications.Add(() => hub.updatedRoster(compiledProj(roster)));
-          db.SaveChanges();
-          foreach (var notify in notifications)
+          else if (otherTimeOut > effectiveTimeOut)
           {
-            notify();
+            //split other around roster
+            var front = SplitSignin(eventId, other, signin, db, config);
+            notifications.Add(() => hub.updatedRoster(compiledProj(front), false));
+            notifications.Add(() => hub.updatedRoster(compiledProj(other), true));
+            rosterisLatest = false;
+          }
+          else if (otherTimeOut < signin.TimeIn)
+          {
+            // other notification is not the latest.
+            notifications.Add(() => hub.updatedRoster(compiledProj(other), false));
           }
         }
       }
+
+      signin.EventId = eventId;
+      notifications.Add(() => hub.updatedRoster(compiledProj(signin), rosterisLatest));
+      db.SaveChanges();
+      foreach (var notify in notifications)
+      {
+        notify();
+      }
+
       return result;
     }
 
-    private MemberSignIn SplitSignin(int eventId, MemberSignIn outer, MemberSignIn inner, IMissionLineDbContext db)
+    private static MemberSignIn SplitSignin(int? eventId, MemberSignIn outer, MemberSignIn inner, IMissionLineDbContext db, IConfigSource config)
     {
       MemberSignIn front = new MemberSignIn
       {
@@ -169,7 +198,7 @@ namespace Kcesar.MissionLine.Website.Api
         TimeOut = inner.TimeIn
       };
       db.SignIns.Add(front);
-      outer.TimeIn = inner.TimeOut ?? DateTimeOffset.Now.ToOrgTime(this.config);
+      outer.TimeIn = inner.TimeOut ?? DateTimeOffset.Now.ToOrgTime(config);
       return front;
     }
 

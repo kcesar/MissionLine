@@ -182,13 +182,10 @@ namespace Kcesar.MissionLine.Website.Api
       using (var db = dbFactory())
       {
         var signin = await GetMembersLatestSignin(db, session.MemberId);
-        signin.EventId = session.EventId;
+        await RosterController.AssignInternal(signin, session.EventId, db, this.config);
 
         var name = CurrentEvents.Where(f => f.Id == session.EventId).Select(f => f.Name).SingleOrDefault();
         response.SayVoice(Speeches.ChangeEventTemplate, name);
-
-        await db.SaveChangesAsync();
-        this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
       }
 
       response.Redirect(Url.Content("~/api/Voice/Menu") + session.ToQueryString());
@@ -237,19 +234,21 @@ namespace Kcesar.MissionLine.Website.Api
 
           if (this.CurrentEvents.Count == 0)
           {
+            await RosterController.AssignInternal(signin, null, db, this.config);
             BeginMenu(response);
             response.SayVoice(Speeches.SignedInUnassignedTemplate, this.session.MemberName, sayDate);
             await EndMenu(response);
           }
           else if (this.CurrentEvents.Count == 1)
           {
-            signin.Event = this.CurrentEvents[0];
+           await  RosterController.AssignInternal(signin, this.CurrentEvents[0].Id, db, this.config);
             BeginMenu(response);
             response.SayVoice(Speeches.SignedInTemplate, this.CurrentEvents[0].Name, this.session.MemberName, sayDate);
             await EndMenu(response);
           }
           else
           {
+            await RosterController.AssignInternal(signin, null, db, this.config);
             BuildSetEventMenu(response, string.Format(Speeches.SignedInUnassignedTemplate, this.session.MemberName, sayDate), Url.Content("~/api/voice/SetSigninEvent"));
           }
         }
@@ -317,7 +316,7 @@ namespace Kcesar.MissionLine.Website.Api
           var signin = await GetMembersLatestSignin(db, this.session.MemberId);
           signin.TimeOut = signin.TimeOut.Value.AddMinutes(minutes);
           await db.SaveChangesAsync();
-          this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+          this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db), true);
           var sayDate = TimeUtils.GetMiltaryTimeVoiceText(signin.TimeOut.Value);
           response.SayVoice(Speeches.SignedOutTemplate, this.session.MemberName, sayDate);
         }
@@ -345,7 +344,7 @@ namespace Kcesar.MissionLine.Website.Api
           var signin = db.SignIns.OrderByDescending(f => f.TimeIn).FirstOrDefault(f => f.MemberId == this.session.MemberId);
           signin.Miles = miles;
           await db.SaveChangesAsync();
-          this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db));
+          this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db), true);
         }
         response.SayVoice(Speeches.MilesUpdated);
       }
