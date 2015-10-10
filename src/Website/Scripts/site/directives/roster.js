@@ -38,7 +38,7 @@
             .catch(function (error) { toasterService.toast('Error', 'danger', error); });
         },
         reopen: function () {
-          eventsService.repoen(this.event)
+          eventsService.reopen(this.event)
             .catch(function (error) { toasterService.toast('Error', 'danger', error); })
         },
         startMerge: function (otherEvent) {

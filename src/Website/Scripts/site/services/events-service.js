@@ -72,9 +72,6 @@
         for (var i = 0; i < self.list.length; i++) { self.list[i].roster.length = 0; }
         $.each(rosterService.signins, function (idx, item) {
           item.event = self._lookup[item.eventId];
-          if (!item.event) {
-            console.log('no event found for '); console.log(item);
-          }
           item.eventId ? item.event.roster.push(item) : self.unassigned.roster.push(item);
         })
       }
@@ -94,6 +91,7 @@
         }
       }
       if (!found) { self.list.push(event); }
+      self.populateRosters();
       $rootScope.$digest();
     });
     pushService.listenTo('removedEvent', function (data) {

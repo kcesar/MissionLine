@@ -14,7 +14,8 @@
       return {
         id: self.id,
         name: self.name,
-        opened: moment(self.datePart + 'T' + ("00:00".substring(0, 5 - self.timePart.length) + self.timePart))
+        opened: moment(self.datePart + 'T' + ("00:00".substring(0, 5 - self.timePart.length) + self.timePart)),
+        closed: self.closed
       }
     }
   })

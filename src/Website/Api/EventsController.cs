@@ -238,10 +238,22 @@ namespace Kcesar.MissionLine.Website.Api
       {
         result.Errors.Add(new SubmitError("name", "Required"));
       }
-      DateTime localTime = value.Opened.ToOrgTime(config);
-      if (localTime < minDate || localTime > maxDate)
+      DateTime localOpened = value.Opened.ToOrgTime(config);
+      if (localOpened < minDate || localOpened > maxDate)
       {
         result.Errors.Add(new SubmitError("opened", "Date invalid or out of range"));
+      }
+      DateTime? localClosed = value.Closed == null ? (DateTime?)null : value.Closed.Value.ToOrgTime(config);
+      if (localClosed.HasValue)
+      {
+        if (localClosed < minDate || localClosed > maxDate)
+        {
+          result.Errors.Add(new SubmitError("closed", "Date invalid or out of range"));
+        }
+        else if (localClosed < localOpened)
+        {
+          result.Errors.Add(new SubmitError("closed", "Must be after open time"));
+        }
       }
 
       if (result.Errors.Count == 0)
@@ -254,7 +266,8 @@ namespace Kcesar.MissionLine.Website.Api
             evt = new SarEvent
             {
               Name = value.Name,
-              Opened = localTime
+              Opened = localOpened,
+              Closed = localClosed
             };
             db.Events.Add(evt);
           }
@@ -264,7 +277,8 @@ namespace Kcesar.MissionLine.Website.Api
           }
 
           if (value.Name != evt.Name) { evt.Name = value.Name; }
-          if (localTime != evt.Opened) { evt.Opened = localTime; }
+          if (localOpened != evt.Opened) { evt.Opened = localOpened; }
+          if (localClosed != evt.Closed) { evt.Closed = localClosed; }
 
           await db.SaveChangesAsync();
           result.Data = new[] { evt }.AsQueryable().Select(proj).Single();
