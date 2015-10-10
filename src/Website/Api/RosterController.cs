@@ -96,7 +96,7 @@ namespace Kcesar.MissionLine.Website.Api
         notifications.Add(() => hub.updatedRoster(compiledProj(exposedSignin), true));
       }
 
-      var others = db.SignIns.Where(f => f.EventId == eventId && f.MemberId == signin.MemberId).OrderBy(f => f.TimeIn).ToList();
+      var others = db.SignIns.Where(f => f.EventId == eventId && f.MemberId == signin.MemberId && f.Id != signin.Id).OrderBy(f => f.TimeIn).ToList();
       DateTime effectiveTimeOut = signin.TimeOut ?? DateTime.MaxValue;
       bool rosterisLatest = true;
 
@@ -202,50 +202,48 @@ namespace Kcesar.MissionLine.Website.Api
       return front;
     }
 
-    [HttpPost]
-    [Route("api/roster/{rosterId}/signout")]
-    public SubmitResult Signout(int rosterId, DateTime when, int? miles)
-    {
-      var result = new SubmitResult();
-      using (var db = dbFactory())
-      {
-        var roster = db.SignIns.SingleOrDefault(f => f.Id == rosterId);
-        if (roster == null)
-        {
-          result.Errors.Add(new SubmitError("Roster entry not found"));
-        }
-        else
-        {
-          roster.TimeOut = when;
-          roster.Miles = miles;
-          db.SaveChanges();
-          this.config.GetPushHub<CallsHub>().updatedRoster(compiledProj(roster));
-        }
-      }
-      return result;
-    }
+    //[HttpPost]
+    //[Route("api/roster/{rosterId}/signout")]
+    //public async Task<SubmitResult> Signout(int rosterId, DateTime when, int? miles)
+    //{
+    //  var result = new SubmitResult();
+    //  using (var db = dbFactory())
+    //  {
+    //    var roster = db.SignIns.SingleOrDefault(f => f.Id == rosterId);
+    //    if (roster == null)
+    //    {
+    //      result.Errors.Add(new SubmitError("Roster entry not found"));
+    //    }
+    //    else
+    //    {
+    //      roster.TimeOut = when;
+    //      roster.Miles = miles;
+    //      await AssignInternal(roster, roster.EventId, db, config);
+    //    }
+    //  }
+    //  return result;
+    //}
 
-    [HttpPost]
-    [Route("api/roster/{rosterId}/undoSignout")]
-    public SubmitResult UndoSignout(int rosterId)
-    {
-      var result = new SubmitResult();
-      using (var db = dbFactory())
-      {
-        var roster = db.SignIns.SingleOrDefault(f => f.Id == rosterId);
-        if (roster == null)
-        {
-          result.Errors.Add(new SubmitError("Roster entry not found"));
-        }
-        else
-        {
-          roster.TimeOut = null;
-          db.SaveChanges();
-          this.config.GetPushHub<CallsHub>().updatedRoster(compiledProj(roster));
-        }
-      }
-      return result;
-    }
+    //[HttpPost]
+    //[Route("api/roster/{rosterId}/undoSignout")]
+    //public async Task<SubmitResult> UndoSignout(int rosterId)
+    //{
+    //  var result = new SubmitResult();
+    //  using (var db = dbFactory())
+    //  {
+    //    var roster = db.SignIns.SingleOrDefault(f => f.Id == rosterId);
+    //    if (roster == null)
+    //    {
+    //      result.Errors.Add(new SubmitError("Roster entry not found"));
+    //    }
+    //    else
+    //    {
+    //      roster.TimeOut = null;
+    //      await AssignInternal(roster, roster.EventId, db, config);
+    //    }
+    //  }
+    //  return result;
+    //}
 
     internal static RosterEntry GetRosterEntry(int id, IMissionLineDbContext db)
     {
@@ -267,10 +265,8 @@ namespace Kcesar.MissionLine.Website.Api
 
           if (signin.TimeOut != value.TimeOut) { signin.TimeOut = value.TimeOut; }
           if (signin.Miles != value.Miles) { signin.Miles = value.Miles; }
-
-          await db.SaveChangesAsync();
+          await AssignInternal(signin, signin.EventId, db, config);
           result.Data = new[] { signin }.AsQueryable().Select(proj).Single();
-          this.config.GetPushHub<CallsHub>().updatedRoster(result.Data);
         }
       }
       return result;
@@ -289,21 +285,5 @@ namespace Kcesar.MissionLine.Website.Api
       EventId = f.EventId
     };
     private static Func<MemberSignIn, RosterEntry> compiledProj = proj.Compile();
-    /*
-    // POST api/<controller>
-    public void Post([FromBody]string value)
-    {
-    }
-
-    // PUT api/<controller>/5
-    public void Put(int id, [FromBody]string value)
-    {
-    }
-
-    // DELETE api/<controller>/5
-    public void Delete(int id)
-    {
-    }
-     * */
   }
 }

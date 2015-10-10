@@ -28,6 +28,10 @@
       },
       save: function (eventModel) {
         var deferred = $q.defer();
+        if (eventModel.closed && $.grep(eventModel.roster, function (item) { return item.timeOut }, true).length > 0) {
+          deferred.reject("Can\'t close event until everyone is signed out");
+          return deferred.promise;
+        }
         $http({
           method: eventModel.id ? 'PUT' : 'POST',
           url: window.appRoot + 'api/events',
@@ -42,18 +46,10 @@
         return deferred.promise;
       },
       _updateCloseTime: function (eventModel, newClosed) {
-        var deferred = $q.defer();
-        if ($.grep(eventModel.roster, function (item) { return item.timeOut }, true).length > 0) {
-          deferred.reject("Can\t close event until everyone is signed out");
-        }
         var shadow = new EventModel(eventModel.getData());
         shadow.closed = newClosed;
-        self.save(shadow)
-        .then(
-          function (result) { deferred.resolve(result) },
-          function (error) { deferred.reject(result); }
-        );
-        return deferred.promise;
+        shadow.roster = eventModel.roster;
+        return self.save(shadow);
       },
       close: function (eventModel) { return self._updateCloseTime(eventModel, moment()); },
       reopen: function (eventModel) { return self._updateCloseTime(eventModel, null); },
