@@ -60,6 +60,7 @@
 @RenderPage("_EditDialog.cshtml")
 @RenderPage("_MergeDialog.cshtml")
 @RenderPage("_SignoutDialog.cshtml")
+@RenderPage("_CloseDialog.cshtml")
 
 @section scripts {
   @Scripts.Render("~/bundles/app")
@@ -68,6 +69,7 @@
       'EditModalService', 'eventsService', 'rosterService', 'callsService',
       function ($scope, EditModalService, eventsService, rosterService, callsService) {
         $.extend($scope, {
+          myself: @(new HtmlString(ViewBag.Myself)),
           showRoster: true,
           showCalls: false,
           unassignedEvent: eventsService.unassigned,
@@ -81,7 +83,7 @@
           },
           calls: callsService.calls,
           createEvent: function () { EditModalService.edit('editDialog.html', 'Create New Event', new EventModel(), eventsService.save); },
-          getToday: function() { return moment().startOf('day'); }
+          getToday: function () { return moment().startOf('day'); },
         })
         eventsService.load();
         callsService.load();

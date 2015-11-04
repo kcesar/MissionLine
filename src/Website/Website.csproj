@@ -163,6 +163,7 @@
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -279,6 +280,10 @@
     <Compile Include="Migrations\201507310638271_LogTable.cs" />
     <Compile Include="Migrations\201507310638271_LogTable.Designer.cs">
       <DependentUpon>201507310638271_LogTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201510100426012_datetimeoffset.cs" />
+    <Compile Include="Migrations\201510100426012_datetimeoffset.Designer.cs">
+      <DependentUpon>201510100426012_datetimeoffset.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\ExternalLoginListViewModel.cs" />
     <Compile Include="Model\SubmitResult.cs" />
@@ -474,7 +479,9 @@
     <Content Include="Views\Home\_EditDialog.cshtml" />
     <Content Include="Views\Home\_Roster.cshtml" />
     <Content Include="Views\Home\_SignoutDialog.cshtml" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -493,6 +500,7 @@
     <Content Include="Views\Account\Link.cshtml" />
     <Content Include="Views\Account\LinkComplete.cshtml" />
     <Content Include="Views\Home\_MergeDialog.cshtml" />
+    <Content Include="Views\Home\_CloseDialog.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -524,6 +532,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507310638271_LogTable.resx">
       <DependentUpon>201507310638271_LogTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201510100426012_datetimeoffset.resx">
+      <DependentUpon>201510100426012_datetimeoffset.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Speeches.resx">
       <Generator>ResXFileCodeGenerator</Generator>

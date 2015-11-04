@@ -34,7 +34,7 @@
         },
         startEdit: function () { EditModalService.edit('editDialog.html', 'Edit Event', new EventModel(this.event.getData()), eventsService.save); },
         startClose: function () {
-          eventsService.close(this.event)
+          EditModalService.edit('closeDialog.html', 'Close Event', new EventModel(this.event.getData()), eventsService.close, { saveText: 'Close Event' })
             .catch(function (error) { toasterService.toast('Error', 'danger', error); });
         },
         reopen: function () {

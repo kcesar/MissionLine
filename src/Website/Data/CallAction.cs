@@ -14,7 +14,7 @@ namespace Kcesar.MissionLine.Website.Data
     public int CallId { get; set; }
     public virtual VoiceCall Call { get; set; }
 
-    public DateTime Time { get; set; }
+    public DateTimeOffset Time { get; set; }
     public string Action { get; set; }
   }
 }

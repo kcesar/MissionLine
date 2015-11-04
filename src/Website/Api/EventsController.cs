@@ -22,8 +22,8 @@ namespace Kcesar.MissionLine.Website.Api
     private readonly IConfigSource config;
     private readonly Func<IMissionLineDbContext> dbFactory;
 
-    private static DateTime minDate = new DateTime(2000, 1, 1);
-    private static DateTime maxDate = new DateTime(2100, 1, 1);
+    private static DateTimeOffset minDate = new DateTimeOffset(new DateTime(2000, 1, 1));
+    private static DateTimeOffset maxDate = new DateTimeOffset(new DateTime(2100, 1, 1));
 
     /// <summary>
     /// 
@@ -56,7 +56,7 @@ namespace Kcesar.MissionLine.Website.Api
     internal static IQueryable<SarEvent> GetActiveEvents(IMissionLineDbContext db, IConfigSource config)
     {
       IQueryable<SarEvent> query = db.Events;
-      DateTime cutoff = DateTimeOffset.Now.AddDays(-2).ToOrgTime(config).ToLocalTime();
+      DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddDays(-2).ToOrgTime(config);
       query = query.Where(f => f.Closed == null || f.Closed > cutoff);
       return query.OrderByDescending(f => f.Opened);
     }
@@ -87,7 +87,7 @@ namespace Kcesar.MissionLine.Website.Api
         if (result.Errors.Count == 0)
         {
           var e = await db.Events.SingleOrDefaultAsync(f => f.Id == id);
-          e.Closed = DateTimeOffset.Now.ToOrgTime(this.config);
+          e.Closed = DateTimeOffset.UtcNow.ToOrgTime(config);
           await db.SaveChangesAsync();
           this.config.GetPushHub<CallsHub>().updatedEvent(compiledProj(e));
         }
@@ -238,12 +238,12 @@ namespace Kcesar.MissionLine.Website.Api
       {
         result.Errors.Add(new SubmitError("name", "Required"));
       }
-      DateTime localOpened = value.Opened.ToOrgTime(config);
+      DateTimeOffset localOpened = value.Opened.ToOrgTime(config);
       if (localOpened < minDate || localOpened > maxDate)
       {
         result.Errors.Add(new SubmitError("opened", "Date invalid or out of range"));
       }
-      DateTime? localClosed = value.Closed == null ? (DateTime?)null : value.Closed.Value.ToOrgTime(config);
+      DateTimeOffset? localClosed = value.Closed == null ? (DateTimeOffset?)null : value.Closed.Value.ToOrgTime(config);
       if (localClosed.HasValue)
       {
         if (localClosed < minDate || localClosed > maxDate)
@@ -287,17 +287,5 @@ namespace Kcesar.MissionLine.Website.Api
       }
       return result;
     }
-
-    /*
-    // PUT api/<controller>/5
-    public void Put(int id, [FromBody]string value)
-    {
-    }
-
-    // DELETE api/<controller>/5
-    public void Delete(int id)
-    {
-    }
-     * */
   }
 }

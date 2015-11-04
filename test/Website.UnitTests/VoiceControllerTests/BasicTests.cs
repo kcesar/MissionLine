@@ -277,7 +277,7 @@ namespace Website.UnitTests.VoiceControllerTests
       var url = element.Attribute("action").Value;
 
 
-      DateTime markerA = TimeUtils.GetLocalDateTime(context.ConfigMock.Object);
+      DateTimeOffset markerA = TimeUtils.GetLocalDateTime(context.ConfigMock.Object);
       result = Task.Run(() => context.DoApiCall(url, digits: "1")).Result.ToXDocument();
 
       // Should mark the member signed out in the database

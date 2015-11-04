@@ -38,7 +38,7 @@ namespace Kcesar.MissionLine.Website.Api
     // GET api/<controller>
     public async Task<IEnumerable<CallEntry>> Get()
     {
-      DateTime cutoff = DateTimeOffset.Now.AddDays(-2).ToOrgTime(config).ToLocalTime();
+      DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddDays(-2);
       using (var db = this.dbFactory())
       {
         return await db.Calls.Where(f => f.CallTime > cutoff).OrderByDescending(f => f.CallTime).Select(proj).ToArrayAsync();

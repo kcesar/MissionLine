@@ -45,5 +45,9 @@ namespace Kcesar.MissionLine.Website
       return t;
     }
 
+    public Task<MemberLookupResult> LookupMemberUsername(string username)
+    {
+      return MakeLookupResult(ReadData().Descendants("Member").FirstOrDefault(f => f.Attribute("username").Value == username));
+    }
   }
 }

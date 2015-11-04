@@ -9,8 +9,8 @@ namespace Kcesar.MissionLine.Website.Api.Model
   {
     public int Id { get; set; }
     public string Name { get; set; }
-    public DateTime TimeIn { get; set; }
-    public DateTime? TimeOut { get; set; }
+    public DateTimeOffset TimeIn { get; set; }
+    public DateTimeOffset? TimeOut { get; set; }
     public string MemberId { get; set; }
     public bool IsMember { get; set; }
 

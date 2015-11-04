@@ -14,8 +14,8 @@ namespace Kcesar.MissionLine.Website.Data
     public string MemberId { get; set; }
     public bool isMember { get; set; }
 
-    public DateTime TimeIn { get; set; }
-    public DateTime? TimeOut { get; set; }
+    public DateTimeOffset TimeIn { get; set; }
+    public DateTimeOffset? TimeOut { get; set; }
     public int? Miles { get; set; }
 
     [ForeignKey("Event")]

@@ -7,11 +7,12 @@ namespace Kcesar.MissionLine.Website
 
   public static class TimeUtils
   {
-    public static DateTime GetLocalDateTime(IConfigSource config)
+    public static DateTimeOffset GetLocalDateTime(IConfigSource config)
     {
-      return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, config.GetConfig("timezone") ?? "Pacific Standard Time");
+      return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTimeOffset.UtcNow, config.GetConfig("timezone") ?? "Pacific Standard Time");
     }
-    public static string GetMiltaryTimeVoiceText(DateTime time)
+
+    public static string GetMiltaryTimeVoiceText(DateTimeOffset time)
     {
       // "m" is giving the same result as "M" (month + day)
       string minuteText = time.ToString("mm").TrimStart('0');

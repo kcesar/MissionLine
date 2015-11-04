@@ -5,6 +5,7 @@ namespace Kcesar.MissionLine.Website
 {
   using System;
   using System.Net;
+  using System.Runtime.Caching;
   using System.Threading.Tasks;
   using Kcesar.MissionLine.Website.Model;
   using log4net;
@@ -14,6 +15,7 @@ namespace Kcesar.MissionLine.Website
   {
     Task<MemberLookupResult> LookupMemberPhone(string phone);
     Task<MemberLookupResult> LookupMemberDEM(string workerNumber);
+    Task<MemberLookupResult> LookupMemberUsername(string username);
   }
 
   public class MemberSource : IMemberSource
@@ -21,6 +23,11 @@ namespace Kcesar.MissionLine.Website
     private readonly string url;
     private readonly NetworkCredential credential;
     private readonly ILog log;
+
+    private static readonly MemoryCache usersCache = new MemoryCache("usernames");
+    private static readonly object cacheLock = new object();
+    private static readonly CacheItemPolicy cachePolicy = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10) };
+    private static readonly MemberLookupResult nullUser = new MemberLookupResult();
 
     public MemberSource(IConfigSource config, ILog log)
     {
@@ -37,6 +44,25 @@ namespace Kcesar.MissionLine.Website
     public Task<MemberLookupResult> LookupMemberDEM(string workerNumber)
     {
       return DoLookup("/api/members/byworkernumber/" + workerNumber);
+    }
+
+    public async Task<MemberLookupResult> LookupMemberUsername(string username)
+    {
+      MemberLookupResult result;
+      lock(cacheLock)
+      {
+        result = (MemberLookupResult)usersCache.Get(username);
+      }
+
+      if (result == null)
+      {
+        result = await DoLookup("/api/members/byusername/" + Uri.EscapeUriString(username)) ?? nullUser;        
+        lock (cacheLock)
+        {
+          usersCache.Set(username, result, cachePolicy);
+        }
+      }
+      return result == nullUser ? null : result;
     }
 
     private async Task<MemberLookupResult> DoLookup(string url)

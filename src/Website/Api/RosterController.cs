@@ -41,8 +41,8 @@ namespace Kcesar.MissionLine.Website.Api
     {
       using (var db = this.dbFactory())
       {
-        var futureDate = DateTime.Now.AddYears(1);
-        var closedEventCutoff = DateTimeOffset.Now.AddDays(-2).ToOrgTime(config).ToLocalTime();
+        var futureDate = DateTimeOffset.UtcNow.ToOrgTime(config).AddYears(1);
+        var closedEventCutoff = DateTimeOffset.UtcNow.ToOrgTime(config).AddDays(-2);
 
         var latest = (from s in db.SignIns where s.TimeOut == null || s.TimeOut > closedEventCutoff || (s.EventId.HasValue && s.Event.Closed == null)
                       group s by new { s.MemberId, s.EventId } into g
@@ -97,12 +97,12 @@ namespace Kcesar.MissionLine.Website.Api
       }
 
       var others = db.SignIns.Where(f => f.EventId == eventId && f.MemberId == signin.MemberId && f.Id != signin.Id).OrderBy(f => f.TimeIn).ToList();
-      DateTime effectiveTimeOut = signin.TimeOut ?? DateTime.MaxValue;
+      DateTimeOffset effectiveTimeOut = signin.TimeOut ?? DateTimeOffset.MaxValue;
       bool rosterisLatest = true;
 
       foreach (var other in others)
       {
-        var otherTimeOut = other.TimeOut ?? DateTime.MaxValue;
+        var otherTimeOut = other.TimeOut ?? DateTimeOffset.MaxValue;
         // R: [---------->
         // O:      [----------]
 
@@ -198,7 +198,7 @@ namespace Kcesar.MissionLine.Website.Api
         TimeOut = inner.TimeIn
       };
       db.SignIns.Add(front);
-      outer.TimeIn = inner.TimeOut ?? DateTimeOffset.Now.ToOrgTime(config);
+      outer.TimeIn = inner.TimeOut ?? DateTimeOffset.UtcNow.ToOrgTime(config);
       return front;
     }
 

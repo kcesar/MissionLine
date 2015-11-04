@@ -208,7 +208,7 @@ namespace Kcesar.MissionLine.Website.Api
         var signin = await db.SignIns.Where(f => f.MemberId == this.session.MemberId).OrderByDescending(f => f.TimeIn).FirstOrDefaultAsync();
         var call = await db.Calls.SingleAsync(f => f.CallId == request.CallSid);
 
-        DateTime time = TimeUtils.GetLocalDateTime(this.config);
+        DateTimeOffset time = TimeUtils.GetLocalDateTime(this.config);
         var sayDate = TimeUtils.GetMiltaryTimeVoiceText(time);
 
         if (signin == null || signin.TimeOut.HasValue)

@@ -17,8 +17,8 @@ namespace Kcesar.MissionLine.Website.Data
     public int Id { get; set; }
     public string Name { get; set; }
 
-    public DateTime Opened { get; set; }
-    public DateTime? Closed { get; set; }
+    public DateTimeOffset Opened { get; set; }
+    public DateTimeOffset? Closed { get; set; }
 
     public string OutgoingText { get; set; }
     public string OutgoingUrl { get; set; }

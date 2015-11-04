@@ -17,7 +17,7 @@ namespace Kcesar.MissionLine.Website.Data
     public int Id { get; set; }
     public string CallId { get; set; }
     public string Number { get; set; }
-    public DateTime CallTime { get; set; }
+    public DateTimeOffset CallTime { get; set; }
     public string Name { get; set; }
     public int? Duration { get; set; }
     public string RecordingUrl { get; set; }
