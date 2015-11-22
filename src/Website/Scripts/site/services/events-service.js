@@ -67,8 +67,15 @@
         self.unassigned.roster.length = 0;
         for (var i = 0; i < self.list.length; i++) { self.list[i].roster.length = 0; }
         $.each(rosterService.signins, function (idx, item) {
-          item.event = self._lookup[item.eventId];
-          item.eventId ? item.event.roster.push(item) : self.unassigned.roster.push(item);
+          if (item.eventId) {
+            item.event = self._lookup[item.eventId];
+            if (item.event) {
+              item.event.roster.push(item);
+            }
+          }
+          else {
+            self.unassigned.roster.push(item);
+          }
         })
       }
     });
