@@ -91,3 +91,10 @@ footer {
 tr.highlight {
     background-color: yellow !important;
 }
+
+div.myevent {
+    padding-left: 1.28571429em;
+}
+.font-bold {
+  font-weight: bold;
+}

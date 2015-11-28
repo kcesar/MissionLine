@@ -501,6 +501,7 @@
     <Content Include="Views\Account\LinkComplete.cshtml" />
     <Content Include="Views\Home\_MergeDialog.cshtml" />
     <Content Include="Views\Home\_CloseDialog.cshtml" />
+    <Content Include="Views\Home\Me.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

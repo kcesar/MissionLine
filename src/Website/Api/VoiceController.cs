@@ -259,6 +259,8 @@ namespace Kcesar.MissionLine.Website.Api
           this.session.IsSignedIn = false;
           await db.SaveChangesAsync();
 
+          this.config.GetPushHub<CallsHub>().updatedRoster(RosterController.GetRosterEntry(signin.Id, db), true);
+
           // add prompt for timeout beyond right now
           response.BeginGather(new { timeout = 10, action = GetAction("SetTimeOut") });
           response.SayVoice(Speeches.SignedOutTemplate, this.session.MemberName, sayDate);

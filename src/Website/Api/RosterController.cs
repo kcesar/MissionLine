@@ -11,6 +11,7 @@ namespace Kcesar.MissionLine.Website.Api
   using System.Threading.Tasks;
   using System.Web.Http;
   using Data;
+  using log4net;
   using Model;
   using Website.Model;
 
@@ -22,6 +23,7 @@ namespace Kcesar.MissionLine.Website.Api
     private readonly IConfigSource config;
     private readonly IMemberSource members;
     private readonly Func<IMissionLineDbContext> dbFactory;
+    private readonly ILog log;
 
     /// <summary>
     /// 
@@ -29,11 +31,13 @@ namespace Kcesar.MissionLine.Website.Api
     /// <param name="dbFactory"></param>
     /// <param name="config"></param>
     /// <param name="members"></param>
-    public RosterController(Func<IMissionLineDbContext> dbFactory, IConfigSource config, IMemberSource members)
+    /// <param name="log"></param>
+    public RosterController(Func<IMissionLineDbContext> dbFactory, IConfigSource config, IMemberSource members, ILog log)
     {
       this.dbFactory = dbFactory;
       this.config = config;
       this.members = members;
+      this.log = log;
     }
 
     // GET api/<controller>
@@ -61,6 +65,25 @@ namespace Kcesar.MissionLine.Website.Api
       using (var db = this.dbFactory())
       {
         return GetRosterEntry(id, db);
+      }
+    }
+
+    [HttpGet]
+    [Route("api/roster/member/{memberId}")]
+    public RosterEntry[] GetForMember(string memberId)
+    {
+      using (var db = this.dbFactory())
+      {
+        var futureDate = DateTimeOffset.UtcNow.ToOrgTime(config).AddYears(1);
+        var closedEventCutoff = DateTimeOffset.UtcNow.ToOrgTime(config).AddDays(-2);
+
+        var latest = (from s in db.SignIns
+                      where (s.TimeOut == null || s.TimeOut > closedEventCutoff) && s.MemberId == memberId
+                      orderby s.TimeOut.HasValue ? s.TimeOut : futureDate descending, s.TimeIn
+                      select s)
+                      .Select(proj);
+
+        return latest.ToArray();
       }
     }
 
@@ -252,16 +275,52 @@ namespace Kcesar.MissionLine.Website.Api
         .SingleOrDefault();
     }
 
-    public async Task<SubmitResult<RosterEntry>> Put(MemberSignIn value)
+    public async Task<SubmitResult<RosterEntry>> Post(MemberSignIn value)
     {
       var result = new SubmitResult<RosterEntry>();
+      log.InfoFormat("User {0} adding signin for member {1} on event {2}", User.Identity.Name, value.MemberId, value.EventId);
+      var member = await members.LookupMemberUsername(User.Identity.Name.Split('@')[0]);
+      if (member == null || member.Id != value.MemberId)
+      {
+        result.Errors.Add(new SubmitError("memberId", "Currently only supports signing in yourself."));
+      }
+      else
+      {
+        value.Name = member.Name;
+        value.isMember = true;
+      }
 
+      return await SaveSigninInternal(value, result);
+    }
+
+
+    public async Task<SubmitResult<RosterEntry>> Put(MemberSignIn value)
+    {
+      log.InfoFormat("User {0} updating signin for member {1} ({2}) on event {3}. New timeout = {4}",
+        User.Identity.Name,
+        value.MemberId,
+        value.Name,
+        value.EventId,
+        value.TimeOut);
+      return await SaveSigninInternal(value, new SubmitResult<RosterEntry>());
+    }
+
+    private async Task<SubmitResult<RosterEntry>> SaveSigninInternal(MemberSignIn value, SubmitResult<RosterEntry> result)
+    {
       if (result.Errors.Count == 0)
       {
         using (var db = dbFactory())
         {
           MemberSignIn signin;
-          signin = db.SignIns.Single(f => f.Id == value.Id);
+          if (value.Id == 0)
+          {
+            signin = value;
+            db.SignIns.Add(value);
+          }
+          else
+          {
+            signin = db.SignIns.Single(f => f.Id == value.Id);
+          }
 
           if (signin.TimeOut != value.TimeOut) { signin.TimeOut = value.TimeOut; }
           if (signin.Miles != value.Miles) { signin.Miles = value.Miles; }

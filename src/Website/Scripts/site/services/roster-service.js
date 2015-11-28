@@ -49,6 +49,10 @@
       }
     });
     pushService.listenTo('updatedRoster', function (data, isLatest) {
+      if (console['log']) {
+        console.log('roster updated');
+        console.log(data);
+      }
       var signin = new SigninModel(data);
       var found = false;
       if (isLatest) {

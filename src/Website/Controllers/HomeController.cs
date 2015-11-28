@@ -26,9 +26,14 @@ namespace Kcesar.MissionLine.Website.Controllers
 
     public async Task<ActionResult> Index()
     {
-      ViewBag.NgApp = "missionlineApp";
       ViewBag.LinkTemplate = this.config.GetConfig("memberLinkTemplate");
       ViewBag.Myself = JsonConvert.SerializeObject(await members.LookupMemberUsername(User.Identity.Name.Split('@')[0]));
+      return View();
+    }
+
+    public async Task<ActionResult> Me()
+    {
+      ViewBag.Myself = await members.LookupMemberUsername(User.Identity.Name.Split('@')[0]);
       return View();
     }
 

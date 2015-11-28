@@ -24,7 +24,10 @@
       id: self.id,
       name: self.name,
       eventId: self.eventId,
-      miles: self.miles
+      miles: self.miles,
+      memberId: self.memberId,
+      timeIn: self.timeIn,
+      timeOut: self.timeOut
     };
     if (self.inDatePart && self.inTimePart) {
       data.timeIn = moment(self.inDatePart + 'T' + ("00:00".substring(0, 5 - self.inTimePart.length) + self.inTimePart))

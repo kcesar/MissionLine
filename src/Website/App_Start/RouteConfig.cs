@@ -19,6 +19,12 @@ namespace Kcesar.MissionLine.Website
       );
 
       routes.MapRoute(
+        name: "Me",
+        url: "Me",
+        defaults: new { controller = "Home", action = "Me" }
+        );
+
+      routes.MapRoute(
           name: "Default",
           url: "{controller}/{action}/{id}",
           defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
