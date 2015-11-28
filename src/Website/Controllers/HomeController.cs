@@ -3,8 +3,10 @@
  */
 namespace Kcesar.MissionLine.Website.Controllers
 {
+  using System.Data.Entity;
   using System.Threading.Tasks;
   using System.Web.Mvc;
+  using Data;
   using log4net;
   using Newtonsoft.Json;
 
@@ -31,9 +33,13 @@ namespace Kcesar.MissionLine.Website.Controllers
     }
 
     [AllowAnonymous]
-    public ActionResult Heartbeat()
+    public async Task<ActionResult> Heartbeat()
     {
-      log.Debug("Heartbeat");
+      using (var db = new MissionLineDbContext())
+      {
+        var info = await members.LookupMemberUsername("heartbeat");
+        log.DebugFormat("Heartbeat {0} {1}", await db.Events.CountAsync(), info);
+      }
       return Content("OK");
     }
   }
