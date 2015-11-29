@@ -34,6 +34,7 @@
 <script type="text/ng-template" id="signoutDialog.html">
   <p>Sign out from <strong>{{model.name}}</strong><span ng-if="model.next"> before signing into {{model.next}}</span>?</p>
 </script>
+@RenderPage("_SignoutDialog.cshtml")
 
 @section scripts {
   @Scripts.Render("~/bundles/app")
@@ -44,22 +45,9 @@
       function ($scope, $rootScope, EditModalService, eventsService, rosterService) {
         $.extend($scope, {
           events: eventsService.list,
-          @*myself: @(new HtmlString(ViewBag.Myself)),
-          showRoster: true,
-          showCalls: false,
-          unassignedEvent: eventsService.unassigned,
-          callsSort: 'time',
-          callsSortDesc: true,
-          rosterSort: 'timeOut',
-          rosterSortDesc: true,
-*@
           eventsSortPredicate: function (event) {
             return -event.opened.unix() + (event.closed ? 100000000 : 0);
           },
-          @*        calls: callsService.calls,
-          createEvent: function () { EditModalService.edit('editDialog.html', 'Create New Event', new EventModel(), eventsService.save); },
-          getToday: function () { return moment().startOf('day'); },
-            *@
           getEventStatus: function (event) {
             var parts = rosterService.signins.filter(function (f) {
               return f.memberId == memberId && f.eventId == event.id
@@ -105,13 +93,12 @@
             rosterService.save(new SigninModel({ eventId: evt.id, memberId: memberId, timeIn: moment() }));
           },
           signout: function (evt) {
-            if (!confirm("Sign out?")) {
-              return;
-            }
             var rosterEntry = rosterService.signins.filter(function (f) { return f.memberId == memberId && f.eventId == evt.id && !f.timeOut });
             if (rosterEntry.length > 0) {
-              rosterEntry[0].timeOut = moment();
-              rosterService.save(rosterEntry[0]);
+              var data = rosterEntry[0].getData();
+              data.timeOut = moment();
+              EditModalService.edit('signoutDialog.html', 'Sign Out', new SigninModel(data), rosterService.save, { event: evt });
+
             } else {
               alert("Couldn't figure out how to sign you out");
             }
