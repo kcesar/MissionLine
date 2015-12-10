@@ -28,7 +28,7 @@ namespace Website.UnitTests
 
       var context = TestContext.GetDefault<TestContext>();
       var membersMock = new Mock<IMemberSource>(MockBehavior.Strict);
-      var controller = new RosterController(() => context.DBMock.Object, context.ConfigMock.Object, membersMock.Object);
+      var controller = new RosterController(() => context.DBMock.Object, context.ConfigMock.Object, membersMock.Object, new ConsoleLogger());
 
       int eventId = 52;
       context.Events.Add(new SarEvent { Id = eventId, Opened = "3:00".TimeToDate().Value, Name = "Test Event" });
