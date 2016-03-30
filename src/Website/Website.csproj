@@ -60,10 +60,6 @@
       <HintPath>..\..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.Identity.Owin.2.2.1\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
       <Private>True</Private>
@@ -92,14 +88,6 @@
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Cookies, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Owin.Security.Cookies.3.0.1\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.Facebook, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.Facebook.3.0.1\lib\net45\Microsoft.Owin.Security.Facebook.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.Google, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.Google.3.0.1\lib\net45\Microsoft.Owin.Security.Google.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Jwt, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -258,17 +246,12 @@
     <Compile Include="Api\BaseVoiceController.cs" />
     <Compile Include="Api\VoiceAdminController.cs" />
     <Compile Include="Data\LogEntry.cs" />
-    <Compile Include="Data\UserLogin.cs" />
     <Compile Include="DIConfig.cs" />
     <Compile Include="DIControllerFactory.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Identity\ApplicationSignInManager.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
-    <Compile Include="Data\ApplicationUser.cs" />
-    <Compile Include="Identity\ApplicationUserManager.cs" />
-    <Compile Include="Identity\SimpleUserStore.cs" />
     <Compile Include="Migrations\201507130422468_OAuthIdentity.cs" />
     <Compile Include="Migrations\201507130422468_OAuthIdentity.Designer.cs">
       <DependentUpon>201507130422468_OAuthIdentity.cs</DependentUpon>
@@ -285,7 +268,10 @@
     <Compile Include="Migrations\201510100426012_datetimeoffset.Designer.cs">
       <DependentUpon>201510100426012_datetimeoffset.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\ExternalLoginListViewModel.cs" />
+    <Compile Include="Migrations\201603300623007_RemoveSignins.cs" />
+    <Compile Include="Migrations\201603300623007_RemoveSignins.Designer.cs">
+      <DependentUpon>201603300623007_RemoveSignins.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\SubmitResult.cs" />
     <Compile Include="Api\RosterController.cs" />
     <Compile Include="Api\Model\RosterEntry.cs" />
@@ -297,7 +283,6 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="CallsHub.cs" />
     <Compile Include="ConfigSource.cs" />
-    <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Api\VoiceController.cs" />
     <Compile Include="Data\CallAction.cs" />
@@ -495,10 +480,6 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Scripts\moment.min.js" />
-    <Content Include="Views\Account\Login.cshtml" />
-    <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
-    <Content Include="Views\Account\Link.cshtml" />
-    <Content Include="Views\Account\LinkComplete.cshtml" />
     <Content Include="Views\Home\_MergeDialog.cshtml" />
     <Content Include="Views\Home\_CloseDialog.cshtml" />
     <Content Include="Views\Home\Me.cshtml" />
@@ -536,6 +517,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201510100426012_datetimeoffset.resx">
       <DependentUpon>201510100426012_datetimeoffset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603300623007_RemoveSignins.resx">
+      <DependentUpon>201603300623007_RemoveSignins.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Speeches.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -3,17 +3,8 @@
     <text>
     <ul class="nav navbar-nav navbar-right">
         <li class="navbar-text">
-            @User.Identity.Name.Split('@')[0]
-        </li>
-        <li>
-            @Html.ActionLink("Sign out", "SignOut", "Account")
+            @ViewBag.MySelf.Name
         </li>
     </ul>
     </text>
-}
-else
-{
-    <ul class="nav navbar-nav navbar-right">
-        <li>@Html.ActionLink("Sign in", "Index", "Home", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
-    </ul>
 }

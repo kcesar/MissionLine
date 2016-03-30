@@ -1,14 +1,14 @@
 ﻿/*
- * Copyright 2015 Matthew Cosand
+ * Copyright Matthew Cosand
  */
 namespace Kcesar.MissionLine.Website.Controllers
 {
   using System.Data.Entity;
+  using System.Security.Claims;
   using System.Threading.Tasks;
   using System.Web.Mvc;
   using Data;
   using log4net;
-  using Newtonsoft.Json;
 
   [RequireHttps]
   public class HomeController : Controller
@@ -24,16 +24,23 @@ namespace Kcesar.MissionLine.Website.Controllers
       this.log = log;
     }
 
-    public async Task<ActionResult> Index()
+    private MemberLookupResult GetMySelf()
     {
-      ViewBag.LinkTemplate = this.config.GetConfig("memberLinkTemplate");
-      ViewBag.Myself = JsonConvert.SerializeObject(await members.LookupMemberUsername(User.Identity.Name.Split('@')[0]));
+      var identity = (ClaimsIdentity)User.Identity;
+      var memberIdClaim = identity.FindFirst("memberId");
+      return new MemberLookupResult { Id = memberIdClaim.Value, Name = identity.FindFirst("name").Value };
+    }
+
+    public ActionResult Index()
+    {
+      ViewBag.LinkTemplate = config.GetConfig("memberLinkTemplate");
+      ViewBag.Myself = GetMySelf();
       return View();
     }
 
-    public async Task<ActionResult> Me()
+    public ActionResult Me()
     {
-      ViewBag.Myself = await members.LookupMemberUsername(User.Identity.Name.Split('@')[0]);
+      ViewBag.MySelf = GetMySelf();
       return View();
     }
 

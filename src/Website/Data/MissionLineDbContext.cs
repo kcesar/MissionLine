@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2015 Matthew Cosand
+ * Copyright Matthew Cosand
  */
 namespace Kcesar.MissionLine.Website.Data
 {
@@ -13,8 +13,6 @@ namespace Kcesar.MissionLine.Website.Data
     IDbSet<MemberSignIn> SignIns { get; set; }
     IDbSet<SarEvent> Events { get; set; }
 
-    IDbSet<ApplicationUser> Users { get; set; }
-    IDbSet<UserLogin> UserLogins { get; set; }
     int SaveChanges();
     Task<int> SaveChangesAsync();
   }
@@ -30,17 +28,12 @@ namespace Kcesar.MissionLine.Website.Data
     public IDbSet<MemberSignIn> SignIns { get; set; }
     public IDbSet<SarEvent> Events { get; set; }
 
-    public IDbSet<ApplicationUser> Users { get; set; }
-    public IDbSet<UserLogin> UserLogins { get; set; }
-
     public IDbSet<LogEntry> Logs { get; set; }
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
       modelBuilder.Types().Configure(e => e.ToTable("missionline_" + e.ClrType.Name));
-      modelBuilder.Entity<ApplicationUser>().HasKey(f => f.Id).HasMany(f => f.Logins).WithRequired(f => f.User);
-      modelBuilder.Entity<UserLogin>().HasKey(l => new { l.LoginProvider, l.ProviderKey, l.UserId });
     }
 
     public static MissionLineDbContext Create()

@@ -70,7 +70,7 @@
       'EditModalService', 'eventsService', 'rosterService', 'callsService',
       function ($scope, EditModalService, eventsService, rosterService, callsService) {
         $.extend($scope, {
-          myself: @(new HtmlString(ViewBag.Myself)),
+          myself: @(new HtmlString(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Myself))),
           showRoster: true,
           showCalls: false,
           unassignedEvent: eventsService.unassigned,
