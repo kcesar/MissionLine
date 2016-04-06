@@ -3,8 +3,14 @@
     <text>
     <ul class="nav navbar-nav navbar-right">
         <li class="navbar-text">
-            @ViewBag.MySelf.Name
+            @ViewBag.Myself.Name
         </li>
+@if (ViewBag.Signout != null)
+{
+        <li>
+            <a href="@ViewBag.Signout">Sign out</a>
+        </li>
+}
     </ul>
     </text>
 }

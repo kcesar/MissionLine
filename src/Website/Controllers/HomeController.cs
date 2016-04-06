@@ -33,14 +33,16 @@ namespace Kcesar.MissionLine.Website.Controllers
 
     public ActionResult Index()
     {
-      ViewBag.LinkTemplate = config.GetConfig("memberLinkTemplate");
+      ViewBag.LinkTemplate = ((ClaimsIdentity)User.Identity).FindFirst("profile")?.Value;
       ViewBag.Myself = GetMySelf();
+      ViewBag.Signout = config.GetConfig("auth:endsession");
       return View();
     }
 
     public ActionResult Me()
     {
       ViewBag.MySelf = GetMySelf();
+      ViewBag.Signout = config.GetConfig("auth:endsession");
       return View();
     }
 
