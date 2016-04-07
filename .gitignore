@@ -1,5 +1,7 @@
 run.log*
 src/website/App_Data/*.?df
+Web.Release.config
+web.local.config
 
 # Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
 [Bb]in/
