@@ -5,8 +5,11 @@ namespace Kcesar.MissionLine.Website
 {
   using System;
   using System.Net;
+  using System.Net.Http;
+  using System.Net.Http.Headers;
   using System.Runtime.Caching;
   using System.Threading.Tasks;
+  using IdentityModel.Client;
   using Kcesar.MissionLine.Website.Model;
   using log4net;
   using Newtonsoft.Json;
@@ -15,24 +18,32 @@ namespace Kcesar.MissionLine.Website
   {
     Task<MemberLookupResult> LookupMemberPhone(string phone);
     Task<MemberLookupResult> LookupMemberDEM(string workerNumber);
-    Task<MemberLookupResult> LookupMemberUsername(string username);
+    //  Task<MemberLookupResult> LookupMemberUsername(string username);
   }
 
   public class MemberSource : IMemberSource
   {
-    private readonly string url;
-    private readonly NetworkCredential credential;
+    private readonly string _url;
+    private readonly string _authorityUrl;
+    private readonly string _clientId;
+    private readonly string _clientSecret;
+    private string token;
+    private DateTime tokenExpiry = DateTime.MinValue;
+    private readonly object tokenLock = new object();
+    //  private readonly NetworkCredential credential;
     private readonly ILog log;
 
-    private static readonly MemoryCache usersCache = new MemoryCache("usernames");
-    private static readonly object cacheLock = new object();
-    private static readonly CacheItemPolicy cachePolicy = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10) };
+    //private static readonly MemoryCache usersCache = new MemoryCache("usernames");
+    //private static readonly object cacheLock = new object();
+    //private static readonly CacheItemPolicy cachePolicy = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10) };
     private static readonly MemberLookupResult nullUser = new MemberLookupResult();
 
     public MemberSource(IConfigSource config, ILog log)
     {
-      this.url = config.GetConfig("databaseUrl").TrimEnd('/');
-      this.credential = new NetworkCredential(config.GetConfig("databaseUsername"), config.GetConfig("databasePassword"));
+      _authorityUrl = config.GetConfig("auth:authority");
+      _url = config.GetConfig("api:root").TrimEnd('/');
+      _clientId = config.GetConfig("api:client");
+      _clientSecret = config.GetConfig("api:clientSecret");
       this.log = log;
     }
 
@@ -46,37 +57,58 @@ namespace Kcesar.MissionLine.Website
       return DoLookup("/api/members/byworkernumber/" + workerNumber);
     }
 
-    public async Task<MemberLookupResult> LookupMemberUsername(string username)
-    {
-      MemberLookupResult result;
-      lock(cacheLock)
-      {
-        result = (MemberLookupResult)usersCache.Get(username);
-      }
+    //public async Task<MemberLookupResult> LookupMemberUsername(string username)
+    //{
+    //  MemberLookupResult result;
+    //  lock(cacheLock)
+    //  {
+    //    result = (MemberLookupResult)usersCache.Get(username);
+    //  }
 
-      if (result == null)
+    //  if (result == null)
+    //  {
+    //    result = await DoLookup("/api/members/byusername/" + Uri.EscapeUriString(username)) ?? nullUser;        
+    //    lock (cacheLock)
+    //    {
+    //      usersCache.Set(username, result, cachePolicy);
+    //    }
+    //  }
+    //  return result == nullUser ? null : result;
+    //}
+
+    private async Task<string> GetToken()
+    {
+      if (tokenExpiry < DateTime.Now)
       {
-        result = await DoLookup("/api/members/byusername/" + Uri.EscapeUriString(username)) ?? nullUser;        
-        lock (cacheLock)
+        var tokenClient = new TokenClient(
+          _authorityUrl + "/connect/token",
+          _clientId,
+          _clientSecret);
+        var response = await tokenClient.RequestClientCredentialsAsync("database-api");
+        lock (tokenLock)
         {
-          usersCache.Set(username, result, cachePolicy);
+          token = response.AccessToken;
+          tokenExpiry = DateTime.Now.AddSeconds(response.ExpiresIn - 100);
         }
       }
-      return result == nullUser ? null : result;
+      return token;
     }
 
     private async Task<MemberLookupResult> DoLookup(string url)
     {
-      WebClient client = new WebClient() { Credentials = this.credential };
-      Uri uri = new Uri(this.url + url + "?_auth=basic");
+      var token = await GetToken();
+      HttpClient client = new HttpClient();
+      client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+      url = _url + url;
       string response;
       try
       {
-        response = await client.DownloadStringTaskAsync(uri);
+        response = await client.GetStringAsync(url);
       }
       catch (Exception ex)
       {
-        this.log.Error("While querying " + uri.AbsoluteUri, ex);
+        this.log.Error("While querying " + url, ex);
         throw;
       }
 

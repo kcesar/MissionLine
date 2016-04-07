@@ -12,6 +12,8 @@ namespace Kcesar.MissionLine.Website
   public class DIControllerFactory : DefaultControllerFactory
   {
     private readonly IKernel kernel;
+    private readonly object bindingLock = new object();
+
     public DIControllerFactory(IKernel kernel)
     {
       this.kernel = kernel;
@@ -19,11 +21,14 @@ namespace Kcesar.MissionLine.Website
 
     protected override IController GetControllerInstance(RequestContext requestContext, Type controllerType)
     {
-      if (!this.kernel.GetBindings(controllerType).Any())
+      lock (bindingLock)
       {
-        this.kernel.Bind(controllerType).To(controllerType);
+        if (!kernel.GetBindings(controllerType).Any())
+        {
+          kernel.Bind(controllerType).To(controllerType);
+        }
       }
-      return (IController)this.kernel.Get(controllerType);
+      return (IController)kernel.Get(controllerType);
     }
   }
 }

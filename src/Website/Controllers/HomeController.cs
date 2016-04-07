@@ -45,16 +45,5 @@ namespace Kcesar.MissionLine.Website.Controllers
       ViewBag.Signout = config.GetConfig("auth:endsession");
       return View();
     }
-
-    [AllowAnonymous]
-    public async Task<ActionResult> Heartbeat()
-    {
-      using (var db = new MissionLineDbContext())
-      {
-        var info = await members.LookupMemberUsername("heartbeat");
-        log.DebugFormat("Heartbeat {0} {1}", await db.Events.CountAsync(), info);
-      }
-      return Content("OK");
-    }
   }
 }

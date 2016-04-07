@@ -8,6 +8,7 @@ namespace Kcesar.MissionLine.Website.Api
   using System.Data.Entity;
   using System.Linq;
   using System.Linq.Expressions;
+  using System.Security.Claims;
   using System.Threading.Tasks;
   using System.Web.Http;
   using Data;
@@ -279,14 +280,16 @@ namespace Kcesar.MissionLine.Website.Api
     {
       var result = new SubmitResult<RosterEntry>();
       log.InfoFormat("User {0} adding signin for member {1} on event {2}", User.Identity.Name, value.MemberId, value.EventId);
-      var member = await members.LookupMemberUsername(User.Identity.Name.Split('@')[0]);
-      if (member == null || member.Id != value.MemberId)
+
+      var memberIdClaim = ((ClaimsPrincipal)User).FindFirst("memberId");
+      if (memberIdClaim == null || memberIdClaim.Value != value.MemberId)
       {
         result.Errors.Add(new SubmitError("memberId", "Currently only supports signing in yourself."));
       }
       else
       {
-        value.Name = member.Name;
+        var nameClaim = ((ClaimsPrincipal)User).FindFirst("name");
+        value.Name = nameClaim.Value;
         value.isMember = true;
       }
 

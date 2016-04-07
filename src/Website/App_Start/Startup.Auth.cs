@@ -3,6 +3,8 @@
  */
 namespace Kcesar.MissionLine.Website
 {
+  using System.IdentityModel.Tokens;
+  using System.Security.Claims;
   using Data;
   using Microsoft.AspNet.Identity;
   using Microsoft.Owin.Security.Cookies;
@@ -28,6 +30,10 @@ namespace Kcesar.MissionLine.Website
         RedirectUri = config.GetConfig("auth:redirect").Trim('/') + "/",
         ResponseType = "id_token",
         Scope = "openid email profile kcsara-profile",
+        TokenValidationParameters = new TokenValidationParameters
+        {
+          NameClaimType = ClaimsIdentity.DefaultNameClaimType
+        },
         SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
       });
     }
