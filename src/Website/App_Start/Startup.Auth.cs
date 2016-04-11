@@ -10,7 +10,7 @@ namespace Kcesar.MissionLine.Website
   using Microsoft.Owin.Security.Cookies;
   using Microsoft.Owin.Security.OpenIdConnect;
   using Owin;
-
+  using Sar.Web;
   public partial class Startup
   {
     // For more information on configuring authentication, please visit http://go.microsoft.com/fwlink/?LinkId=301864
@@ -23,7 +23,7 @@ namespace Kcesar.MissionLine.Website
       {
         AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
       });
-      app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
+      app.Use<NonceCleanupOpenIdConnectAuthenticationMiddleware>(app, new OpenIdConnectAuthenticationOptions
       {
         Authority = config.GetConfig("auth:authority").Trim('/') + "/",
         ClientId = config.GetConfig("auth:clientId"),
