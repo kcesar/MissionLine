@@ -42,19 +42,19 @@ namespace Kcesar.MissionLine.Website
     {
       _authorityUrl = config.GetConfig("auth:authority");
       _url = config.GetConfig("api:root").TrimEnd('/');
-      _clientId = config.GetConfig("api:client");
-      _clientSecret = config.GetConfig("api:clientSecret");
+      _clientId = config.GetConfig("api:clientId");
+      _clientSecret = config.GetConfig("api:secret");
       this.log = log;
     }
 
     public Task<MemberLookupResult> LookupMemberPhone(string phone)
     {
-      return DoLookup("/api/members/byphonenumber/" + phone.TrimStart('+'));
+      return DoLookup("/members/byphonenumber/" + phone.TrimStart('+'));
     }
 
     public Task<MemberLookupResult> LookupMemberDEM(string workerNumber)
     {
-      return DoLookup("/api/members/byworkernumber/" + workerNumber);
+      return DoLookup("/members/byworkernumber/" + workerNumber);
     }
 
     //public async Task<MemberLookupResult> LookupMemberUsername(string username)

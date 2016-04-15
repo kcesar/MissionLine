@@ -316,6 +316,8 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\MemberSummary.cs" />
+    <Compile Include="NonceCleanupOpenIdConnectAuthenticationHandler.cs" />
+    <Compile Include="NonceCleanupOpenIdConnectAuthenticationMiddleware.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\EventsService.cs" />
     <Compile Include="Services\LogService.cs" />

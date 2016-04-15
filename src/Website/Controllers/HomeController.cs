@@ -3,11 +3,8 @@
  */
 namespace Kcesar.MissionLine.Website.Controllers
 {
-  using System.Data.Entity;
   using System.Security.Claims;
-  using System.Threading.Tasks;
   using System.Web.Mvc;
-  using Data;
   using log4net;
 
   [RequireHttps]
@@ -33,7 +30,7 @@ namespace Kcesar.MissionLine.Website.Controllers
 
     public ActionResult Index()
     {
-      ViewBag.LinkTemplate = this.config.GetConfig("memberLinkTemplate");
+      ViewBag.LinkTemplate = config.GetConfig("memberLinkTemplate");
       ViewBag.Myself = GetMySelf();
       ViewBag.Signout = config.GetConfig("auth:endsession");
       return View();
