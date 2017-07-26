@@ -84,7 +84,7 @@ namespace Kcesar.MissionLine.Website
           _authorityUrl + "/connect/token",
           _clientId,
           _clientSecret);
-        var response = await tokenClient.RequestClientCredentialsAsync("database-api");
+        var response = await tokenClient.RequestClientCredentialsAsync("database-api db-r-members");
         lock (tokenLock)
         {
           token = response.AccessToken;

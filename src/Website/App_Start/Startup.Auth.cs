@@ -32,8 +32,6 @@ namespace Kcesar.MissionLine.Website
       });
 
       NameValueCollection configStrings = ConfigurationManager.AppSettings;
-      var addScopes = new[] { "database-api" };
-
 
       app.Use<NonceCleanupOpenIdConnectAuthenticationMiddleware>(app, new OpenIdConnectAuthenticationOptions
       {
@@ -41,7 +39,7 @@ namespace Kcesar.MissionLine.Website
         ClientId = configStrings["auth:clientId"],
         RedirectUri = configStrings["auth:redirect"].Trim('/') + "/",
         ResponseType = "code id_token token",
-        Scope = "openid email profile kcsara-profile" + (addScopes.Length > 0 ? " " + string.Join(" ", addScopes) : string.Empty),
+        Scope = "openid email profile database-api kcsara-profile",
         TokenValidationParameters = new TokenValidationParameters
         {
           NameClaimType = "name"

@@ -277,6 +277,10 @@
     <Compile Include="Migrations\201603300623007_RemoveSignins.Designer.cs">
       <DependentUpon>201603300623007_RemoveSignins.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707260624018_DefaultSchema.cs" />
+    <Compile Include="Migrations\201707260624018_DefaultSchema.Designer.cs">
+      <DependentUpon>201707260624018_DefaultSchema.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\SubmitResult.cs" />
     <Compile Include="Api\RosterController.cs" />
     <Compile Include="Api\Model\RosterEntry.cs" />
@@ -527,6 +531,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201603300623007_RemoveSignins.resx">
       <DependentUpon>201603300623007_RemoveSignins.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707260624018_DefaultSchema.resx">
+      <DependentUpon>201707260624018_DefaultSchema.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Speeches.resx">
       <Generator>ResXFileCodeGenerator</Generator>

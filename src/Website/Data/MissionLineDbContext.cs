@@ -33,7 +33,7 @@ namespace Kcesar.MissionLine.Website.Data
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
-      modelBuilder.Types().Configure(e => e.ToTable("missionline_" + e.ClrType.Name));
+      modelBuilder.HasDefaultSchema("missionline");
     }
 
     public static MissionLineDbContext Create()
