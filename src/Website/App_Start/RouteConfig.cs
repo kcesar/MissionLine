@@ -1,7 +1,4 @@
-﻿/*
- * Copyright 2015 Matthew Cosand
- */
-namespace Kcesar.MissionLine.Website
+﻿namespace Kcesar.MissionLine.Website
 {
   using System.Web.Mvc;
   using System.Web.Routing;
@@ -11,12 +8,7 @@ namespace Kcesar.MissionLine.Website
     public static void RegisterRoutes(RouteCollection routes)
     {
       routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-
-      routes.MapRoute(
-        name: "Me",
-        url: "Me",
-        defaults: new { controller = "Home", action = "Me" }
-        );
+      routes.MapMvcAttributeRoutes();
 
       routes.MapRoute(
           name: "Default",

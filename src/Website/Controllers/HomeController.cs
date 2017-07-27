@@ -32,6 +32,7 @@
       return new MemberLookupResult { Id = memberIdClaim.Value, Name = identity.FindFirst("name").Value };
     }
 
+    [Route("dashboard")]
     public ActionResult Dashboard()
     {
       ViewBag.LinkTemplate = config.GetConfig("memberLinkTemplate");
