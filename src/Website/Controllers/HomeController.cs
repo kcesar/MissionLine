@@ -1,7 +1,4 @@
-﻿/*
- * Copyright Matthew Cosand
- */
-namespace Kcesar.MissionLine.Website.Controllers
+﻿namespace Kcesar.MissionLine.Website.Controllers
 {
   using System.Security.Claims;
   using System.Web.Mvc;
@@ -21,6 +18,13 @@ namespace Kcesar.MissionLine.Website.Controllers
       this.log = log;
     }
 
+    public ActionResult Index()
+    {
+      ViewBag.MySelf = GetMySelf();
+      ViewBag.Signout = config.GetConfig("auth:endsession");
+      return View();
+    }
+
     private MemberLookupResult GetMySelf()
     {
       var identity = (ClaimsIdentity)User.Identity;
@@ -28,17 +32,10 @@ namespace Kcesar.MissionLine.Website.Controllers
       return new MemberLookupResult { Id = memberIdClaim.Value, Name = identity.FindFirst("name").Value };
     }
 
-    public ActionResult Index()
+    public ActionResult Dashboard()
     {
       ViewBag.LinkTemplate = config.GetConfig("memberLinkTemplate");
       ViewBag.Myself = GetMySelf();
-      ViewBag.Signout = config.GetConfig("auth:endsession");
-      return View();
-    }
-
-    public ActionResult Me()
-    {
-      ViewBag.MySelf = GetMySelf();
       ViewBag.Signout = config.GetConfig("auth:endsession");
       return View();
     }

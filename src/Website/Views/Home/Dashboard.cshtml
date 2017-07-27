@@ -1,0 +1,96 @@
+﻿@{
+  ViewBag.NgApp = "missionlineApp";
+  ViewBag.Title = Strings.DashboardTitle;
+}
+<div ng-controller="IndexCtrl">
+  <div class="row">
+    <div class="col-xs-12 col-md-8 col-md-offset-2">
+      <div class="panel panel-default">
+        <div class="form-inline panel-body">
+          <button type="button" class="btn btn-sm btn-primary" ng-click="createEvent()">New Event</button>
+          <a href="~/" class="btn btn-sm btn-primary">Sign In/Out</a>
+          <div class="form-group pull-right">
+            <label>Show:</label>
+            <button type="button" class="btn btn-sm btn-primary" ng-click="showRoster = !showRoster" ng-class="{active: showRoster}" autocomplete="off">Roster</button>
+            <button type="button" class="btn btn-sm btn-primary" ng-click="showCalls = !showCalls" ng-class="{active: showCalls}" autocomplete="off">Call Log</button>
+          </div>
+        </div>
+      </div>
+      <div ng-show="showRoster">
+        <roster ng-show="unassignedEvent.roster.length" event="unassignedEvent" sort="rosterSort" sort-dir="rosterSortDesc"></roster>
+        <div ng-repeat="event in events | orderBy:eventsSortPredicate" class="animate-card">
+          <roster event="event" sort="rosterSort" sort-dir="rosterSortDesc" eventSortBy="eventsSortPredicate"></roster>
+        </div>
+      </div>
+      <div ng-if="showRoster && events.length == 0" ng-cloak class="panel panel-default">
+        <div class="panel-body">{{events.loading ? "Loading ..." : "No recent events"}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" ng-show="showCalls" ng-cloak>
+    <div class="col-xs-12">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Call Log</div>
+        <table class="table table-striped table-condensed">
+          <thead>
+            <tr>
+              <th style="width:1em" ng-click="callsSort='time'; callsSortDesc=!callsSortDesc">Time</th>
+              <th ng-click="callsSort='name'; callsSortDesc=!callsSortDesc">Name</th>
+              <th class="hidden-xs" ng-click="callsSort='number'; callsSortDesc=!callsSortDesc">Number</th>
+              <th class="hidden-xs">Message</th>
+            </tr>
+          </thead>
+          <tbody ng-if="calls.length > 0" ng-repeat="call in calls | orderBy: callsSort : callsSortDesc">
+            <tr>
+              <td class="text-right" style="width:1em; white-space:nowrap">{{call.time | eventTime : getToday()}}</td>
+              <td><strong>{{call.name}}</strong></td>
+              <td class="hidden-xs"><a ng-href="{{'tel:' + call.number}}">{{call.number}}</a></td>
+              <td class="hidden-xs">
+                <audio ng-if="call.recording" ng-src="{{call.recording}}" controls="controls" />
+              </td>
+            </tr>
+          </tbody>
+          <tbody ng-if="calls.length == 0"><tr><td colspan="3">No calls</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+@RenderPage("_Roster.cshtml")
+@RenderPage("_EditDialog.cshtml")
+@RenderPage("_MergeDialog.cshtml")
+@RenderPage("_SignoutDialog.cshtml")
+@RenderPage("_CloseDialog.cshtml")
+
+@section scripts {
+  @Scripts.Render("~/bundles/app")
+  <script type="text/javascript">
+    angular.module('missionlineApp').controller('IndexCtrl', ['$scope',
+      'EditModalService', 'eventsService', 'rosterService', 'callsService',
+      function ($scope, EditModalService, eventsService, rosterService, callsService) {
+        $.extend($scope, {
+          myself: @(new HtmlString(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Myself))),
+          showRoster: true,
+          showCalls: false,
+          unassignedEvent: eventsService.unassigned,
+          callsSort: 'time'
+          callsSortDesc: true,
+          rosterSort: 'timeOut',
+          rosterSortDesc: true,
+          events: eventsService.list,
+          eventsSortPredicate: function (event) {
+            return -event.opened.unix() + (event.closed ? 100000000 : 0);
+          },
+          calls: callsService.calls,
+          createEvent: function () { EditModalService.edit('editDialog.html', 'Create New Event', new EventModel(), eventsService.save); },
+          getToday: function () { return moment().startOf('day'); },
+        })
+        eventsService.load();
+        callsService.load();
+      }]);
+
+    window.hasHubs = true;
+  </script>
+}
