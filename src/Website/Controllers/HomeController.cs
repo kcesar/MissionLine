@@ -4,7 +4,6 @@
   using System.Web.Mvc;
   using log4net;
 
-  [RequireHttps]
   public class HomeController : Controller
   {
     private readonly IMemberSource members;
