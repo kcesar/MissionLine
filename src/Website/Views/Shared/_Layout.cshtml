@@ -29,7 +29,7 @@
       </div>
     </div>
   </div>
-  <div class="container body-content">
+  <div class="@(ViewBag.FullHeightBody != null ? "full-height-body" : "container body-content")">
     @RenderBody()
     <div class="row">
       <footer class="col-xs-12">
@@ -46,6 +46,8 @@
       if (window.hasHubs) $.connection.hub.start();
     });
   </script>
+  @RenderSection("modals", required: false)
   @RenderSection("scripts", required: false)
+  @RenderSection("partialScripts", required: false)
 </body>
 </html>

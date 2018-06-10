@@ -41,6 +41,10 @@ textarea {
     max-width: 280px;
 }
 
+.full-width-input {
+    max-width: none;
+}
+
 .panel-heading .btn-group {
   height: 20px;
   margin-top: -5px;
@@ -97,4 +101,78 @@ div.myevent {
 }
 .font-bold {
   font-weight: bold;
+}
+
+.full-height-body {
+    display: flex;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+}
+
+.vertical-flexbox {
+    display: flex;
+    flex-direction: column;
+}
+
+.flexrow-stretch-height {
+    flex-grow: 1;
+    position: relative;
+    width: 100%;
+}
+
+.stretch-height {
+    height: 100%;
+    position: absolute;
+}
+
+.stretch-width {
+    width: 100%;
+    position: absolute;
+}
+
+.btn-around-map {
+    padding: 8px;
+}
+
+.fullscreen-page-header {
+    background: #428bca;
+    color: white;
+    align-items: center;
+}
+
+.fullscreen-page-header-button {
+    height: 100%;
+    padding: 12px;
+    background: none;
+    outline: none;
+    border: none;
+}
+
+.horizontal-flexbox {
+    display: flex;
+    flex-direction: row;
+}
+
+.flexcolumn-stretch-width {
+    flex-grow: 1;
+    position: relative;
+    height: 100%;
+}
+
+.map-center-marker {
+    position: absolute;
+    /*url of the marker*/
+    background: url(http://maps.gstatic.com/mapfiles/markers2/marker.png) no-repeat;
+    /*center the marker*/
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    /*fix offset when needed*/
+    margin-left: -10px;
+    margin-top: -34px;
+    /*size of the image*/
+    height: 34px;
+    width: 20px;
 }
