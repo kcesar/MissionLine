@@ -55,9 +55,6 @@ namespace Kcesar.MissionLine.Website.Api
           {
             Member = member
           });
-
-          // TODO: Might remove this and have this be loaded by javascript when person clicked
-          answer.Last().PersonContacts = await memberSource.LookupPersonContactsAsync(member.Id);
         }
       }
       return answer;
