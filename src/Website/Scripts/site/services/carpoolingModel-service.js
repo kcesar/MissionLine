@@ -2,6 +2,9 @@
   function ($sce, $http, $q, $rootScope, $timeout, pushService, carpoolingService) {
     var self = this;
     var currentLocationLoadedDeferral = $q.defer();
+    var personModalId = 'personModal';
+    var updateInfoModalId = 'updateInfoModal';
+    var changeLocationId = 'changeLocation';
     $.extend(this, {
       model: {
         eventId: 0,
@@ -12,6 +15,10 @@
         currentLocationCoords: null,
         loading: true
       },
+      personModalId: personModalId,
+      updateInfoModalId: updateInfoModalId,
+      changeLocationId: changeLocationId,
+      modalIds: [personModalId, updateInfoModalId, changeLocationId],
       load: function (eventId, memberId) {
         self.model.eventId = eventId;
         self.model.memberId = memberId;
@@ -52,10 +59,10 @@
         }
       },
       changeLocation: function () {
-        self.model.isChangingLocation = true;
+        window.location.hash = changeLocationId;
       },
       cancelChangeLocation: function () {
-        self.model.isChangingLocation = false;
+        self.returnHome();
       },
       saveChangedLocation: function () {
         self.model.savingLocation = true;
@@ -64,50 +71,93 @@
           LocationLongitude: changeLocationMap.getCenter().lng()
         }).then(function () {
           self.model.savingLocation = false;
-          self.model.isChangingLocation = false;
           self.reload();
+          self.returnHome();
         }, function () {
           self.model.savingLocation = false;
         });
+      },
+      addSelf: function () {
+        window.location.hash = "updateInfoModal";
+      },
+      editSelf: function () {
+        window.location.hash = "updateInfoModal";
+      },
+      getModalIdBasedOnHash: function () {
+        if (window.location.hash.length <= 1) {
+          return null;
+        }
+
+        var foundModalId = null;
+        $.each(self.modalIds, function (idx, modalId) {
+          if (modalId === window.location.hash.substr(1)) {
+            foundModalId = modalId;
+          }
+        });
+
+        if (foundModalId != null) {
+          return foundModalId;
+        }
+
+        // Otherwise, must be viewing person info about the carpooler
+        return self.personModalId;
       }
     });
+
+    function updateBasedOnHashChange() {
+      self.model.isChangingLocation = self.getModalIdBasedOnHash() === changeLocationId;
+    }
+
+    window.addEventListener('hashchange', function () {
+      $rootScope.$apply(updateBasedOnHashChange);
+    }, false);
   }]);
 
 
 
-angular.module('missionlineApp').service('carpoolingPersonModelService', ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService', 'carpoolingService',
-  function ($sce, $http, $q, $rootScope, $timeout, pushService, carpoolingService) {
+angular.module('missionlineApp').service('carpoolingPersonModelService',
+  ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService', 'carpoolingService', 'carpoolingModelService',
+  function ($sce, $http, $q, $rootScope, $timeout, pushService, carpoolingService, carpoolingModelService) {
     var self = this;
+    var eventId = carpoolingModelService.model.eventId;
     $.extend(this, {
       model: {
         carpooler: null,
         loading: true,
         carpoolerTypeText: ''
-      },
-      loadCarpooler: function (eventId, memberId) {
-        self.model.loading = true;
-        self.model.carpooler = null;
-        self.model.carpoolerTypeText = '';
-        carpoolingService.getCarpooler(eventId, memberId).then(function (carpooler) {
-          self.model.carpooler = carpooler;
-          var typeText;
-          if (carpooler.canBeDriver && carpooler.canBePassenger) {
-            typeText = 'Can drive or be passenger!';
-          }
-          else if (carpooler.canBeDriver) {
-            typeText = 'Can drive!';
-          }
-          else if (carpooler.canBePassenger) {
-            typeText = 'Looking for a ride!';
-          }
-          else {
-            typeText = 'Not carpooling';
-          }
-          self.model.carpoolerTypeText = typeText;
-          self.model.loading = false;
-        });
       }
     });
+
+    function loadCarpooler(memberId) {
+      self.model.loading = true;
+      self.model.carpooler = null;
+      self.model.carpoolerTypeText = '';
+      carpoolingService.getCarpooler(eventId, memberId).then(function (carpooler) {
+        self.model.carpooler = carpooler;
+        var typeText;
+        if (carpooler.canBeDriver && carpooler.canBePassenger) {
+          typeText = 'Can drive or be passenger!';
+        }
+        else if (carpooler.canBeDriver) {
+          typeText = 'Can drive!';
+        }
+        else if (carpooler.canBePassenger) {
+          typeText = 'Looking for a ride!';
+        }
+        else {
+          typeText = 'Not carpooling';
+        }
+        self.model.carpoolerTypeText = typeText;
+        self.model.loading = false;
+      });
+    }
+
+    window.addEventListener('hashchange', function () {
+      if (carpoolingModelService.getModalIdBasedOnHash() === carpoolingModelService.personModalId) {
+        var memberId = window.location.hash.substr(1);
+        loadCarpooler(memberId);
+      }
+    }, false);
   }]);
 
 
@@ -159,6 +209,7 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
 
           var finishSave = function () {
             carpoolingService.updateCarpoolerInfo(eventId, memberId, updatedInfo).then(function () {
+              self.model.saving = false;
               carpoolingModelService.reload();
               carpoolingModelService.returnHome();
             }, function () {
@@ -169,17 +220,23 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
           if (self.model.alreadyHasLocation) {
             finishSave();
           } else {
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(function (position) {
-                updatedInfo.LocationLatitude = postion.coords.latitude;
-                updatedInfo.LocationLongitude = position.coords.longitude;
+            carpoolingModelService.getCurrentLocation().then(function (position) {
+              if (position == null) {
+                alert('Geolocation not supported');
+              } else {
+                updatedInfo.LocationLatitude = position.latitude;
+                updatedInfo.LocationLongitude = position.longitude;
                 finishSave();
-              });
-            } else {
-              alert('Geolocation not supported');
-            }
+              }
+            });
           }
         }
       }
     });
+
+    window.addEventListener('hashchange', function () {
+      if (carpoolingModelService.getModalIdBasedOnHash() === carpoolingModelService.updateInfoModalId) {
+        self.load();
+      }
+    }, false);
   }]);

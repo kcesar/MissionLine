@@ -152,8 +152,8 @@
     var map;
     var carpoolerMarkers = [];
     var changeLocationMap;
-    var personModal = createModalObject('#personModal');
-    var updateInfoModal = createModalObject('#updateInfoModal', true);
+    var personModal = createModalObject('personModal');
+    var updateInfoModal = createModalObject('updateInfoModal', true);
     var modals = [personModal, updateInfoModal];
 
     angular.module('missionlineApp').controller('CarpoolingCtrl', ['$scope', '$q', '$rootScope',
@@ -161,80 +161,17 @@
       function ($scope, $q, $rootScope, EditModalService, carpoolingService, carpoolingModelService) {
         $.extend($scope, {
           model: carpoolingModelService.model,
-          populateMapWithCarpoolers: function () {
-            $scope.model.carpoolers.forEach(function (carpooler) {
-
-              var infoWindow = new google.maps.InfoWindow({
-                content: '<a href="#' + carpooler.member.id + '"><h5>' + carpooler.member.name + '</h5></a>'
-              });
-
-              var marker = new google.maps.Marker({
-                position: { lat: carpooler.locationLatitude, lng: carpooler.locationLongitude },
-                map: map
-              });
-
-              marker.addListener('click', function () {
-                infoWindow.open(map, marker);
-              });
-
-              carpoolerMarkers.push(marker);
-            });
-          },
-          editSelf: function () {
-            updateInfoModal.show();
-          },
-          addSelf: function () {
-            updateInfoModal.show();
-          },
-          changeLocation: function () {
-            carpoolingModelService.changeLocation();
-            var center = {
-              lat: $scope.model.ownCarpoolerEntry.locationLatitude,
-              lng: $scope.model.ownCarpoolerEntry.locationLongitude
-            };
-            if (!changeLocationMap) {
-              changeLocationMap = new google.maps.Map(document.getElementById('changeLocationMap'), {
-                center: center,
-                zoom: map.zoom
-              });
-
-              $scope.addOwnLocationToMap(changeLocationMap);
-            } else {
-              changeLocationMap.setCenter(center);
-              changeLocationMap.setZoom(map.zoom);
-            }
-          },
+          addSelf: carpoolingModelService.addSelf,
+          editSelf: carpoolingModelService.editSelf,
+          changeLocation: carpoolingModelService.changeLocation,
           cancelChangeLocation: carpoolingModelService.cancelChangeLocation,
           saveChangedLocation: carpoolingModelService.saveChangedLocation,
-          addOwnLocationToMap: function (map) {
-            carpoolingModelService.getCurrentLocation().then(function (coords) {
-              if (coords != null) {
-                // Draw the location on the map
-                var marker = new google.maps.Marker({
-                  position: { lat: coords.latitude, lng: coords.longitude },
-                  icon: {
-                    path: 'M-2,2a2,2 0 1,0 4,0a2,2 0 1,0 -4,0',
-                    fillColor: '#4285F4',
-                    fillOpacity: 1,
-                    scale: 3,
-                    strokeColor: 'white',
-                    strokeWeight: 2
-                  },
-                  zIndex: 100,
-                  map: map
-                });
-              }
-            });
-          },
-          selectCarpooler(memberId) {
-            window.location.hash = memberId;
-          },
-          goBack() {
+          goBack: function () {
             //if ($scope.isViewingPerson()) {
             //  window.history.back();
             //}
           },
-          updateBasedOnHash() {
+          updateBasedOnHash: function () {
             var modal = $scope.getModalBasedOnHash();
 
             // Hide all other modals
@@ -248,29 +185,60 @@
               modal.show();
             }
           },
-          getModalBasedOnHash() {
-            if (window.location.hash.length <= 1) {
-              return null;
-            }
-
+          getModalBasedOnHash: function () {
+            var modalId = carpoolingModelService.getModalIdBasedOnHash();
             var foundModal = null;
             $.each(modals, function (idx, modal) {
-              if (modal.id == window.location.hash) {
+              if (modal.id == modalId) {
                 foundModal = modal;
               }
             });
-
-            if (foundModal != null) {
-              return foundModal;
-            }
-
-            // Otherwise, viewing info about the carpooler
-            return personModal;
+            return foundModal;
           },
-          isViewingPerson() {
+          isViewingPerson: function () {
             return window.location.hash.length > 1;
           }
-        })
+        });
+
+        function populateMapWithCarpoolers () {
+          $scope.model.carpoolers.forEach(function (carpooler) {
+            var infoWindow = new google.maps.InfoWindow({
+              content: '<a href="#' + carpooler.member.id + '"><h5>' + carpooler.member.name + '</h5></a>'
+            });
+
+            var marker = new google.maps.Marker({
+              position: { lat: carpooler.locationLatitude, lng: carpooler.locationLongitude },
+              map: map
+            });
+
+            marker.addListener('click', function () {
+              infoWindow.open(map, marker);
+            });
+
+            carpoolerMarkers.push(marker);
+          });
+        }
+
+        function addOwnLocationToMap (map) {
+          carpoolingModelService.getCurrentLocation().then(function (coords) {
+            if (coords != null) {
+              // Draw the location on the map
+              var marker = new google.maps.Marker({
+                position: { lat: coords.latitude, lng: coords.longitude },
+                icon: {
+                  path: 'M-2,2a2,2 0 1,0 4,0a2,2 0 1,0 -4,0',
+                  fillColor: '#4285F4',
+                  fillOpacity: 1,
+                  scale: 3,
+                  strokeColor: 'white',
+                  strokeWeight: 2
+                },
+                zIndex: 100,
+                map: map
+              });
+            }
+          });
+        }
 
         mapInitializedDeferral = $q.defer();
 
@@ -280,7 +248,7 @@
               map.panTo({ lat: coords.latitude, lng: coords.longitude });
             }
             mapInitializedDeferral.promise.then(function () {
-              $scope.addOwnLocationToMap(map);
+              addOwnLocationToMap(map);
             });
           }
         });
@@ -291,22 +259,33 @@
             marker.setMap(null);
           });
           if ($scope.model.carpoolers) {
-            $scope.populateMapWithCarpoolers();
+            populateMapWithCarpoolers();
+          }
+        });
+
+        $scope.$watch('model.isChangingLocation', function () {
+          if ($scope.model.isChangingLocation) {
+            var center = {
+              lat: $scope.model.ownCarpoolerEntry.locationLatitude,
+              lng: $scope.model.ownCarpoolerEntry.locationLongitude
+            };
+            if (!changeLocationMap) {
+              changeLocationMap = new google.maps.Map(document.getElementById('changeLocationMap'), {
+                center: center,
+                zoom: map.zoom
+              });
+
+              addOwnLocationToMap(changeLocationMap);
+            } else {
+              changeLocationMap.setCenter(center);
+              changeLocationMap.setZoom(map.zoom);
+            }
           }
         });
 
         carpoolingModelService.load(eventId, memberId);
 
-        window.onhashchange = $scope.updateBasedOnHash;
-
-
-        //$('#carpoolingModals .modal').on('show.bs.modal', function () {
-        //  isPersonModalShown = true;
-        //});
-        //$('#carpoolingModals .modal').on('hide.bs.modal', function () {
-        //  isPersonModalShown = false;
-        //  $scope.goBack();
-        //});
+        window.addEventListener('hashchange', $scope.updateBasedOnHash, false);
       }]);
 
 
@@ -317,12 +296,6 @@
         $.extend($scope, {
           model: carpoolingPersonModelService.model
         });
-
-        $('#personModal').on('show.bs.modal', function () {
-          var memberId = window.location.hash.substr(1);
-          carpoolingPersonModelService.loadCarpooler(eventId, memberId);
-        });
-
       }]);
 
     angular.module('missionlineApp').controller('UpdateInfoModalCtrl', ['$scope', '$q', '$rootScope',
@@ -332,11 +305,6 @@
           model: carpoolingUpdateInfoModelService.model,
           save: carpoolingUpdateInfoModelService.save
         });
-
-        $('#updateInfoModal').on('show.bs.modal', function () {
-          carpoolingUpdateInfoModelService.load();
-        });
-
       }]);
 
     function initializeMap() {
@@ -356,16 +324,13 @@
     }
 
 
-    function createModalObject(id, autoSetHash) {
+    function createModalObject(id) {
       var modalObject = {
         id: id,
-        modal: $(id),
+        modal: $('#' + id),
         isShown: false,
         show: function () {
           if (!this.isShown) {
-            if (autoSetHash) {
-              window.location.hash = id.substr(1);
-            }
             this.modal.modal('show');
           }
         },
