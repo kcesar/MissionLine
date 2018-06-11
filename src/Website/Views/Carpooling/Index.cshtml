@@ -198,14 +198,48 @@
 
         function populateMapWithCarpoolers () {
           $scope.model.carpoolers.forEach(function (carpooler) {
+
+            var subtext;
+            if (carpooler.canBeDriver && carpooler.canBePassenger) {
+              subtext = 'Driver or passenger';
+            } else if (carpooler.canBeDriver) {
+              subtext = 'Driver';
+            } else {
+              subtext = 'Passenger';
+            }
+
             var infoWindow = new google.maps.InfoWindow({
-              content: '<a href="#' + carpooler.member.id + '"><h5>' + carpooler.member.name + '</h5></a>'
+              content: '<a href="#' + carpooler.member.id + '"><h5>' + $('<span>').text(carpooler.member.name).html() + '</h5></a>' + '<p>' + subtext + '</p>'
             });
 
-            var marker = new google.maps.Marker({
+            var markerData = {
               position: { lat: carpooler.locationLatitude, lng: carpooler.locationLongitude },
               map: map
-            });
+            };
+
+            // If self, use a star
+            if (carpooler.member.id === memberId) {
+//              markerData.icon = {
+//                path: 'M 0.000 20.000\
+//L 23.511 32.361\
+//L 19.021 6.180\
+//L 38.042 - 12.361\
+//L 11.756 - 16.180\
+//L 0.000 - 40.000\
+//L -11.756 - 16.180\
+//L -38.042 - 12.361\
+//L -19.021 6.180\
+//L - 23.511 32.361\
+//L 0.000 20.000',
+//                fillColor: 'orange',
+//                fillOpacity: 1,
+//                scale: 20,
+//                strokeColor: 'white',
+//                strokeWeight: 2
+//              };
+            }
+
+            var marker = new google.maps.Marker(markerData);
 
             marker.addListener('click', function () {
               infoWindow.open(map, marker);
