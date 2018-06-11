@@ -161,6 +161,11 @@ namespace Kcesar.MissionLine.Website.Api
           carpooler.LocationLongitude = updatedInfo.LocationLongitude.Value;
         }
 
+        if (updatedInfo.VehicleDescription != null)
+        {
+          carpooler.VehicleDescription = updatedInfo.VehicleDescription;
+        }
+
         if (updatedInfo.Message != null)
         {
           carpooler.Message = updatedInfo.Message;

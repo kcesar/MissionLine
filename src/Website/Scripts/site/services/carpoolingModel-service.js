@@ -123,8 +123,8 @@
   }]);
 
 angular.module('missionlineApp').service('carpoolingPersonModelService',
-  ['$rootScope', 'carpoolingModelService',
-  function ($rootScope, carpoolingModelService) {
+  ['$rootScope', 'carpoolingService', 'carpoolingModelService',
+  function ($rootScope, carpoolingService, carpoolingModelService) {
     var self = this;
     var eventId = carpoolingModelService.model.eventId;
     $.extend(this, {
