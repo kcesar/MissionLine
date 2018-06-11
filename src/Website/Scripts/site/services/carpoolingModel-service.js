@@ -113,8 +113,6 @@
     }, false);
   }]);
 
-
-
 angular.module('missionlineApp').service('carpoolingPersonModelService',
   ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService', 'carpoolingService', 'carpoolingModelService',
   function ($sce, $http, $q, $rootScope, $timeout, pushService, carpoolingService, carpoolingModelService) {
@@ -159,8 +157,6 @@ angular.module('missionlineApp').service('carpoolingPersonModelService',
       }
     }, false);
   }]);
-
-
 
 angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
   ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService', 'carpoolingService', 'carpoolingModelService',

@@ -141,8 +141,6 @@
     var memberId = '@ViewBag.MySelf.Id';
     var eventId = @ViewBag.EventId;
     var isMapScriptLoaded = false;
-    var isCarpoolingLoaded = false;
-    var isCurrentLocationLoaded = false;
     var defaultLocationCoords = {
       latitude: 47.6104544,
       longitude: -122.1497337
@@ -153,7 +151,7 @@
     var carpoolerMarkers = [];
     var changeLocationMap;
     var personModal = createModalObject('personModal');
-    var updateInfoModal = createModalObject('updateInfoModal', true);
+    var updateInfoModal = createModalObject('updateInfoModal');
     var modals = [personModal, updateInfoModal];
 
     angular.module('missionlineApp').controller('CarpoolingCtrl', ['$scope', '$q', '$rootScope',
@@ -165,40 +163,34 @@
           editSelf: carpoolingModelService.editSelf,
           changeLocation: carpoolingModelService.changeLocation,
           cancelChangeLocation: carpoolingModelService.cancelChangeLocation,
-          saveChangedLocation: carpoolingModelService.saveChangedLocation,
-          goBack: function () {
-            //if ($scope.isViewingPerson()) {
-            //  window.history.back();
-            //}
-          },
-          updateBasedOnHash: function () {
-            var modal = $scope.getModalBasedOnHash();
-
-            // Hide all other modals
-            $.each(modals, function (idx, m) {
-              if (modal != m) {
-                m.hide();
-              }
-            });
-
-            if (modal != null) {
-              modal.show();
-            }
-          },
-          getModalBasedOnHash: function () {
-            var modalId = carpoolingModelService.getModalIdBasedOnHash();
-            var foundModal = null;
-            $.each(modals, function (idx, modal) {
-              if (modal.id == modalId) {
-                foundModal = modal;
-              }
-            });
-            return foundModal;
-          },
-          isViewingPerson: function () {
-            return window.location.hash.length > 1;
-          }
+          saveChangedLocation: carpoolingModelService.saveChangedLocation
         });
+
+        function getModalBasedOnHash() {
+          var modalId = carpoolingModelService.getModalIdBasedOnHash();
+          var foundModal = null;
+          $.each(modals, function (idx, modal) {
+            if (modal.id == modalId) {
+              foundModal = modal;
+            }
+          });
+          return foundModal;
+        }
+
+        function updateBasedOnHash() {
+          var modal = getModalBasedOnHash();
+
+          // Hide all other modals
+          $.each(modals, function (idx, m) {
+            if (modal != m) {
+              m.hide();
+            }
+          });
+
+          if (modal != null) {
+            modal.show();
+          }
+        }
 
         function populateMapWithCarpoolers () {
           $scope.model.carpoolers.forEach(function (carpooler) {
@@ -244,6 +236,7 @@
 
         carpoolingModelService.getCurrentLocation().then(function (coords) {
           if (coords != null) {
+            currentLocationCoords = coords;
             if (map) {
               map.panTo({ lat: coords.latitude, lng: coords.longitude });
             }
@@ -283,12 +276,10 @@
           }
         });
 
+        window.addEventListener('hashchange', updateBasedOnHash, false);
+
         carpoolingModelService.load(eventId, memberId);
-
-        window.addEventListener('hashchange', $scope.updateBasedOnHash, false);
       }]);
-
-
 
     angular.module('missionlineApp').controller('PersonModalCtrl', ['$scope', '$q', '$rootScope',
       'EditModalService', 'carpoolingPersonModelService',
@@ -322,7 +313,6 @@
 
       mapInitializedDeferral.resolve();
     }
-
 
     function createModalObject(id) {
       var modalObject = {
