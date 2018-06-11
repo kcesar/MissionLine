@@ -1,5 +1,6 @@
-﻿angular.module('missionlineApp').service('carpoolingService', ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService',
-  function ($sce, $http, $q, $rootScope, $timeout, pushService) {
+﻿angular.module('missionlineApp').service('carpoolingService',
+  ['$http', '$q', '$rootScope', 'pushService',
+  function ($http, $q, $rootScope, pushService) {
     var self = this;
     $.extend(this, {
       getCarpoolers: function (eventId) {

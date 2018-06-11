@@ -1,5 +1,5 @@
-﻿angular.module('missionlineApp').service('carpoolingModelService', ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService', 'carpoolingService',
-  function ($sce, $http, $q, $rootScope, $timeout, pushService, carpoolingService) {
+﻿angular.module('missionlineApp').service('carpoolingModelService', ['$q', '$rootScope', 'pushService', 'carpoolingService',
+  function ($q, $rootScope, pushService, carpoolingService) {
     var self = this;
     var currentLocationLoadedDeferral = $q.defer();
     var personModalId = 'personModal';
@@ -123,8 +123,8 @@
   }]);
 
 angular.module('missionlineApp').service('carpoolingPersonModelService',
-  ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService', 'carpoolingService', 'carpoolingModelService',
-  function ($sce, $http, $q, $rootScope, $timeout, pushService, carpoolingService, carpoolingModelService) {
+  ['$rootScope', 'carpoolingModelService',
+  function ($rootScope, carpoolingModelService) {
     var self = this;
     var eventId = carpoolingModelService.model.eventId;
     $.extend(this, {
@@ -168,8 +168,8 @@ angular.module('missionlineApp').service('carpoolingPersonModelService',
   }]);
 
 angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
-  ['$sce', '$http', '$q', '$rootScope', '$timeout', 'pushService', 'carpoolingService', 'carpoolingModelService',
-  function ($sce, $http, $q, $rootScope, $timeout, pushService, carpoolingService, carpoolingModelService) {
+  ['$rootScope', 'carpoolingService', 'carpoolingModelService',
+  function ($rootScope, carpoolingService, carpoolingModelService) {
     var self = this;
     var eventId = carpoolingModelService.model.eventId;
     var memberId = carpoolingModelService.model.memberId;
