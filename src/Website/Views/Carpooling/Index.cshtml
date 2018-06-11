@@ -59,14 +59,18 @@
             Loading...
           </div>
           <div ng-if="!model.loading">
-            <h5 class="font-bold">{{model.carpoolerTypeText}}</h5>
-            <h5 class="font-bold">Contacts</h5>
+            <h4 class="font-bold">{{model.carpoolerTypeText}}</h4>
+            <div ng-if="model.carpooler.message">
+              <h5 class="carpooler-info-group-header">Message</h5>
+              <p>{{model.carpooler.message}}</p>
+            </div>
+            <h5 class="carpooler-info-group-header">Contact info</h5>
             <div ng-repeat="contact in model.carpooler.personContacts">
               {{contact.value}}
             </div>
-            <div ng-if="model.carpooler.message">
-              <h5 class="font-bold">Message</h5>
-              <p>{{model.carpooler.message}}</p>
+            <div ng-if="model.carpooler.vehicleDescription">
+              <h5 class="carpooler-info-group-header">Vehicle</h5>
+              <p>{{model.carpooler.vehicleDescription}}</p>
             </div>
           </div>
         </div>

@@ -181,3 +181,9 @@ div.myevent {
   height: 34px;
   width: 20px;
 }
+
+.carpooler-info-group-header {
+  margin-top: 24px;
+  margin-bottom: 2px;
+  font-weight: bold;
+}
