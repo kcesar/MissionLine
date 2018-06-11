@@ -4,6 +4,7 @@
 namespace Kcesar.MissionLine.Website
 {
   using System;
+  using System.Collections.Generic;
   using System.IO;
   using System.Linq;
   using System.Threading.Tasks;
@@ -48,6 +49,25 @@ namespace Kcesar.MissionLine.Website
     public Task<MemberLookupResult> LookupMemberUsername(string username)
     {
       return MakeLookupResult(ReadData().Descendants("Member").FirstOrDefault(f => f.Attribute("username").Value == username));
+    }
+
+    public Task<List<MemberLookupResult>> TryLookupMembersAsync(IEnumerable<string> memberIds)
+    {
+      return Task.FromResult(ReadData().Descendants("Member")
+        .Where(f => memberIds.Contains(f.Attribute("id").Value))
+        .Select(f => MakeLookupResult(f).Result).ToList());
+    }
+
+    public Task<List<PersonContact>> LookupPersonContactsAsync(string memberId)
+    {
+      return Task.FromResult(ReadData().Descendants("Member")
+        .FirstOrDefault(f => f.Attribute("id").Value == memberId)
+        .Descendants("Phone")
+        .Select(f => new PersonContact()
+        {
+          Type = "phone",
+          Value = f.Value
+        }).ToList());
     }
   }
 }
