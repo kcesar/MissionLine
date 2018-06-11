@@ -40,6 +40,9 @@
           self.model.loading = false;
         });
       },
+      expectReload: function () {
+        self.model.loading = true;
+      },
       getCurrentLocation: function () {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function (position) {
@@ -71,7 +74,7 @@
           LocationLongitude: changeLocationMap.getCenter().lng()
         }).then(function () {
           self.model.savingLocation = false;
-          self.reload();
+          self.expectReload();
           self.returnHome();
         }, function () {
           self.model.savingLocation = false;
@@ -111,6 +114,12 @@
     window.addEventListener('hashchange', function () {
       $rootScope.$apply(updateBasedOnHashChange);
     }, false);
+
+    pushService.listenTo('carpoolersChanged', function (eventId) {
+      if (eventId === self.model.eventId) {
+        self.reload();
+      }
+    });
   }]);
 
 angular.module('missionlineApp').service('carpoolingPersonModelService',
@@ -189,7 +198,7 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
         self.model.saving = true;
         if (!self.model.canBeDriver && !self.model.canBePassenger) {
           carpoolingService.removeCarpooler(eventId, memberId).then(function () {
-            carpoolingModelService.reload();
+            carpoolingModelService.expectReload();
             carpoolingModelService.returnHome();
           }, function () {
             self.model.saving = false;
@@ -206,7 +215,7 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
           var finishSave = function () {
             carpoolingService.updateCarpoolerInfo(eventId, memberId, updatedInfo).then(function () {
               self.model.saving = false;
-              carpoolingModelService.reload();
+              carpoolingModelService.expectReload();
               carpoolingModelService.returnHome();
             }, function () {
               self.model.saving = false;
