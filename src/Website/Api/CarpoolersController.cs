@@ -60,6 +60,13 @@ namespace Kcesar.MissionLine.Website.Api
       return answer;
     }
 
+    // Contact types to return (and the order to return them in)
+    private readonly static string[] s_filterContactTypes = new string[]
+    {
+      "phone",
+      "email"
+    };
+
     [Route("api/events/{eventId}/carpoolers/{memberId}")]
     public async Task<CarpoolerEntry> Get(int eventId, string memberId)
     {
@@ -86,8 +93,22 @@ namespace Kcesar.MissionLine.Website.Api
       return new CarpoolerEntry(carpooler)
       {
         Member = member,
-        PersonContacts = await memberSource.LookupPersonContactsAsync(memberId)
+        PersonContacts = (await memberSource.LookupPersonContactsAsync(memberId))
+          .Where(i => s_filterContactTypes.Contains(i.Type))
+          .OrderBy(i => i.Type, new PersonContactTypeComparer())
+          .ToList()
       };
+    }
+
+    private class PersonContactTypeComparer : IComparer<string>
+    {
+      public int Compare(string x, string y)
+      {
+        int xIndex = Array.IndexOf(s_filterContactTypes, x);
+        int yIndex = Array.IndexOf(s_filterContactTypes, y);
+
+        return xIndex.CompareTo(yIndex);
+      }
     }
 
     [Route("api/events/{eventId}/updateinfo/{memberId}")]

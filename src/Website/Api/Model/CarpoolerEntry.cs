@@ -35,7 +35,7 @@ namespace Kcesar.MissionLine.Website.Api.Model
     public string Message { get; set; }
 
     /// <summary>
-    /// TODO: Only initialized when viewing a specific contact? Maybe we could do this all via JS?
+    /// Only initialized when viewing a specific contact.
     /// </summary>
     public List<PersonContact> PersonContacts { get; set; }
   }
