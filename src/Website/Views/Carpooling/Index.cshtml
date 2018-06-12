@@ -217,6 +217,45 @@
               map: map
             };
 
+            if (carpooler.member.id === memberId) {
+              // If self, use star
+              markerData.icon = {
+                path: carpoolingModelService.selfIconPath,
+                fillColor: 'orange',
+                fillOpacity: 1,
+                scale: 0.36,
+                strokeColor: 'black',
+                strokeWeight: 2
+              };
+            } else if (carpooler.canBeDriver && carpooler.canBePassenger) {
+              markerData.icon = {
+                path: carpoolingModelService.driverOrPassengerIconPath,
+                fillColor: 'white',
+                fillOpacity: 1,
+                scale: 1,
+                strokeColor: '#008DE5',
+                strokeWeight: 2
+              };
+            } else if (carpooler.canBeDriver) {
+              markerData.icon = {
+                path: carpoolingModelService.driverIconPath,
+                fillColor: 'white',
+                fillOpacity: 1,
+                scale: 1,
+                strokeColor: '#7700C9',
+                strokeWeight: 2
+              };
+            } else {
+              markerData.icon = {
+                path: carpoolingModelService.passengerIconPath,
+                fillColor: 'white',
+                fillOpacity: 1,
+                scale: 1,
+                strokeColor: '#D3005F',
+                strokeWeight: 2
+              };
+            }
+
             // If self, use a star
             if (carpooler.member.id === memberId) {
 //              markerData.icon = {
