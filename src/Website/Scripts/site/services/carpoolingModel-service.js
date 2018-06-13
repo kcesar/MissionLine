@@ -147,7 +147,7 @@ angular.module('missionlineApp').service('carpoolingPersonModelService',
         self.model.carpooler = carpooler;
         var typeText;
         if (carpooler.canBeDriver && carpooler.canBePassenger) {
-          typeText = 'Can drive or be passenger!';
+          typeText = 'Can drive or be a passenger!';
         }
         else if (carpooler.canBeDriver) {
           typeText = 'Can drive!';
@@ -181,6 +181,7 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
       model: {
         canBeDriver: false,
         canBePassenger: false,
+        carpoolerType: null,
         vehicleDescription: '',
         message: '',
         alreadyHasLocation: false,
@@ -190,8 +191,15 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
       load: function () {
         self.model.loading = true;
         carpoolingService.getUpdateInfo(eventId, memberId).then(function (carpooler) {
-          self.model.canBeDriver = carpooler.canBeDriver;
-          self.model.canBePassenger = carpooler.canBePassenger;
+          if (carpooler.canBeDriver && carpooler.canBePassenger) {
+            self.model.carpoolerType = 'either';
+          } else if (carpooler.canBeDriver) {
+            self.model.carpoolerType = 'driver';
+          } else if (carpooler.canBePassenger) {
+            self.model.carpoolerType = 'passenger';
+          } else {
+            self.model.carpoolerType = null;
+          }
           self.model.vehicleDescription = carpooler.vehicleDescription;
           self.model.message = carpooler.message;
           self.model.alreadyHasLocation = carpooler.locationLatitude && carpooler.locationLongitude;
@@ -200,7 +208,7 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
       },
       save: function () {
         self.model.saving = true;
-        if (!self.model.canBeDriver && !self.model.canBePassenger) {
+        if (self.model.carpoolerType === null) {
           carpoolingService.removeCarpooler(eventId, memberId).then(function () {
             carpoolingModelService.expectReload();
             carpoolingModelService.returnHome();
@@ -210,8 +218,8 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
         }
         else {
           var updatedInfo = {
-            CanBeDriver: self.model.canBeDriver,
-            CanBePassenger: self.model.canBePassenger,
+            CanBeDriver: self.model.carpoolerType === 'driver' || self.model.carpoolerType === 'either',
+            CanBePassenger: self.model.carpoolerType === 'passenger' || self.model.carpoolerType === 'either',
             VehicleDescription: self.model.vehicleDescription,
             Message: self.model.message
           };

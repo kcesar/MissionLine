@@ -97,16 +97,14 @@
           <div ng-if="!model.loading">
             <div class="form-group">
               <label>Can you be a...</label>
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox" ng-model="model.canBeDriver" /> Driver
-                </label>
+              <div class="radio">
+                <label><input type="radio" value="driver" ng-model="model.carpoolerType" />Driver</label>
               </div>
-
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox" ng-model="model.canBePassenger" /> Passenger
-                </label>
+              <div class="radio">
+                <label><input type="radio" value="passenger" ng-model="model.carpoolerType" />Passenger</label>
+              </div>
+              <div class="radio">
+                <label><input type="radio" value="either" ng-model="model.carpoolerType" />Either driver or passenger</label>
               </div>
             </div>
 
@@ -223,34 +221,37 @@
                 path: carpoolingModelService.selfIconPath,
                 fillColor: 'orange',
                 fillOpacity: 1,
-                scale: 0.36,
+                scale: 0.3,
                 strokeColor: 'black',
                 strokeWeight: 2
               };
             } else if (carpooler.canBeDriver && carpooler.canBePassenger) {
+              // If both driver or passenger
               markerData.icon = {
                 path: carpoolingModelService.driverOrPassengerIconPath,
                 fillColor: 'white',
                 fillOpacity: 1,
-                scale: 1,
+                scale: 0.8,
                 strokeColor: '#008DE5',
                 strokeWeight: 2
               };
             } else if (carpooler.canBeDriver) {
+              // If only driver
               markerData.icon = {
                 path: carpoolingModelService.driverIconPath,
                 fillColor: 'white',
                 fillOpacity: 1,
-                scale: 1,
+                scale: 0.7,
                 strokeColor: '#7700C9',
                 strokeWeight: 2
               };
             } else {
+              // If only passenger
               markerData.icon = {
                 path: carpoolingModelService.passengerIconPath,
                 fillColor: 'white',
                 fillOpacity: 1,
-                scale: 1,
+                scale: 0.7,
                 strokeColor: '#D3005F',
                 strokeWeight: 2
               };
