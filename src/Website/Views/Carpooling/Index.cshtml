@@ -16,9 +16,14 @@
     <button class="btn-primary btn-around-map" ng-click="addSelf()" ng-if="!model.loading && !model.ownCarpoolerEntry" ng-cloak>
       <span class="h4">Add yourself</span><span>&nbsp;(driver or passenger)</span>
     </button>
-    <button class="btn-primary btn-around-map" ng-click="editSelf()" ng-if="!model.loading && model.ownCarpoolerEntry" ng-cloak>
-      <span class="h4">Edit yourself</span>
-    </button>
+    <div class="horizontal-flexbox" ng-if="!model.loading && model.ownCarpoolerEntry" ng-cloak>
+      <button class="flexcolumn-stretch-width btn-primary btn-around-map" ng-click="editSelf()">
+        <span class="h4">Edit yourself</span>
+      </button>
+      <button id="buttonCarpoolingRemoveSelf" class="btn-danger" ng-click="removeSelf()">
+        <span class="h4">&#x1f5d1;</span>
+      </button>
+    </div>
   </div>
 
 
@@ -128,6 +133,26 @@
   </div>
 
 
+  @*Modal about removing self from map*@
+  <div id="removeSelfModal" class="modal fade" role="dialog" ng-controller="RemoveSelfModalCtrl">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Remove yourself?</h4>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to remove yourself from the carpooling map for this event?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" ng-click="removeSelf()">{{model.saving ? 'Removing...' : 'Remove yourself'}}</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
 </div>
 }
 
@@ -154,7 +179,8 @@
     var changeLocationMap;
     var personModal = createModalObject('personModal');
     var updateInfoModal = createModalObject('updateInfoModal');
-    var modals = [personModal, updateInfoModal];
+    var removeSelfModal = createModalObject('removeSelfModal');
+    var modals = [personModal, updateInfoModal, removeSelfModal];
 
     angular.module('missionlineApp').controller('CarpoolingCtrl', ['$scope', '$q', '$rootScope',
       'EditModalService', 'carpoolingService', 'carpoolingModelService',
@@ -163,6 +189,7 @@
           model: carpoolingModelService.model,
           addSelf: carpoolingModelService.addSelf,
           editSelf: carpoolingModelService.editSelf,
+          removeSelf: carpoolingModelService.removeSelf,
           changeLocation: carpoolingModelService.changeLocation,
           cancelChangeLocation: carpoolingModelService.cancelChangeLocation,
           saveChangedLocation: carpoolingModelService.saveChangedLocation
@@ -352,6 +379,15 @@
         $.extend($scope, {
           model: carpoolingUpdateInfoModelService.model,
           save: carpoolingUpdateInfoModelService.save
+        });
+      }]);
+
+    angular.module('missionlineApp').controller('RemoveSelfModalCtrl', ['$scope', '$q', '$rootScope',
+      'EditModalService', 'removeSelfModelService',
+      function ($scope, $q, $rootScope, EditModalService, removeSelfModelService) {
+        $.extend($scope, {
+          model: removeSelfModelService.model,
+          removeSelf: removeSelfModelService.removeSelf
         });
       }]);
 

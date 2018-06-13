@@ -4,6 +4,7 @@
     var currentLocationLoadedDeferral = $q.defer();
     var personModalId = 'personModal';
     var updateInfoModalId = 'updateInfoModal';
+    var removeSelfModalId = 'removeSelfModal';
     var changeLocationId = 'changeLocation';
     $.extend(this, {
       model: {
@@ -22,7 +23,7 @@
       personModalId: personModalId,
       updateInfoModalId: updateInfoModalId,
       changeLocationId: changeLocationId,
-      modalIds: [personModalId, updateInfoModalId, changeLocationId],
+      modalIds: [personModalId, updateInfoModalId, removeSelfModalId, changeLocationId],
       load: function (eventId, memberId) {
         self.model.eventId = eventId;
         self.model.memberId = memberId;
@@ -89,6 +90,9 @@
       },
       editSelf: function () {
         window.location.hash = "updateInfoModal";
+      },
+      removeSelf: function () {
+        window.location.hash = removeSelfModalId;
       },
       getModalIdBasedOnHash: function () {
         if (window.location.hash.length <= 1) {
@@ -207,46 +211,40 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
         });
       },
       save: function () {
-        self.model.saving = true;
         if (self.model.carpoolerType === null) {
-          carpoolingService.removeCarpooler(eventId, memberId).then(function () {
+          alert('You must select whether you\'re a driver or passenger!');
+          return;
+        }
+        self.model.saving = true;
+        var updatedInfo = {
+          CanBeDriver: self.model.carpoolerType === 'driver' || self.model.carpoolerType === 'either',
+          CanBePassenger: self.model.carpoolerType === 'passenger' || self.model.carpoolerType === 'either',
+          VehicleDescription: self.model.vehicleDescription,
+          Message: self.model.message
+        };
+
+        var finishSave = function () {
+          carpoolingService.updateCarpoolerInfo(eventId, memberId, updatedInfo).then(function () {
+            self.model.saving = false;
             carpoolingModelService.expectReload();
             carpoolingModelService.returnHome();
           }, function () {
             self.model.saving = false;
           });
-        }
-        else {
-          var updatedInfo = {
-            CanBeDriver: self.model.carpoolerType === 'driver' || self.model.carpoolerType === 'either',
-            CanBePassenger: self.model.carpoolerType === 'passenger' || self.model.carpoolerType === 'either',
-            VehicleDescription: self.model.vehicleDescription,
-            Message: self.model.message
-          };
+        };
 
-          var finishSave = function () {
-            carpoolingService.updateCarpoolerInfo(eventId, memberId, updatedInfo).then(function () {
-              self.model.saving = false;
-              carpoolingModelService.expectReload();
-              carpoolingModelService.returnHome();
-            }, function () {
-              self.model.saving = false;
-            });
-          };
-
-          if (self.model.alreadyHasLocation) {
-            finishSave();
-          } else {
-            carpoolingModelService.getCurrentLocation().then(function (position) {
-              if (position == null) {
-                alert('Geolocation not supported');
-              } else {
-                updatedInfo.LocationLatitude = position.latitude;
-                updatedInfo.LocationLongitude = position.longitude;
-                finishSave();
-              }
-            });
-          }
+        if (self.model.alreadyHasLocation) {
+          finishSave();
+        } else {
+          carpoolingModelService.getCurrentLocation().then(function (position) {
+            if (position == null) {
+              alert('Geolocation not supported');
+            } else {
+              updatedInfo.LocationLatitude = position.latitude;
+              updatedInfo.LocationLongitude = position.longitude;
+              finishSave();
+            }
+          });
         }
       }
     });
@@ -256,4 +254,27 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
         self.load();
       }
     }, false);
-  }]);
+    }]);
+
+angular.module('missionlineApp').service('removeSelfModelService',
+  ['$rootScope', 'carpoolingService', 'carpoolingModelService',
+    function ($rootScope, carpoolingService, carpoolingModelService) {
+      var self = this;
+      var eventId = carpoolingModelService.model.eventId;
+      var memberId = carpoolingModelService.model.memberId;
+      $.extend(this, {
+        model: {
+          saving: false
+        },
+        removeSelf: function () {
+          self.model.saving = true;
+          carpoolingService.removeCarpooler(eventId, memberId).then(function () {
+            self.model.saving = false;
+            carpoolingModelService.expectReload();
+            carpoolingModelService.returnHome();
+          }, function () {
+            self.model.saving = false;
+          });
+        }
+      });
+    }]);

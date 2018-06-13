@@ -187,3 +187,12 @@ div.myevent {
   margin-bottom: 2px;
   font-weight: bold;
 }
+
+#buttonCarpoolingRemoveSelf {
+  padding: 0, 14px;
+}
+
+#buttonCarpoolingRemoveSelf span {
+  font-size: 26px;
+  color: white;
+}
