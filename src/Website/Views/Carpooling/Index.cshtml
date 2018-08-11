@@ -61,7 +61,7 @@
             <h4 class="font-bold">{{model.carpoolerTypeText}}</h4>
             <div ng-if="model.carpooler.message">
               <h5 class="carpooler-info-group-header">Message</h5>
-              <p>{{model.carpooler.message}}</p>
+              <p style="white-space: pre-wrap">{{model.carpooler.message}}</p>
             </div>
             <h5 class="carpooler-info-group-header">Contact info</h5>
             <div ng-repeat="contact in model.carpooler.personContacts">
@@ -125,7 +125,7 @@
 
             <div class="form-group">
               <label for="message" class="control-label">Message</label>
-              <textarea name="message" class="form-control full-width-input" ng-model="model.message"></textarea>
+              <textarea name="message" rows="4" class="form-control full-width-input" ng-model="model.message"></textarea>
             </div>
           </div>
         </div>
