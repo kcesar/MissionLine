@@ -66,8 +66,23 @@
         return currentLocationLoadedDeferral.promise;
       },
       returnHome: function () {
-        while (self.closePopup()) {
-          // Keep closing
+        // history.back() in Chrome is asynchronous, so we can't loop over to return home.
+        // However, we know that we can only be two levels deep, and that's only when
+        // we're in the add/change location scenario.
+
+        var levels = 0;
+        if (window.location.hash.length > 1) {
+          if (self.model.isChangingLocation
+            && self.getModalIdBasedOnHash() !== changeLocationId
+            && self.getModalIdBasedOnHash() !== pickLocationId) {
+            levels = 2;
+          } else {
+            levels = 1;
+          }
+        }
+
+        if (levels > 0) {
+          window.history.go(levels * -1);
         }
       },
       closePopup: function () {
