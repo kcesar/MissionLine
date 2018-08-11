@@ -128,6 +128,41 @@ namespace Kcesar.MissionLine.Website.Api
       };
     }
 
+    /// <summary>
+    /// API to obtain the carpooler's last known carpooler location.
+    /// </summary>
+    /// <param name="memberId"></param>
+    /// <returns></returns>
+    [Route("api/carpoolers/{memberId}/previouslocation")]
+    public async Task<Location> GetPreviousLocation(string memberId)
+    {
+      // Get the carpooler
+      Carpooler carpooler;
+      using (var db = dbFactory())
+      {
+        carpooler = await db.Carpoolers.Where(i => i.MemberId == memberId).OrderByDescending(i => i.EventId).FirstOrDefaultAsync();
+      }
+
+      // No need to load the member info
+
+      // If we didn't find a carpooler entry, return null
+      if (carpooler == null)
+      {
+        return null;
+      }
+
+      if (carpooler.LocationLatitude != 0 && carpooler.LocationLongitude != 0)
+      {
+        return new Location()
+        {
+          Latitude = carpooler.LocationLatitude,
+          Longitude = carpooler.LocationLongitude
+        };
+      }
+
+      return null;
+    }
+
     private async Task<List<PersonContact>> GetPersonContactsAsync(string memberId)
     {
       return (await memberSource.LookupPersonContactsAsync(memberId))

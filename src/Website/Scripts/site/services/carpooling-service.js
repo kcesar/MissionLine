@@ -7,12 +7,12 @@
         var deferred = $q.defer();
         $http({
           method: 'GET',
-          url: window.appRoot + 'api/events/' + eventId + '/carpoolers',
+          url: window.appRoot + 'api/events/' + eventId + '/carpoolers'
         }).success(function (data) {
           var carpoolers = [];
           $.each(data, function (idx, carpooler) {
             carpoolers.push(new CarpoolerModel(carpooler));
-          })
+          });
           deferred.resolve(carpoolers);
         })
         .error(function (response) { deferred.reject(response); });
@@ -36,7 +36,7 @@
         var deferred = $q.defer();
         $http({
           method: 'GET',
-          url: window.appRoot + 'api/events/' + eventId + '/updateinfo/' + memberId,
+          url: window.appRoot + 'api/events/' + eventId + '/updateinfo/' + memberId
         }).success(function (data) {
           deferred.resolve(data);
         }).error(function (response) {
@@ -61,7 +61,19 @@
         var deferred = $q.defer();
         $http({
           method: 'GET',
-          url: window.appRoot + 'api/events/' + eventId + '/carpoolers/' + memberId,
+          url: window.appRoot + 'api/events/' + eventId + '/carpoolers/' + memberId
+        }).success(function (data) {
+          deferred.resolve(data);
+        }).error(function (response) {
+          deferred.reject(response);
+        });
+        return deferred.promise;
+      },
+      getPreviousLocation: function (memberId) {
+        var deferred = $q.defer();
+        $http({
+          method: 'GET',
+          url: window.appRoot + 'api/carpoolers/' + memberId + '/previouslocation'
         }).success(function (data) {
           deferred.resolve(data);
         }).error(function (response) {

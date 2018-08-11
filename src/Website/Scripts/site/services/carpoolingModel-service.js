@@ -6,15 +6,19 @@
     var updateInfoModalId = 'updateInfoModal';
     var removeSelfModalId = 'removeSelfModal';
     var changeLocationId = 'changeLocation';
+    var pickLocationId = 'pickLocation';
     $.extend(this, {
       model: {
         eventId: 0,
         memberId: "",
         carpoolers: null,
         ownCarpoolerEntry: null,
+        pickLocationStartPosition: null,
         isChangingLocation: false,
+        isChangingLocationForFirstTime: false,
         currentLocationCoords: null,
-        loading: true
+        loading: true,
+        addYourselfDetailsLoading: false
       },
       driverIconPath: 'm-4.66667,10.08767c0.7,0.099 -4.34794,0.099 -3.64894,0.19899c-0.1,0.49999 -0.1,0.99998 -0.5,1.09999c-0.49899,0.19999 -1.09899,-0.10001 -1.69899,0c0,-0.39999 5.74794,-0.79999 5.84793,-1.29898zm15.24005,-0.20001c0,0.399 0.1,0.89899 0.1,1.29899c-0.59901,-0.1 -1.29901,0.2 -1.799,-0.1c-0.39901,-0.2 -0.39901,-0.59998 -0.499,-1.09898c0.799,0.1 1.49899,0 2.198,-0.10001zm4.59799,-2.99893c-0.09999,1.39996 -0.09999,2.79894 -0.2,4.29792c0,0.49999 -0.1,0.99899 -0.39999,1.09897c-0.30001,0.1 -1.09901,0 -1.39901,0c-0.4,0 -1.09899,0.1 -1.399,0c-0.3,-0.09998 -0.3,-0.69898 -0.4,-1.09897c0,-0.49999 -0.1,-0.89999 -0.1,-1.39898c1.799,-0.4 3.198,-1.29998 3.898,-2.89894zm-30.18297,0c0.799,1.49997 2.099,2.49894 3.998,2.89894c0,0.49899 -0.09999,0.89899 -0.09999,1.39898c0,0.39999 0,0.99899 -0.40001,1.09897c-0.3,0.1 -1.09899,0 -1.499,0c-0.4,0 -1.09999,0.1 -1.399,0c-0.5,-0.19998 -0.4,-1.79895 -0.5,-2.49795c0,-0.49999 0,-0.99998 -0.1,-1.39897l0,-1.49997zm25.18598,-7.49486c-1.10001,0 -1.799,0.09999 -2.59901,0.399c-0.59899,0.19999 -1.49899,0.59998 -1.59899,1.39997c0,0.49898 0.30001,1.19898 0.7,1.49896c0.39899,0.3 1.09901,0.499 1.79899,0.499c1.69901,0 3.398,-0.499 4.397,-1.39898c0.3,-0.19999 0.8,-0.69899 0.7,-1.29897c0,-0.3 -0.3,-0.49999 -0.5,-0.59999c-0.6,-0.399 -1.599,-0.49899 -2.49899,-0.49899l-0.399,0zm-20.48898,0c-0.699,0 -1.29899,0 -1.899,0.19899c-0.499,0.1 -1.099,0.4 -1.199,0.79999c-0.1,0.49999 0.4,0.99899 0.7,1.29897c0.99901,0.89999 2.798,1.39898 4.497,1.39898c0.39999,0 1,-0.099 1.29899,-0.19899c0.60001,-0.20001 1.3,-1.09999 1.2,-1.89897c-0.09999,-0.3 -0.4,-0.59999 -0.7,-0.79999c-0.899,-0.59999 -2.099,-0.79898 -3.39799,-0.79898l-0.5,0zm10.894,-9.89483c-0.89901,0 -1.79902,0 -2.69801,0.10001c-2.499,0.09998 -4.69799,0.09998 -6.99599,0.39998c-1.1,1.69898 -1.799,3.79794 -2.49899,5.8969c7.69598,0.099 15.59097,0.099 23.38696,0c-0.5,-1.69897 -0.99999,-3.09894 -1.699,-4.69791c-0.2,-0.20001 -0.59999,-1.19899 -0.89999,-1.29899c-0.10001,-0.09999 -0.4,0 -0.69901,-0.09999c-2.39899,-0.10001 -5.19699,-0.3 -7.89597,-0.3zm0.19998,-1.49898c1.599,0 3.198,0.20001 4.697,0.3c1.699,0.19999 3.498,0.4 4.498,1.39897c0.3,0.3 0.599,0.79999 0.799,1.29898c0.8,1.29998 1.4,2.79896 1.99899,4.39793c0.1,-1.39898 3.099,-1.49898 3.298,-0.1c0.10001,0.49999 -0.399,0.79898 -0.799,0.99899c-0.4,0.09999 -1,0.19999 -1.399,0.09999c-0.3,-0.09999 -0.7,-0.39999 -0.8,-0.2c-0.1,0.10001 0.2,0.3 0.3,0.39999c0.4,0.4 0.7,0.7 1.099,1.09999c0.4,0.49898 1,1.09898 1.2,1.69897c0.2,0.69898 0,1.89897 -0.09999,2.59795c-0.10001,0.79999 -0.10001,1.69897 -0.20001,2.49896c-0.2,2.49796 -1.499,3.99691 -3.598,4.59691c-0.69999,0.19999 -1.49899,0.19999 -2.399,0.29998c-1.49899,0.10001 -2.99799,0.20001 -4.59699,0.20001l-0.1,0l-8.89499,0l-0.1,0c-1.599,0 -3.29799,-0.1 -4.79699,-0.20001c-0.9,-0.09999 -1.699,-0.09999 -2.399,-0.29998c-2.09899,-0.6 -3.398,-1.99897 -3.598,-4.59691c0,-0.79999 -0.2,-1.69897 -0.2,-2.49896c-0.1,-0.79898 -0.2,-1.79897 0,-2.49796c0.2,-0.69998 0.7,-1.19998 1.099,-1.69997c0.5,-0.49898 1,-0.89898 1.4,-1.39897c-0.29999,-0.2 -0.5,0 -0.79999,0.1c-0.99901,0 -2.39901,-0.3 -2.29901,-1.29897c0.2,-1.19899 3.099,-1.19899 3.29901,0.09999c0.59899,-1.49897 1.09899,-3.09794 1.99799,-4.39792c0.2,-0.399 0.5,-0.89899 0.8,-1.19899c0.99899,-0.99897 2.49899,-1.19898 4.19799,-1.29897c0.899,-0.1 1.699,-0.19999 2.598,-0.19999c0.9,0 1.79899,-0.10001 2.699,-0.10001c0.39901,-0.1 0.69899,-0.1 1.09899,-0.1z',
       passengerIconPath: 'm-7.31061,2.36309c2.01498,1.51696 4.51798,2.41601 7.22898,2.41601c2.71002,0 5.21403,-0.89905 7.22902,-2.41601c4.71002,0.59295 8.354,4.60998 8.354,9.48096l0,4.15601l-31.16801,0l0,-4.15601c0,-4.87097 3.646,-8.88801 8.35601,-9.48096zm7.22898,-18.36305c4.81901,0 8.72602,3.90802 8.72602,8.72802c0,4.82001 -3.90702,8.72602 -8.72602,8.72602c-4.81998,0 -8.727,-3.90601 -8.727,-8.72602c0,-4.82001 3.90701,-8.72802 8.727,-8.72802z',
@@ -23,7 +27,7 @@
       personModalId: personModalId,
       updateInfoModalId: updateInfoModalId,
       changeLocationId: changeLocationId,
-      modalIds: [personModalId, updateInfoModalId, removeSelfModalId, changeLocationId],
+      modalIds: [personModalId, updateInfoModalId, removeSelfModalId, changeLocationId, pickLocationId],
       load: function (eventId, memberId) {
         self.model.eventId = eventId;
         self.model.memberId = memberId;
@@ -62,21 +66,32 @@
         return currentLocationLoadedDeferral.promise;
       },
       returnHome: function () {
+        while (self.closePopup()) {
+          // Keep closing
+        }
+      },
+      closePopup: function () {
         if (window.location.hash.length > 1) {
           window.history.back();
+          return true;
         }
+        return false;
       },
       changeLocation: function () {
         window.location.hash = changeLocationId;
       },
       cancelChangeLocation: function () {
-        self.returnHome();
+        self.closePopup();
       },
       saveChangedLocation: function () {
+        if (self.model.isChangingLocationForFirstTime) {
+          window.location.hash = updateInfoModalId;
+          return;
+        }
         self.model.savingLocation = true;
         carpoolingService.updateCarpoolerInfo(self.model.eventId, self.model.memberId, {
-          LocationLatitude: changeLocationMap.getCenter().lat(),
-          LocationLongitude: changeLocationMap.getCenter().lng()
+          LocationLatitude: map.getCenter().lat(),
+          LocationLongitude: map.getCenter().lng()
         }).then(function () {
           self.model.savingLocation = false;
           self.expectReload();
@@ -86,7 +101,25 @@
         });
       },
       addSelf: function () {
-        window.location.hash = "updateInfoModal";
+        if (self.model.addYourselfDetailsLoading) {
+          return;
+        }
+
+        // We want to load their previous location from last time they carpooled
+        if (self.model.pickLocationStartPosition === null) {
+          self.model.addYourselfDetailsLoading = true;
+          carpoolingService.getPreviousLocation(self.model.memberId).then(function (prevLocation) {
+            self.model.pickLocationStartPosition = prevLocation;
+            self.model.addYourselfDetailsLoading = false;
+            window.location.hash = pickLocationId;
+          }, function () {
+            self.model.addYourselfDetailsLoading = false;
+            window.location.hash = pickLocationId;
+          });
+          return;
+        }
+
+        window.location.hash = pickLocationId;
       },
       editSelf: function () {
         window.location.hash = "updateInfoModal";
@@ -106,7 +139,7 @@
           }
         });
 
-        if (foundModalId != null) {
+        if (foundModalId !== null) {
           return foundModalId;
         }
 
@@ -116,7 +149,25 @@
     });
 
     function updateBasedOnHashChange() {
-      self.model.isChangingLocation = self.getModalIdBasedOnHash() === changeLocationId;
+      var currModal = self.getModalIdBasedOnHash();
+      if (currModal === null) {
+        // Returned home, clear and stop
+        self.model.isChangingLocation = false;
+        self.model.isChangingLocationForFirstTime = false;
+        return;
+      }
+
+      switch (currModal) {
+        case changeLocationId:
+          self.model.isChangingLocation = true;
+          self.model.isChangingLocationForFirstTime = false;
+          break;
+
+        case pickLocationId:
+          self.model.isChangingLocation = true;
+          self.model.isChangingLocationForFirstTime = true;
+          break;
+      }
     }
 
     window.addEventListener('hashchange', function () {
@@ -189,12 +240,12 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
         vehicleDescription: '',
         message: '',
         personContacts: [],
-        alreadyHasLocation: false,
         loading: true,
         saving: false
       },
       load: function () {
         self.model.loading = true;
+        self.model.saving = false;
         carpoolingService.getUpdateInfo(eventId, memberId).then(function (carpooler) {
           if (carpooler.canBeDriver && carpooler.canBePassenger) {
             self.model.carpoolerType = 'either';
@@ -208,7 +259,6 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
           self.model.vehicleDescription = carpooler.vehicleDescription;
           self.model.message = carpooler.message;
           self.model.personContacts = carpooler.personContacts;
-          self.model.alreadyHasLocation = carpooler.locationLatitude && carpooler.locationLongitude;
           self.model.loading = false;
         });
       },
@@ -225,29 +275,20 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
           Message: self.model.message
         };
 
-        var finishSave = function () {
-          carpoolingService.updateCarpoolerInfo(eventId, memberId, updatedInfo).then(function () {
-            self.model.saving = false;
-            carpoolingModelService.expectReload();
-            carpoolingModelService.returnHome();
-          }, function () {
-            self.model.saving = false;
-          });
-        };
-
-        if (self.model.alreadyHasLocation) {
-          finishSave();
-        } else {
-          carpoolingModelService.getCurrentLocation().then(function (position) {
-            if (position == null) {
-              alert('Geolocation not supported');
-            } else {
-              updatedInfo.LocationLatitude = position.latitude;
-              updatedInfo.LocationLongitude = position.longitude;
-              finishSave();
-            }
-          });
+        // If we have just picked the location, assign the location
+        if (carpoolingModelService.model.isChangingLocationForFirstTime) {
+          updatedInfo.LocationLatitude = map.getCenter().lat();
+          updatedInfo.LocationLongitude = map.getCenter().lng();
         }
+
+        // Save the updated info
+        carpoolingService.updateCarpoolerInfo(eventId, memberId, updatedInfo).then(function () {
+          self.model.saving = false;
+          carpoolingModelService.expectReload();
+          carpoolingModelService.returnHome();
+        }, function () {
+          self.model.saving = false;
+        });
       }
     });
 
