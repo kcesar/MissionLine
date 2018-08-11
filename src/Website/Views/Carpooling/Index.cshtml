@@ -71,7 +71,7 @@
             </div>
             <h5 class="carpooler-info-group-header">Contact info</h5>
             <div ng-repeat="contact in model.carpooler.personContacts">
-              {{contact.value}}
+              @Html.Partial("_PersonContact")
             </div>
             <div ng-if="model.carpooler.vehicleDescription">
               <h5 class="carpooler-info-group-header">Vehicle</h5>
@@ -110,6 +110,16 @@
               </div>
               <div class="radio">
                 <label><input type="radio" value="either" ng-model="model.carpoolerType" />Either driver or passenger</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Contact info</label>
+              <div class="list-group-item">
+                <div ng-repeat="contact in model.personContacts">
+                  @Html.Partial("_PersonContact")
+                </div>
+                <a style="padding-top: 1em; display: inline-block" href="https://database.kcsara.org/members/detail/@ViewBag.MySelf.Id" target="_blank">Edit on KCSARA database</a>
               </div>
             </div>
 

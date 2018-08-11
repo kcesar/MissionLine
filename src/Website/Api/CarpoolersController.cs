@@ -93,22 +93,8 @@ namespace Kcesar.MissionLine.Website.Api
       return new CarpoolerEntry(carpooler)
       {
         Member = member,
-        PersonContacts = (await memberSource.LookupPersonContactsAsync(memberId))
-          .Where(i => s_filterContactTypes.Contains(i.Type))
-          .OrderBy(i => i.Type, new PersonContactTypeComparer())
-          .ToList()
+        PersonContacts = await GetPersonContactsAsync(memberId)
       };
-    }
-
-    private class PersonContactTypeComparer : IComparer<string>
-    {
-      public int Compare(string x, string y)
-      {
-        int xIndex = Array.IndexOf(s_filterContactTypes, x);
-        int yIndex = Array.IndexOf(s_filterContactTypes, y);
-
-        return xIndex.CompareTo(yIndex);
-      }
     }
 
     [Route("api/events/{eventId}/updateinfo/{memberId}")]
@@ -135,7 +121,30 @@ namespace Kcesar.MissionLine.Website.Api
         carpooler = new Carpooler();
       }
 
-      return new CarpoolerEntry(carpooler);
+      // Join with their contact info
+      return new CarpoolerEntry(carpooler)
+      {
+        PersonContacts = await GetPersonContactsAsync(memberId)
+      };
+    }
+
+    private async Task<List<PersonContact>> GetPersonContactsAsync(string memberId)
+    {
+      return (await memberSource.LookupPersonContactsAsync(memberId))
+          .Where(i => s_filterContactTypes.Contains(i.Type))
+          .OrderBy(i => i.Type, new PersonContactTypeComparer())
+          .ToList();
+    }
+
+    private class PersonContactTypeComparer : IComparer<string>
+    {
+      public int Compare(string x, string y)
+      {
+        int xIndex = Array.IndexOf(s_filterContactTypes, x);
+        int yIndex = Array.IndexOf(s_filterContactTypes, y);
+
+        return xIndex.CompareTo(yIndex);
+      }
     }
 
     // POST

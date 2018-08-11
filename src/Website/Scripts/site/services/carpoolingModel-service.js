@@ -188,6 +188,7 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
         carpoolerType: null,
         vehicleDescription: '',
         message: '',
+        personContacts: [],
         alreadyHasLocation: false,
         loading: true,
         saving: false
@@ -206,6 +207,7 @@ angular.module('missionlineApp').service('carpoolingUpdateInfoModelService',
           }
           self.model.vehicleDescription = carpooler.vehicleDescription;
           self.model.message = carpooler.message;
+          self.model.personContacts = carpooler.personContacts;
           self.model.alreadyHasLocation = carpooler.locationLatitude && carpooler.locationLongitude;
           self.model.loading = false;
         });
