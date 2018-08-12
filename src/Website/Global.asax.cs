@@ -32,20 +32,5 @@
       var raisedException = Server.GetLastError();
       LogManager.GetLogger("Application").Error("Unhandled error", raisedException);
     }
-
-    // Redirect http requests to the https URL
-    protected void Application_BeginRequest()
-    {
-      if (!Context.Request.IsSecureConnection && !Context.Request.Url.Host.StartsWith("localhost"))
-      {
-        // This is an insecure connection, so redirect to the secure version
-        UriBuilder uri = new UriBuilder(Context.Request.Url)
-        {
-          Scheme = "https",
-          Port = 443
-        };
-        Response.Redirect(uri.ToString());
-      }
-    }
   }
 }
