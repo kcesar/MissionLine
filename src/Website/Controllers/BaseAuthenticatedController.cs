@@ -8,9 +8,6 @@ using System.Web.Mvc;
 
 namespace Kcesar.MissionLine.Website.Controllers
 {
-#if !DEBUG
-  [RequireHttps]
-#endif
   public class BaseAuthenticatedController : Controller
   {
     protected readonly IMemberSource Members;
