@@ -97,7 +97,7 @@ namespace Kcesar.MissionLine.Website.Api
       };
     }
 
-    [Route("api/events/{eventId}/updateinfo/{memberId}")]
+    [Route("api/events/{eventId}/carpoolers/{memberId}/updateinfo")]
     public async Task<CarpoolerEntry> GetUpdateInfo(int eventId, string memberId)
     {
       // Get the carpooler
