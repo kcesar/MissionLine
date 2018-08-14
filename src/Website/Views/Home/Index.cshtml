@@ -14,10 +14,13 @@
       </div>
     </div>
     <div class="col-xs-12 col-md-6 col-md-offset-3 list-group" ng-cloak="true">
-      <div class="list-group-item" ng-repeat="event in events | orderBy:eventsSortPredicate">
+      <div class="list-group-item clearfix" ng-repeat="event in events | orderBy:eventsSortPredicate">
         <i class="fa fa-2x fa-fw fa-pull-left" ng-class="{'fa-ban': event.closed, 'fa-bullhorn': !event.closed }"></i>
-        <button class="btn btn-success pull-right" ng-click="signin(event)" ng-if="canSignIn(event)">Sign In</button>
-        <button class="btn pull-right" ng-click="signout(event)" ng-if="canSignOut(event)">Sign Out</button>
+        <div class="pull-right">
+          <button class="btn btn-success btn-block" ng-click="signin(event)" ng-if="canSignIn(event)">Sign In</button>
+          <button class="btn btn-block" ng-click="signout(event)" ng-if="canSignOut(event)">Sign Out</button>
+          <a class="btn btn-info btn-block" ng-href="/events/{{event.id}}/carpooling">Carpool</a>
+        </div>
         <div style="padding-left: 3.6em">
           <h4 class="list-group-item-heading" ng-class="{'font-bold': !event.closed}">{{event.name}}</h4>
           <p>Opened {{event.opened.fromNow()}}, {{event.roster.length}} responders</p>

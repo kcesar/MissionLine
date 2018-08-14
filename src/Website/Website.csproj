@@ -243,13 +243,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\CarpoolersController.cs" />
     <Compile Include="Api\EventsController.cs" />
     <Compile Include="Api\CallsController.cs" />
     <Compile Include="Api\Log4NetExceptionLogger.cs" />
     <Compile Include="Api\Model\CallEntry.cs" />
+    <Compile Include="Api\Model\CarpoolerEntry.cs" />
     <Compile Include="Api\Model\EventEntry.cs" />
     <Compile Include="Api\BaseVoiceController.cs" />
+    <Compile Include="Api\Model\Location.cs" />
     <Compile Include="Api\VoiceAdminController.cs" />
+    <Compile Include="Controllers\BaseAuthenticatedController.cs" />
+    <Compile Include="Controllers\CarpoolingController.cs" />
+    <Compile Include="Data\Carpooler.cs" />
     <Compile Include="Data\LogEntry.cs" />
     <Compile Include="DIConfig.cs" />
     <Compile Include="DIControllerFactory.cs" />
@@ -280,6 +286,10 @@
     <Compile Include="Migrations\201707260624018_DefaultSchema.cs" />
     <Compile Include="Migrations\201707260624018_DefaultSchema.Designer.cs">
       <DependentUpon>201707260624018_DefaultSchema.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806110445490_Add-Carpooling.cs" />
+    <Compile Include="Migrations\201806110445490_Add-Carpooling.Designer.cs">
+      <DependentUpon>201806110445490_Add-Carpooling.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\SubmitResult.cs" />
     <Compile Include="Api\RosterController.cs" />
@@ -462,10 +472,13 @@
     <Content Include="Scripts\site\forms.js" />
     <Content Include="Scripts\site\ko-bindings.js" />
     <Content Include="Scripts\site\missionline-app.js" />
+    <Content Include="Scripts\site\models\carpooler-model.js" />
     <Content Include="Scripts\site\models\signin-model.js" />
     <Content Include="Scripts\site\models\event-model.js" />
     <Content Include="Scripts\site\page\index.js" />
     <Content Include="Scripts\site\services\calls-service.js" />
+    <Content Include="Scripts\site\services\carpooling-service.js" />
+    <Content Include="Scripts\site\services\carpoolingModel-service.js" />
     <Content Include="Scripts\site\services\roster-service.js" />
     <Content Include="Scripts\site\services\events-service.js" />
     <Content Include="Scripts\site\services\modals-service.js" />
@@ -494,6 +507,8 @@
     <Content Include="Views\Home\_MergeDialog.cshtml" />
     <Content Include="Views\Home\_CloseDialog.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Carpooling\Index.cshtml" />
+    <Content Include="Views\Carpooling\_PersonContact.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -534,6 +549,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707260624018_DefaultSchema.resx">
       <DependentUpon>201707260624018_DefaultSchema.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806110445490_Add-Carpooling.resx">
+      <DependentUpon>201806110445490_Add-Carpooling.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Speeches.resx">
       <Generator>ResXFileCodeGenerator</Generator>

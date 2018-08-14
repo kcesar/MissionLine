@@ -12,6 +12,7 @@ namespace Kcesar.MissionLine.Website.Data
     IDbSet<VoiceCall> Calls { get; set; }
     IDbSet<MemberSignIn> SignIns { get; set; }
     IDbSet<SarEvent> Events { get; set; }
+    IDbSet<Carpooler> Carpoolers { get; set; }
 
     int SaveChanges();
     Task<int> SaveChangesAsync();
@@ -27,6 +28,7 @@ namespace Kcesar.MissionLine.Website.Data
     public IDbSet<VoiceCall> Calls { get; set; }
     public IDbSet<MemberSignIn> SignIns { get; set; }
     public IDbSet<SarEvent> Events { get; set; }
+    public IDbSet<Carpooler> Carpoolers { get; set; }
 
     public IDbSet<LogEntry> Logs { get; set; }
 
@@ -34,6 +36,8 @@ namespace Kcesar.MissionLine.Website.Data
     {
       base.OnModelCreating(modelBuilder);
       modelBuilder.HasDefaultSchema("missionline");
+      modelBuilder.Entity<Carpooler>().Property(i => i.LocationLatitude).HasPrecision(18, 12);
+      modelBuilder.Entity<Carpooler>().Property(i => i.LocationLongitude).HasPrecision(18, 12);
     }
 
     public static MissionLineDbContext Create()

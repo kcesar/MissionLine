@@ -1,0 +1,3 @@
+﻿<a ng-if="contact.type === 'email'" ng-cloak href="mailto:{{contact.value}}">{{contact.value}}</a>
+<a ng-if="contact.type === 'phone'" ng-cloak href="tel:{{contact.value}}">{{contact.value}}</a>
+<span ng-if="contact.type !== 'email' && contact.type !== 'phone'" ng-cloak>{{contact.value}}</span>

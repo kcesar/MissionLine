@@ -1,0 +1,453 @@
+﻿@{
+  ViewBag.NgApp = "missionlineApp";
+  ViewBag.Title = ViewBag.MySelf.Name;
+}
+<div ng-controller="CarpoolingCtrl" class="flexrow-stretch-height">
+
+  <div class="stretch-height stretch-width vertical-flexbox">
+    <button class="btn-info btn-around-map" ng-click="changeLocation()" ng-if="!model.loading && model.ownCarpoolerEntry && !model.isChangingLocation" ng-cloak>
+      <span class="h4">Change your location</span>
+    </button>
+
+    <div class="fullscreen-page-header horizontal-flexbox" ng-if="model.isChangingLocation" ng-cloak>
+      <button class="fullscreen-page-header-button" ng-click="cancelChangeLocation()">Back</button>
+      <div class="flexcolumn-stretch-width">
+        <h4>{{model.isChangingLocationForFirstTime ? 'Pick your location' : 'Change location'}}</h4>
+        <p>Pan &amp; zoom map under pin</p>
+      </div>
+      <button class="fullscreen-page-header-button" ng-click="saveChangedLocation()">{{model.isChangingLocationForFirstTime ? 'Next' : 'OK'}}</button>
+    </div>
+
+    <div class="flexrow-stretch-height">
+      <div id="map" class="stretch-height stretch-width"><p style="padding: 12px">Loading map...</p></div>
+      <div class="map-center-marker" ng-if="model.isChangingLocation" ng-cloak></div>
+    </div>
+
+    <button class="btn-primary btn-around-map" ng-click="addSelf()" ng-if="!model.loading && !model.ownCarpoolerEntry && !model.isChangingLocation" ng-cloak>
+      <span class="h4" ng-if="!model.addYourselfDetailsLoading">Add yourself</span><span>&nbsp;(driver or passenger)</span>
+      <span class="h4" ng-if="model.addYourselfDetailsLoading" ng-cloak>Loading...</span>
+    </button>
+    <div class="horizontal-flexbox" ng-if="!model.loading && model.ownCarpoolerEntry && !model.isChangingLocation" ng-cloak>
+      <button class="flexcolumn-stretch-width btn-primary btn-around-map" ng-click="editSelf()">
+        <span class="h4">Edit your info</span>
+      </button>
+      <button id="buttonCarpoolingRemoveSelf" class="btn-danger" ng-click="removeSelf()">
+        <span class="h4">&#x1f5d1;</span>
+      </button>
+    </div>
+  </div>
+
+
+</div>
+
+@*Modals need to be rendered at body level, otherwise they get messed up when a parent has a fixed or relative placement value*@
+@section modals {
+<div id="carpoolingModals">
+
+  @*Modal about a single person*@
+  <div id="personModal" class="modal fade" role="dialog" ng-controller="PersonModalCtrl">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" ng-if="model.loading">Loading...</h4>
+          <h4 class="modal-title" ng-if="!model.loading">{{model.carpooler.member.name}}</h4>
+        </div>
+        <div class="modal-body">
+          <div ng-if="model.loading">
+            Loading...
+          </div>
+          <div ng-if="!model.loading">
+            <h4 class="font-bold">{{model.carpoolerTypeText}}</h4>
+            <div ng-if="model.carpooler.message">
+              <h5 class="carpooler-info-group-header">Message</h5>
+              <p style="white-space: pre-wrap">{{model.carpooler.message}}</p>
+            </div>
+            <h5 class="carpooler-info-group-header">Contact info</h5>
+            <div ng-repeat="contact in model.carpooler.personContacts">
+              @Html.Partial("_PersonContact")
+            </div>
+            <div ng-if="model.carpooler.vehicleDescription">
+              <h5 class="carpooler-info-group-header">Vehicle</h5>
+              <p>{{model.carpooler.vehicleDescription}}</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a class="btn btn-info" href="https://www.google.com/maps/place/{{model.carpooler.locationLatitude}},{{model.carpooler.locationLongitude}}">View on Google Maps</a>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  @*Modal about updating own carpooling info*@
+  <div id="updateInfoModal" class="modal fade" role="dialog" ng-controller="UpdateInfoModalCtrl">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Carpooling info</h4>
+        </div>
+        <div class="modal-body">
+          <div ng-if="model.loading">
+            Loading...
+          </div>
+          <div ng-if="!model.loading">
+            <div class="form-group">
+              <label>Can you be a...</label>
+              <div class="radio">
+                <label><input type="radio" value="driver" ng-model="model.carpoolerType" />Driver</label>
+              </div>
+              <div class="radio">
+                <label><input type="radio" value="passenger" ng-model="model.carpoolerType" />Passenger</label>
+              </div>
+              <div class="radio">
+                <label><input type="radio" value="either" ng-model="model.carpoolerType" />Either driver or passenger</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Contact info</label>
+              <div class="list-group-item">
+                <div ng-repeat="contact in model.personContacts">
+                  @Html.Partial("_PersonContact")
+                </div>
+                <a style="padding-top: 1em; display: inline-block" href="https://database.kcsara.org/members/detail/@ViewBag.MySelf.Id" target="_blank">Edit on KCSARA database</a>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="vehicleDescription" class="control-label">Vehicle description</label>
+              <input type="text" name="vehicleDescription" class="form-control full-width-input" ng-model="model.vehicleDescription" />
+            </div>
+
+            <div class="form-group">
+              <label for="message" class="control-label">Message</label>
+              <textarea name="message" rows="4" class="form-control full-width-input" ng-model="model.message"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" ng-click="save()" ng-if="!model.loading">{{model.saving ? 'Saving...' : 'Save'}}</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  @*Modal about removing self from map*@
+  <div id="removeSelfModal" class="modal fade" role="dialog" ng-controller="RemoveSelfModalCtrl">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Remove yourself?</h4>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to remove yourself from the carpooling map for this event?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" ng-click="removeSelf()">{{model.saving ? 'Removing...' : 'Remove yourself'}}</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+</div>
+}
+
+@section scripts {
+  @Scripts.Render("~/bundles/app")
+  <script type="text/javascript">
+
+    // If not starting on a blank hash, switch to a blank hash to start with
+    if (window.location.hash.length > 0) {
+      history.replaceState(undefined, undefined, window.location.pathname);
+    }
+
+    var memberId = '@ViewBag.MySelf.Id';
+    var eventId = @ViewBag.EventId;
+    var isMapScriptLoaded = false;
+    var defaultLocationCoords = {
+      latitude: 47.6104544,
+      longitude: -122.1497337
+    };
+    var currentLocationCoords = null;
+    var mapInitializedDeferral = null;
+    var map;
+    var carpoolerMarkers = [];
+    var personModal = createModalObject('personModal');
+    var updateInfoModal = createModalObject('updateInfoModal');
+    var removeSelfModal = createModalObject('removeSelfModal');
+    var modals = [personModal, updateInfoModal, removeSelfModal];
+
+    angular.module('missionlineApp').controller('CarpoolingCtrl', ['$scope', '$q', '$rootScope',
+      'EditModalService', 'carpoolingService', 'carpoolingModelService',
+      function ($scope, $q, $rootScope, EditModalService, carpoolingService, carpoolingModelService) {
+        $.extend($scope, {
+          model: carpoolingModelService.model,
+          addSelf: carpoolingModelService.addSelf,
+          editSelf: carpoolingModelService.editSelf,
+          removeSelf: carpoolingModelService.removeSelf,
+          changeLocation: carpoolingModelService.changeLocation,
+          cancelChangeLocation: carpoolingModelService.cancelChangeLocation,
+          saveChangedLocation: carpoolingModelService.saveChangedLocation
+        });
+
+        function getModalBasedOnHash() {
+          var modalId = carpoolingModelService.getModalIdBasedOnHash();
+          var foundModal = null;
+          $.each(modals, function (idx, modal) {
+            if (modal.id == modalId) {
+              foundModal = modal;
+            }
+          });
+          return foundModal;
+        }
+
+        function updateBasedOnHash() {
+          var modal = getModalBasedOnHash();
+
+          // Hide all other modals
+          $.each(modals, function (idx, m) {
+            if (modal != m) {
+              m.hide();
+            }
+          });
+
+          if (modal != null) {
+            modal.show();
+          }
+        }
+
+        function populateMapWithCarpoolers () {
+          $scope.model.carpoolers.forEach(function (carpooler) {
+
+            var subtext;
+            if (carpooler.canBeDriver && carpooler.canBePassenger) {
+              subtext = 'Driver or passenger';
+            } else if (carpooler.canBeDriver) {
+              subtext = 'Driver';
+            } else {
+              subtext = 'Passenger';
+            }
+
+            var infoWindow = new google.maps.InfoWindow({
+              content: '<a href="#' + carpooler.member.id + '"><h5>' + $('<span>').text(carpooler.member.name).html() + '</h5></a>' + '<p>' + subtext + '</p>'
+            });
+
+            var markerData = {
+              position: { lat: carpooler.locationLatitude, lng: carpooler.locationLongitude },
+              map: map
+            };
+
+            if (carpooler.member.id === memberId) {
+              // If self, use star
+              markerData.icon = {
+                path: carpoolingModelService.selfIconPath,
+                fillColor: 'orange',
+                fillOpacity: 1,
+                scale: 0.3,
+                strokeColor: 'black',
+                strokeWeight: 2
+              };
+            } else if (carpooler.canBeDriver && carpooler.canBePassenger) {
+              // If both driver or passenger
+              markerData.icon = {
+                path: carpoolingModelService.driverOrPassengerIconPath,
+                fillColor: 'white',
+                fillOpacity: 1,
+                scale: 0.8,
+                strokeColor: '#008DE5',
+                strokeWeight: 2
+              };
+            } else if (carpooler.canBeDriver) {
+              // If only driver
+              markerData.icon = {
+                path: carpoolingModelService.driverIconPath,
+                fillColor: 'white',
+                fillOpacity: 1,
+                scale: 0.7,
+                strokeColor: '#7700C9',
+                strokeWeight: 2
+              };
+            } else {
+              // If only passenger
+              markerData.icon = {
+                path: carpoolingModelService.passengerIconPath,
+                fillColor: 'white',
+                fillOpacity: 1,
+                scale: 0.7,
+                strokeColor: '#D3005F',
+                strokeWeight: 2
+              };
+            }
+
+            var marker = new google.maps.Marker(markerData);
+
+            marker.addListener('click', function () {
+              infoWindow.open(map, marker);
+            });
+
+            carpoolerMarkers.push(marker);
+          });
+        }
+
+        function addOwnLocationToMap (map) {
+          carpoolingModelService.getCurrentLocation().then(function (coords) {
+            if (coords != null) {
+              // Draw the location on the map
+              var marker = new google.maps.Marker({
+                position: { lat: coords.latitude, lng: coords.longitude },
+                icon: {
+                  path: 'M-2,2a2,2 0 1,0 4,0a2,2 0 1,0 -4,0',
+                  fillColor: '#4285F4',
+                  fillOpacity: 1,
+                  scale: 3,
+                  strokeColor: 'white',
+                  strokeWeight: 2
+                },
+                zIndex: 100,
+                map: map,
+                clickable: false
+              });
+            }
+          });
+        }
+
+        mapInitializedDeferral = $q.defer();
+
+        carpoolingModelService.getCurrentLocation().then(function (coords) {
+          if (coords != null) {
+            currentLocationCoords = coords;
+            if (map) {
+              map.panTo({ lat: coords.latitude, lng: coords.longitude });
+            }
+            mapInitializedDeferral.promise.then(function () {
+              addOwnLocationToMap(map);
+            });
+          }
+        });
+
+        $scope.$watch('model.carpoolers', function () {
+          // Clear all carpooler markers from the map
+          $.each(carpoolerMarkers, function (idx, marker) {
+            marker.setMap(null);
+          });
+          if ($scope.model.carpoolers) {
+            populateMapWithCarpoolers();
+          }
+        });
+
+        $scope.$watch('model.isChangingLocation', function () {
+          if ($scope.model.isChangingLocation) {
+            var center = null;
+            if (!$scope.model.isChangingLocationForFirstTime && $scope.model.ownCarpoolerEntry) {
+              center = {
+                lat: $scope.model.ownCarpoolerEntry.locationLatitude,
+                lng: $scope.model.ownCarpoolerEntry.locationLongitude
+              };
+            } else if ($scope.model.isChangingLocationForFirstTime && $scope.model.pickLocationStartPosition) {
+              center = {
+                lat: $scope.model.pickLocationStartPosition.latitude,
+                lng: $scope.model.pickLocationStartPosition.longitude
+              };
+            } else {
+              center = map.center;
+            }
+
+            map.setCenter(center);
+          }
+        });
+
+        window.addEventListener('hashchange', updateBasedOnHash, false);
+
+        carpoolingModelService.load(eventId, memberId);
+      }]);
+
+    angular.module('missionlineApp').controller('PersonModalCtrl', ['$scope', '$q', '$rootScope',
+      'EditModalService', 'carpoolingPersonModelService',
+      function ($scope, $q, $rootScope, EditModalService, carpoolingPersonModelService) {
+        $.extend($scope, {
+          model: carpoolingPersonModelService.model
+        });
+      }]);
+
+    angular.module('missionlineApp').controller('UpdateInfoModalCtrl', ['$scope', '$q', '$rootScope',
+      'EditModalService', 'carpoolingUpdateInfoModelService',
+      function ($scope, $q, $rootScope, EditModalService, carpoolingUpdateInfoModelService) {
+        $.extend($scope, {
+          model: carpoolingUpdateInfoModelService.model,
+          save: carpoolingUpdateInfoModelService.save
+        });
+      }]);
+
+    angular.module('missionlineApp').controller('RemoveSelfModalCtrl', ['$scope', '$q', '$rootScope',
+      'EditModalService', 'removeSelfModelService',
+      function ($scope, $q, $rootScope, EditModalService, removeSelfModelService) {
+        $.extend($scope, {
+          model: removeSelfModelService.model,
+          removeSelf: removeSelfModelService.removeSelf
+        });
+      }]);
+
+    function initializeMap() {
+      var center = currentLocationCoords || defaultLocationCoords;
+      // Convert it to Google Maps format
+      center = {
+        lat: center.latitude,
+        lng: center.longitude
+      };
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: center,
+        zoom: 10
+      });
+
+      mapInitializedDeferral.resolve();
+    }
+
+    function createModalObject(id) {
+      var modalObject = {
+        id: id,
+        modal: $('#' + id),
+        isShown: false,
+        show: function () {
+          if (!this.isShown) {
+            this.modal.modal('show');
+          }
+        },
+        hide: function () {
+          if (this.isShown) {
+            this.modal.modal('hide');
+          }
+        }
+      };
+
+      modalObject.modal.on('show.bs.modal', function () {
+        modalObject.isShown = true;
+      });
+
+      modalObject.modal.on('hide.bs.modal', function () {
+        if (modalObject.isShown) {
+          modalObject.isShown = false;
+          if (window.location.hash.length > 1) {
+            window.history.back();
+          }
+        }
+      });
+
+      return modalObject;
+    }
+
+    window.hasHubs = true;
+  </script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDs-6xEFHOlXnS4pQLsjOhncTkrl9eAAt4&callback=initializeMap"
+          async defer></script>
+}

@@ -1,6 +1,6 @@
 ﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+  padding-top: 50px;
+  padding-bottom: 20px;
 }
 
 body, .modal-open .modal {
@@ -10,35 +10,41 @@ body, .modal-open .modal {
 td.roster-state {
   width: 1em;
 }
+
 td.SignedIn, .table-striped > tbody > tr:nth-child(odd) > td.SignedIn {
-  background-color:#83de59 !important;
+  background-color: #83de59 !important;
 }
+
 td.SignedOut, .table-striped > tbody > tr:nth-child(odd) > td.SignedOut {
-  background-color:#3b3b3b !important;
-  color:white;
+  background-color: #3b3b3b !important;
+  color: white;
 }
 
 
 
 /* Set padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 5px;
-    padding-right: 15px;
-    padding-top: 1em;
+  padding-left: 5px;
+  padding-right: 15px;
+  padding-top: 1em;
 }
 
 /* Override the default bootstrap behavior where horizontal description lists 
    will truncate terms that are too long to fit in the left column 
 */
 .dl-horizontal dt {
-    white-space: normal;
+  white-space: normal;
 }
 
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,
 textarea {
-    max-width: 280px;
+  max-width: 280px;
+}
+
+.full-width-input {
+  max-width: none;
 }
 
 .panel-heading .btn-group {
@@ -46,20 +52,22 @@ textarea {
   margin-top: -5px;
   margin-left: -5px;
 }
-.panel-heading .btn-group .btn-sm {
-  line-height: 1;
-}
+
+  .panel-heading .btn-group .btn-sm {
+    line-height: 1;
+  }
 
 .panel-warning > .panel-heading {
   background-color: #ffea63;
 }
+
 .panel-warning, .panel-warning > .panel-heading {
   border-color: #E2C400;
 }
 
 li button.btn-link {
-  text-align:left;
-  width:100%;
+  text-align: left;
+  width: 100%;
 }
 
 .form-control {
@@ -89,12 +97,102 @@ footer {
 }
 
 tr.highlight {
-    background-color: yellow !important;
+  background-color: yellow !important;
 }
 
 div.myevent {
-    padding-left: 1.28571429em;
+  padding-left: 1.28571429em;
 }
+
 .font-bold {
   font-weight: bold;
+}
+
+.full-height-body {
+  display: flex;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.vertical-flexbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.flexrow-stretch-height {
+  flex-grow: 1;
+  position: relative;
+  width: 100%;
+}
+
+.stretch-height {
+  height: 100%;
+  position: absolute;
+}
+
+.stretch-width {
+  width: 100%;
+  position: absolute;
+}
+
+.btn-around-map {
+  padding: 8px;
+}
+
+.fullscreen-page-header {
+  background: #428bca;
+  color: white;
+  align-items: center;
+}
+
+.fullscreen-page-header-button {
+  height: 100%;
+  padding: 12px;
+  background: none;
+  outline: none;
+  border: none;
+}
+
+.horizontal-flexbox {
+  display: flex;
+  flex-direction: row;
+}
+
+.flexcolumn-stretch-width {
+  flex-grow: 1;
+  position: relative;
+  height: 100%;
+}
+
+.map-center-marker {
+  position: absolute;
+  /*url of the marker*/
+  background: url(http://maps.gstatic.com/mapfiles/markers2/marker.png) no-repeat;
+  /*center the marker*/
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  /*fix offset when needed*/
+  margin-left: -10px;
+  margin-top: -34px;
+  /*size of the image*/
+  height: 34px;
+  width: 20px;
+}
+
+.carpooler-info-group-header {
+  margin-top: 24px;
+  margin-bottom: 2px;
+  font-weight: bold;
+}
+
+#buttonCarpoolingRemoveSelf {
+  padding: 0, 14px;
+}
+
+#buttonCarpoolingRemoveSelf span {
+  font-size: 26px;
+  color: white;
 }
