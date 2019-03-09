@@ -43,7 +43,7 @@ namespace Kcesar.MissionLine.Website
 
     public MemberSource(IConfigSource config, ILog log)
     {
-      _authorityUrl = config.GetConfig("auth:authority");
+      _authorityUrl = config.GetConfig("api:authority");
       _url = config.GetConfig("api:root").TrimEnd('/');
       _clientId = config.GetConfig("api:clientId");
       _clientSecret = config.GetConfig("api:secret");
