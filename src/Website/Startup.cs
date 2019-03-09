@@ -8,6 +8,7 @@ namespace Kcesar.MissionLine.Website
   using System;
   using System.Configuration;
   using System.Data.Entity;
+  using System.Net;
   using System.Web.Http;
   using Microsoft.AspNet.SignalR;
   using Newtonsoft.Json;
@@ -32,6 +33,7 @@ namespace Kcesar.MissionLine.Website
 
     public void Configuration(IAppBuilder app)
     {
+      System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
       var config = new HttpConfiguration();
 
       WebApiConfig.Register(config);
