@@ -344,7 +344,8 @@ namespace Kcesar.MissionLine.Website.Api
       TimeOut = f.TimeOut,
       State = f.TimeOut.HasValue ? RosterState.SignedOut : RosterState.SignedIn,
       Miles = f.Miles,
-      EventId = f.EventId
+      EventId = f.EventId,
+      EventName = f.Event.Name
     };
     private static Func<MemberSignIn, RosterEntry> compiledProj = proj.Compile();
   }

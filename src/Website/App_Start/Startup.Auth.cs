@@ -39,7 +39,7 @@ namespace Kcesar.MissionLine.Website
         ClientId = configStrings["auth:clientId"],
         RedirectUri = configStrings["auth:redirect"].Trim('/') + "/",
         ResponseType = "code id_token token",
-        Scope = "openid email profile database-api kcsara-profile",
+        Scope = "openid email profile database-api",
         TokenValidationParameters = new TokenValidationParameters
         {
           NameClaimType = "name"

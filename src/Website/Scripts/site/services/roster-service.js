@@ -11,9 +11,10 @@
           method: 'GET',
           url: window.appRoot + 'api/roster',
         }).success(function (data) {
+          self.signins.length = 0;
           $.each(data, function (idx, event) {
             self.signins.push(new SigninModel(event));
-          })
+          });
           delete self.signins.loading;
           deferred.resolve(data);
         })
