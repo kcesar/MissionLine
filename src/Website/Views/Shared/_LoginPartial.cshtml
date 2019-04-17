@@ -5,12 +5,11 @@
         <li class="navbar-text">
             @ViewBag.Myself.Name
         </li>
-@if (ViewBag.Signout != null)
-{
-        <li>
-            <a href="@ViewBag.Signout">Sign out</a>
-        </li>
-}
+      @if (User.Identity.IsAuthenticated)
+      {
+        <li><a href="/logout">Log out</a></li>
+      }
+
     </ul>
     </text>
 }

@@ -24,7 +24,6 @@ namespace Kcesar.MissionLine.Website.Controllers
     protected override ViewResult View(string viewName, string masterName, object model)
     {
       ViewBag.MySelf = GetMySelf();
-      ViewBag.Signout = Config.GetConfig("auth:endsession");
 
       return base.View(viewName, masterName, model);
     }
