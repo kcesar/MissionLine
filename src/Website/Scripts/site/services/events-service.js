@@ -86,7 +86,7 @@
       var event = new EventModel(data);
       var found = false;
       for (var i = 0; i < self.list.length; i++) {
-        if (self.list[i].id == data.id) {
+        if (self.list[i].id === data.id) {
           self.list[i] = event;
           self._lookup[event.id] = event;
           found = true;
@@ -100,7 +100,7 @@
     pushService.listenTo('removedEvent', function (data) {
       var index = -1;
       $.each(self.list, function (idx, item) {
-        if (item.id == data.id) { index = idx; delete self._lookup[data.id]; }
+        if (item.id === data.id) { index = idx; delete self._lookup[data.id]; }
         return index === -1;
       })
       self.list.splice(index, 1);

@@ -9,7 +9,7 @@
         self.signins.loading = true;
         $http({
           method: 'GET',
-          url: window.appRoot + 'api/roster',
+          url: window.appRoot + 'api/roster'
         }).success(function (data) {
           self.signins.length = 0;
           $.each(data, function (idx, event) {
@@ -62,7 +62,7 @@
       }
 
       for (var i = 0; i < self.signins.length; i++) {
-        if (self.signins[i].id == data.id) {
+        if (self.signins[i].id === data.id) {
           if (isLatest) {
             self.signins[i] = signin;
           } else {
