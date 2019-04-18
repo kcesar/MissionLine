@@ -26,7 +26,7 @@
       <div class="list-group-item clearfix" ng-repeat="event in events | orderBy:eventsSortPredicate">
         <i class="fa fa-2x fa-fw fa-pull-left" ng-class="{'fa-ban': event.closed, 'fa-bullhorn': !event.closed }"></i>
         <div class="pull-right">
-          <button class="btn btn-success btn-block" ng-click="signin(event)" ng-if="canSignIn(event)">Sign In</button>
+          <button class="btn btn-success btn-block" ng-disabled="isWorking" ng-click="signin(event)" ng-if="canSignIn(event)">Sign In</button>
           <button class="btn btn-block" ng-click="signout(event)" ng-if="canSignOut(event)">Sign Out</button>
           <a class="btn btn-info btn-block" ng-href="/events/{{event.id}}/carpooling">Carpool</a>
         </div>
@@ -56,6 +56,7 @@
       'EditModalService', 'eventsService', 'rosterService',
       function ($scope, $rootScope, EditModalService, eventsService, rosterService) {
         $.extend($scope, {
+          isWorking: false,
           events: eventsService.list,
           eventsSortPredicate: function (event) {
             return -event.opened.unix() + (event.closed ? 100000000 : 0);
@@ -85,27 +86,32 @@
             }).length > 0;
           },
           signin: function (evt) {
+            $scope.isWorking = true;
             var signedInEvents = rosterService.signins.filter(function (f) {
               return f.memberId == memberId && !f.timeOut && f.eventId != evt.id
             });
             if (signedInEvents.length) {
               if (signedInEvents[0].eventId == evt.id) {
                 alert('Already signed in');
+                $scope.isWorking = false;
                 return;
               }
               else {
                 alert('Must sign out from other missions first');
+                $scope.isWorking = false;
                 return;
               }
             }
 
             if (!confirm("Sign into " + evt.name + "?")) {
+              $scope.isWorking = false;
               return;
             }
             console.log('going to save');
-            rosterService
+            return rosterService
               .save(new SigninModel({ eventId: evt.id, memberId: memberId, timeIn: moment() }))
               .then(function () {
+                $scope.isWorking = false;
                 rosterService.load();
               });
           },

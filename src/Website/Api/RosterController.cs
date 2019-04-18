@@ -200,6 +200,10 @@ namespace Kcesar.MissionLine.Website.Api
       }
 
       signin.EventId = eventId;
+      if (signin.Event == null)
+      {
+        signin.Event = await db.Events.SingleAsync(f => f.Id == eventId);
+      }
       notifications.Add(() => hub.updatedRoster(compiledProj(signin), rosterisLatest));
       db.SaveChanges();
       foreach (var notify in notifications)
