@@ -102,7 +102,12 @@
             if (!confirm("Sign into " + evt.name + "?")) {
               return;
             }
-            rosterService.save(new SigninModel({ eventId: evt.id, memberId: memberId, timeIn: moment() }));
+            console.log('going to save');
+            rosterService
+              .save(new SigninModel({ eventId: evt.id, memberId: memberId, timeIn: moment() }))
+              .then(function () {
+                rosterService.load();
+              });
           },
           signout: function (evt) {
             var rosterEntry = rosterService.signins.filter(function (f) { return f.memberId == memberId && f.eventId == evt.id && !f.timeOut });
