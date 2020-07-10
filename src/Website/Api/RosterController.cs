@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2015 Matt Cosand
  */
 namespace Kcesar.MissionLine.Website.Api
@@ -200,7 +200,7 @@ namespace Kcesar.MissionLine.Website.Api
       }
 
       signin.EventId = eventId;
-      if (signin.Event == null)
+      if (signin.Event == null && eventId.HasValue)
       {
         signin.Event = await db.Events.SingleAsync(f => f.Id == eventId);
       }
